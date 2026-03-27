@@ -7,16 +7,16 @@ const Badge = memo(({ dimension }) => {
   return (
     <span
       style={{
-        ...theme.shared?.badge,
         fontSize: theme.font.xs,
         fontWeight: 600,
-        background: `${color}12`,
+        background: `${color}15`,
         color,
         padding: '3px 10px',
         borderRadius: theme.radius.full,
-        border: `1px solid ${color}25`,
+        border: `1px solid ${color}30`,
         whiteSpace: 'nowrap',
         letterSpacing: '0.01em',
+        textShadow: `0 0 12px ${color}40`,
       }}
     >
       {DIMENSIONS[dimension]}
