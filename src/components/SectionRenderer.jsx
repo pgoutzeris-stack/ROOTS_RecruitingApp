@@ -6,6 +6,8 @@ import RootsBlock from './RootsBlock';
 import RTIBlock from './RTIBlock';
 import OutroBlock from './OutroBlock';
 import CaseBlock from './CaseBlock';
+import CultureFitBlock from './CultureFitBlock';
+import SectionTimer from './SectionTimer';
 import QuestionCard from './QuestionCard';
 
 const SectionRenderer = memo(({ section, sectionNum, isZweit, erst, zweit, currentState, dispatch, kandidat, interviewer }) => {
@@ -28,7 +30,17 @@ const SectionRenderer = memo(({ section, sectionNum, isZweit, erst, zweit, curre
             {sectionNum.mainNumber}.
           </span>
           <span style={{ fontSize: theme.font.xl, fontWeight: 700, color: theme.colors.text.primary }}>{section.main}</span>
-          {section.time && !section.sub && timeBadge(section.time)}
+          {section.time && !section.sub && (
+            <div style={{ marginLeft: 'auto' }}>
+              <SectionTimer
+                sectionId={section.id}
+                timeStr={section.time}
+                timerMinutes={currentState.timerMinutes || {}}
+                dispatch={dispatch}
+                setTimer={actions.setTimer}
+              />
+            </div>
+          )}
         </div>
       )}
 
@@ -37,7 +49,17 @@ const SectionRenderer = memo(({ section, sectionNum, isZweit, erst, zweit, curre
           {section.isCase && <input type="checkbox" checked={caseChecked} onChange={() => dispatch(actions.toggleCaseCheck(section.caseKey))} style={shared.checkbox} />}
           <span style={{ fontSize: theme.font.body, fontWeight: 500, color: theme.colors.text.muted, fontFamily: theme.fontMono }}>{sectionNum.subNumber}</span>
           <span style={{ fontSize: theme.font.lg, fontWeight: 600, color: theme.colors.text.primary }}>{section.sub}</span>
-          {section.time && timeBadge(section.time)}
+          {section.time && (
+            <div style={{ marginLeft: 'auto' }}>
+              <SectionTimer
+                sectionId={section.id}
+                timeStr={section.time}
+                timerMinutes={currentState.timerMinutes || {}}
+                dispatch={dispatch}
+                setTimer={actions.setTimer}
+              />
+            </div>
+          )}
           {caseGreyed && (
             <span style={{ fontSize: theme.font.xs, color: theme.colors.success.text, fontWeight: 500, padding: '3px 10px', background: theme.colors.success.bg, borderRadius: theme.radius.full }}>
               &#10003; Im EG durchgeführt
@@ -58,8 +80,18 @@ const SectionRenderer = memo(({ section, sectionNum, isZweit, erst, zweit, curre
       {section.type === 'rti' && <RTIBlock rtiDone={currentState.rtiDone} rtiGreyed={rtiGreyed} isZweit={isZweit} erst={erst} zweit={zweit} dispatch={dispatch} />}
       {section.type === 'outro' && <OutroBlock isZweit={isZweit} kandidat={kandidat} abschlussNotes={currentState.abschlussNotes} dispatch={dispatch} />}
       {section.caseText && <CaseBlock caseText={section.caseText} greyed={caseGreyed} />}
+      {section.type === 'culturefit' && (
+        <CultureFitBlock
+          section={section}
+          cultureFitAnswers={currentState.cultureFitAnswers || {}}
+          ratings={currentState.ratings}
+          dispatch={dispatch}
+          erstRatings={isZweit ? erst.ratings : null}
+          isZweit={isZweit}
+        />
+      )}
 
-      {section.questions?.map((question) => {
+      {section.type !== 'culturefit' && section.questions?.map((question) => {
         const greyed = (!section.isCase && isZweit && erst.checks[question.id]) || (section.isCase && caseGreyed);
         return (
           <QuestionCard
@@ -70,7 +102,7 @@ const SectionRenderer = memo(({ section, sectionNum, isZweit, erst, zweit, curre
             erstNote={isZweit ? (erst.notes[question.id] || '') : ''} isZweit={isZweit}
           />
         );
-      })}
+      }) || null}
     </div>
   );
 });

@@ -34,7 +34,7 @@ export const SECTIONS = [
     questions: [
       {
         id: 's3_q1',
-        text: '\u201EBitte stelle dich kurz vor. Fokussiere dich dabei auf das, was dich für diese Rolle besonders qualifiziert.\u201C',
+        text: '\u201EBitte stelle dich kurz vor.\u201C',
         checks: SELBSTVORSTELLUNG_CHECKS,
         evaluations: [
           {
@@ -53,6 +53,33 @@ export const SECTIONS = [
     main: 'Motivation & Organisationswahl',
     time: '8 Min.',
     questions: [
+      {
+        id: 's4_q0a',
+        text: '\u201EDie Auswahl deines ersten Jobs ist eine wichtige Entscheidung und ein Meilenstein in deiner beruflichen Laufbahn. Stell dir vor, du hast ein weißes Blatt Papier – wie soll dein Job aussehen?\u201C',
+        followUp: 'Optionale Nachfrage zur Klärung: \u201EWas möchtest du machen? Was ist dir wichtig?\u201C',
+        evaluations: [
+          {
+            label: 'Klarheit der Jobvorstellung',
+            dimension: 'ownership',
+            anchor1: 'Keine klare Vorstellung; antwortet vage oder ausweichend; kein erkennbarer Reflexionsprozess',
+            anchor3: 'Hat Grundvorstellungen; kann Wünsche benennen, aber wenig priorisiert oder differenziert',
+            anchor5: 'Klare, reflektierte Vorstellung; priorisiert bewusst; zeigt Selbstkenntnis und Bezug zur angestrebten Rolle',
+          },
+        ],
+      },
+      {
+        id: 's4_q0b',
+        text: '\u201EWas bringst du mit, wenn du zu uns kommst?\u201C',
+        evaluations: [
+          {
+            label: 'Selbsteinschätzung & Mehrwert',
+            dimension: 'ownership',
+            anchor1: 'Generische Antwort; kann eigenen Mehrwert nicht benennen; kein Bezug zur Rolle',
+            anchor3: 'Nennt relevante Stärken; Bezug zur Rolle erkennbar, aber oberflächlich',
+            anchor5: 'Differenzierte Selbsteinschätzung; benennt konkreten Mehrwert mit Beispielen; klarer Bezug zu ROOTS und Rolle',
+          },
+        ],
+      },
       {
         id: 's4_q1',
         text: '\u201EWo möchtest Du dich fachlich und persönlich in den nächsten 3–5 Jahren hin entwickeln – hast du bereits einen konkreten Plan?\u201C',
@@ -78,19 +105,6 @@ export const SECTIONS = [
             anchor1: 'Generische oder idealisierte Antwort; kaum Firmenbezug; keine Auseinandersetzung mit Herausforderungen',
             anchor3: 'Solide Grundmotivation; kennt ROOTS oberflächlich; nennt Herausforderungen nur auf Nachfrage',
             anchor5: 'Differenzierte, persönlich begründete Antwort; spezifischer Firmenbezug; reflektiert Herausforderungen und nennt Bewältigungsstrategie',
-          },
-        ],
-      },
-      {
-        id: 's4_q3',
-        text: '\u201EWelche Themen im Marketing- und Branding-Umfeld beschäftigen Dich aktuell besonders? Wie bleibst Du fachlich am Ball?\u201C',
-        evaluations: [
-          {
-            label: 'Wissensdurst',
-            dimension: 'marketing',
-            anchor1: 'Nennt nur Buzzwords; Wissen oberflächlich oder veraltet; kein erkennbares intrinsisches Interesse',
-            anchor3: 'Basiswissen vorhanden; kann einzelne Themen erklären; informiert sich sporadisch; Praxisbezug teils vorhanden',
-            anchor5: 'Aktuelle, fundierte Fachkenntnisse; differenzierte Einordnung; denkt in Wirkungszusammenhängen; nutzt hochwertige Quellen proaktiv',
           },
         ],
       },
@@ -305,6 +319,19 @@ export const SECTIONS = [
     time: '8 Min. (2 aus 3)',
     questions: [
       {
+        id: 's10_q0',
+        text: '\u201EWelche Themen im Marketing- und Branding-Umfeld beschäftigen Dich aktuell besonders? Wie bleibst Du fachlich am Ball?\u201C',
+        evaluations: [
+          {
+            label: 'Wissensdurst',
+            dimension: 'marketing',
+            anchor1: 'Nennt nur Buzzwords; Wissen oberflächlich oder veraltet; kein erkennbares intrinsisches Interesse',
+            anchor3: 'Basiswissen vorhanden; kann einzelne Themen erklären; informiert sich sporadisch; Praxisbezug teils vorhanden',
+            anchor5: 'Aktuelle, fundierte Fachkenntnisse; differenzierte Einordnung; denkt in Wirkungszusammenhängen; nutzt hochwertige Quellen proaktiv',
+          },
+        ],
+      },
+      {
         id: 's10_q1',
         text: '\u201EWas macht aus Deiner Sicht eine Marke langfristig erfolgreich – unabhängig von kurzfristigen Kampagnen?\u201C',
         followUp: 'Nachfrage: \u201EHast du ein Beispiel dafür?\u201C',
@@ -456,13 +483,46 @@ export const SECTIONS = [
     ],
   },
   {
-    id: 's14',
+    id: 's_cf',
+    main: 'Culture-Fit',
+    time: '5 Min.',
+    type: 'culturefit',
+    hint: 'Schnellfragerunde: Forced Choice – Kandidat muss sich spontan entscheiden, kein Mittelweg erlaubt.',
+    cultureFitQuestions: [
+      { id: 'cf_1', optionA: 'Rampensau', optionB: 'Backoffice' },
+      { id: 'cf_2', optionA: 'Better done than perfect', optionB: 'Better perfect than done' },
+      { id: 'cf_3', optionA: 'Datenanalyse', optionB: 'Bauchgefühl' },
+      { id: 'cf_4', optionA: 'Durchdenken', optionB: 'Schnell testen' },
+      { id: 'cf_5', optionA: 'Analytik', optionB: 'Kreativität' },
+      { id: 'cf_6', optionA: 'Kundenanspruch', optionB: 'Eigenanspruch' },
+      { id: 'cf_7', optionA: 'Risiko', optionB: 'Sicherheit' },
+      { id: 'cf_8', optionA: 'Nachfragen', optionB: 'Selbst erarbeiten' },
+      { id: 'cf_9', optionA: 'Office', optionB: 'Homeoffice' },
+    ],
+    questions: [
+      {
+        id: 's_cf_q1',
+        text: 'ROOTS-Fit Gesamteindruck',
+        evaluations: [
+          {
+            label: 'ROOTS-Fit',
+            dimension: 'team',
+            anchor1: null,
+            anchor3: null,
+            anchor5: null,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 's15',
     main: 'Nachfragen & Abschluss',
     time: '5–8 Min.',
     type: 'outro',
     questions: [
       {
-        id: 's14_q1',
+        id: 's15_q1',
         text: 'Qualität der Nachfragen des Kandidaten',
         evaluations: [
           {

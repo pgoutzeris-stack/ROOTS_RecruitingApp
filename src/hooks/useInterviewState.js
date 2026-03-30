@@ -1,5 +1,5 @@
 import { useReducer, useMemo, useCallback, useEffect, useRef, useState } from 'react';
-import { mergeRatings, calculateDimensionScores } from '../utils/scoring';
+import { mergeRatings, calculateDimensionScores, calculateWeightedOverall, DEFAULT_WEIGHTS } from '../utils/scoring';
 import { computeSectionNumbers } from '../utils/numbering';
 import { saveToStorage, loadFromStorage } from '../utils/storage';
 
@@ -15,6 +15,9 @@ const SET_ABSCHLUSS_NOTE = 'SET_ABSCHLUSS_NOTE';
 const TOGGLE_RTI = 'TOGGLE_RTI';
 const TOGGLE_CASE_CHECK = 'TOGGLE_CASE_CHECK';
 const SET_ZWEIT_ANMERKUNG = 'SET_ZWEIT_ANMERKUNG';
+const SET_CULTURE_FIT = 'SET_CULTURE_FIT';
+const SET_TIMER = 'SET_TIMER';
+const SET_WEIGHT = 'SET_WEIGHT';
 const LOAD_STATE = 'LOAD_STATE';
 
 const INITIAL_STATE = {
@@ -29,6 +32,9 @@ const INITIAL_STATE = {
   rtiDone: false,
   caseChecks: {},
   zweitAnmerkung: '',
+  cultureFitAnswers: {},
+  timerMinutes: {},
+  weights: { ...DEFAULT_WEIGHTS },
 };
 
 const reducer = (state, action) => {
@@ -74,6 +80,15 @@ const reducer = (state, action) => {
 
     case SET_ZWEIT_ANMERKUNG:
       return { ...state, zweitAnmerkung: action.value };
+
+    case SET_CULTURE_FIT:
+      return { ...state, cultureFitAnswers: { ...state.cultureFitAnswers, [action.questionId]: action.value } };
+
+    case SET_TIMER:
+      return { ...state, timerMinutes: { ...state.timerMinutes, [action.sectionId]: action.value } };
+
+    case SET_WEIGHT:
+      return { ...state, weights: { ...state.weights, [action.dimension]: action.value } };
 
     case LOAD_STATE:
       return { ...action.payload };
@@ -147,9 +162,15 @@ export const useInterviewState = () => {
     [isZweit, erst.ratings, zweit.ratings, currentState.ratings],
   );
 
+  const weights = currentState.weights || DEFAULT_WEIGHTS;
+
   const dimScores = useMemo(
-    () => calculateDimensionScores(effectiveRatings),
-    [effectiveRatings],
+    () => {
+      const scores = calculateDimensionScores(effectiveRatings);
+      scores.weightedOverall = calculateWeightedOverall(scores.averages, weights);
+      return scores;
+    },
+    [effectiveRatings, weights],
   );
 
   const sectionNumbers = useMemo(
@@ -184,4 +205,7 @@ export const actions = {
   toggleRti: () => ({ type: TOGGLE_RTI }),
   toggleCaseCheck: (caseKey) => ({ type: TOGGLE_CASE_CHECK, caseKey }),
   setZweitAnmerkung: (value) => ({ type: SET_ZWEIT_ANMERKUNG, value }),
+  setCultureFit: (questionId, value) => ({ type: SET_CULTURE_FIT, questionId, value }),
+  setTimer: (sectionId, value) => ({ type: SET_TIMER, sectionId, value }),
+  setWeight: (dimension, value) => ({ type: SET_WEIGHT, dimension, value }),
 };

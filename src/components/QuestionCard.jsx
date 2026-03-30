@@ -2,6 +2,7 @@ import { memo, useCallback } from 'react';
 import { theme, shared } from '../theme';
 import { actions } from '../hooks/useInterviewState';
 import EvalRow from './EvalRow';
+import RichNoteField from './RichNoteField';
 
 const QuestionCard = memo(({
   question, checks, notes, observations, ratings, dispatch,
@@ -62,13 +63,10 @@ const QuestionCard = memo(({
         </div>
       )}
 
-      <textarea
-        placeholder="Notizen ..."
+      <RichNoteField
         value={notes[question.id] || ''}
-        onChange={handleNoteChange}
-        rows={2}
-        style={{ ...shared.dashedInput, marginTop: theme.spacing.sm + 4 }}
-        className="note-field"
+        onChange={(val) => dispatch(actions.setNote(question.id, val))}
+        placeholder="Notizen ..."
       />
 
       {question.evaluations?.map((evaluation, evalIdx) => {

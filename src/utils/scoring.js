@@ -64,3 +64,32 @@ export const calculateDimensionScores = (effectiveRatings) => {
     overall: totalCount > 0 ? totalSum / totalCount : null,
   };
 };
+
+/** Default weights per dimension (all equal = 1) */
+export const DEFAULT_WEIGHTS = {
+  ownership: 1,
+  analytik: 1,
+  kommunikation: 1,
+  projektmgmt: 1,
+  qualitat: 1,
+  resilienz: 1,
+  marketing: 1,
+  team: 1,
+};
+
+/**
+ * Calculates a weighted overall score.
+ * @param {Object} averages - Per-dimension averages
+ * @param {Object} weights - Per-dimension weights (e.g. { analytik: 2, marketing: 1 })
+ * @returns {number|null}
+ */
+export const calculateWeightedOverall = (averages, weights = DEFAULT_WEIGHTS) => {
+  let weightedSum = 0;
+  let totalWeight = 0;
+  for (const [dim, avg] of Object.entries(averages)) {
+    const w = weights[dim] ?? 1;
+    weightedSum += avg * w;
+    totalWeight += w;
+  }
+  return totalWeight > 0 ? weightedSum / totalWeight : null;
+};
