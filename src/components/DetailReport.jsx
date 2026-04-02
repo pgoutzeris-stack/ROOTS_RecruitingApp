@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import { theme, glassElevated } from '../theme';
-import { SECTIONS } from '../data/sections';
+import { getSections, SECTIONS_ERST } from '../data/sections';
 import { DIMENSIONS, DIMENSION_COLORS } from '../data/dimensions';
 import { calculateDimensionScores, calculateWeightedOverall, mergeRatings, DEFAULT_WEIGHTS } from '../utils/scoring';
 
@@ -29,7 +29,7 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
     border: `1px solid ${theme.colors.border.glass}`,
     fontSize: theme.font.sm,
     fontWeight: 600,
-    background: 'rgba(255,255,255,0.04)',
+    background: theme.colors.bg.muted,
     color: theme.colors.text.secondary,
     cursor: 'pointer',
     transition: `all ${theme.transition.fast}`,
@@ -45,12 +45,14 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
   };
 
   /** Render notes and ratings for one round */
-  const renderRoundSummary = (state, label) => {
+  const renderRoundSummary = (state, label, roundIsZweit) => {
     if (!state) return null;
     const hasContent = state.gesamtNote || state.recommendation ||
       Object.values(state.notes || {}).some(Boolean) ||
       Object.keys(state.ratings || {}).length > 0;
     if (!hasContent) return null;
+
+    const roundSections = getSections(roundIsZweit);
 
     return (
       <div style={{ marginBottom: theme.spacing.xl }}>
@@ -68,7 +70,7 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
         </div>
 
         {/* Per-section notes */}
-        {SECTIONS.map((section) => {
+        {roundSections.map((section) => {
           if (!section.questions) return null;
           const sectionNotes = [];
           const sectionRatings = [];
@@ -133,7 +135,7 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
                     fontSize: theme.font.body, color: theme.colors.text.primary,
                     lineHeight: 1.6, whiteSpace: 'pre-wrap',
                     padding: '8px 12px', borderRadius: theme.radius.sm,
-                    background: 'rgba(255,255,255,0.02)',
+                    background: theme.colors.bg.surface,
                     border: `1px solid ${theme.colors.border.subtle}`,
                   }}>
                     {n.note}
@@ -186,7 +188,7 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
           <div style={{ ...glassElevated, padding: theme.spacing.md, marginTop: theme.spacing.sm + 4 }}>
             <div style={sectionLabel}>Culture-Fit Antworten</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {SECTIONS.find(s => s.id === 's_cf')?.cultureFitQuestions?.map((cfq) => {
+              {SECTIONS_ERST.find(s => s.id === 's_cf')?.cultureFitQuestions?.map((cfq) => {
                 const answer = state.cultureFitAnswers[cfq.id];
                 if (!answer) return null;
                 const chosen = answer === 'A' ? cfq.optionA : cfq.optionB;
@@ -327,8 +329,8 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
       </div>
 
       {/* Round summaries */}
-      {renderRoundSummary(erst, 'Erstgespräch')}
-      {hasZweit && renderRoundSummary(zweit, 'Zweitgespräch')}
+      {renderRoundSummary(erst, 'Erstgespräch', false)}
+      {hasZweit && renderRoundSummary(zweit, 'Zweitgespräch', true)}
     </div>
   );
 });

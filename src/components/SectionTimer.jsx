@@ -81,7 +81,7 @@ const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTime
               autoFocus
               style={{
                 width: 44, height: 28, textAlign: 'center',
-                background: 'rgba(255,255,255,0.06)',
+                background: theme.colors.bg.muted,
                 border: `1px solid ${theme.colors.accent.indigo}60`,
                 borderRadius: theme.radius.sm,
                 color: theme.colors.text.primary,
@@ -96,7 +96,7 @@ const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTime
               style={{
                 fontSize: theme.font.xs, color: theme.colors.text.muted,
                 padding: '3px 8px', borderRadius: theme.radius.sm,
-                background: 'rgba(255,255,255,0.04)',
+                background: theme.colors.bg.muted,
                 border: `1px solid ${theme.colors.border.glass}`,
                 cursor: 'pointer', fontFamily: theme.fontMono,
               }}
@@ -113,7 +113,7 @@ const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTime
         fontFamily: theme.fontMono,
         fontSize: theme.font.md,
         fontWeight: 700,
-        color: isOvertime ? theme.colors.danger.text : (remainingSeconds <= 60 && isRunning ? '#FBBF24' : theme.colors.text.primary),
+        color: isOvertime ? theme.colors.danger.text : (remainingSeconds <= 60 && isRunning ? '#B45309' : theme.colors.text.primary),
         minWidth: 52,
         textAlign: 'center',
         textShadow: isOvertime ? `0 0 8px ${theme.colors.danger.text}50` : 'none',
@@ -128,8 +128,8 @@ const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTime
         style={{
           width: 28, height: 28, borderRadius: theme.radius.sm,
           border: `1px solid ${theme.colors.border.glass}`,
-          background: isRunning ? 'rgba(251, 191, 36, 0.1)' : 'rgba(99, 102, 241, 0.1)',
-          color: isRunning ? '#FBBF24' : theme.colors.accent.indigoMid,
+          background: isRunning ? 'rgba(245, 158, 11, 0.08)' : 'rgba(99, 102, 241, 0.08)',
+          color: isRunning ? '#B45309' : theme.colors.accent.indigo,
           cursor: 'pointer', fontSize: 12,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 0, transition: `all ${theme.transition.fast}`,
@@ -146,7 +146,7 @@ const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTime
           style={{
             width: 28, height: 28, borderRadius: theme.radius.sm,
             border: `1px solid ${theme.colors.border.glass}`,
-            background: 'rgba(255,255,255,0.04)',
+            background: theme.colors.bg.muted,
             color: theme.colors.text.muted,
             cursor: 'pointer', fontSize: 11,
             display: 'flex', alignItems: 'center', justifyContent: 'center',

@@ -27,8 +27,8 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
             onClick={() => setShowWeights(p => !p)}
             style={{
               fontSize: theme.font.xs, color: theme.colors.text.muted,
-              background: showWeights ? theme.colors.accent.indigoLight : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${showWeights ? theme.colors.accent.indigo + '40' : theme.colors.border.glass}`,
+              background: showWeights ? theme.colors.accent.indigoLight : theme.colors.bg.muted,
+              border: `1px solid ${showWeights ? theme.colors.accent.indigo + '30' : theme.colors.border.glass}`,
               borderRadius: theme.radius.sm, padding: '4px 10px',
               cursor: 'pointer', fontWeight: 500, transition: `all ${theme.transition.fast}`,
             }}
@@ -43,8 +43,8 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
             const color = DIMENSION_COLORS[dk];
             const w = weights[dk] ?? 1;
             return (
-              <div key={dk} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: theme.radius.md, background: avg ? `${color}0A` : 'rgba(255,255,255,0.02)', border: `1px solid ${avg ? `${color}20` : theme.colors.border.subtle}`, transition: `all ${theme.transition.normal}` }}>
-                <div style={{ width: 10, height: 10, borderRadius: theme.radius.full, background: color, flexShrink: 0, boxShadow: avg ? `0 0 8px ${color}50` : 'none' }} />
+              <div key={dk} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: theme.radius.md, background: avg ? `${color}08` : theme.colors.bg.muted, border: `1px solid ${avg ? `${color}20` : theme.colors.border.subtle}`, transition: `all ${theme.transition.normal}` }}>
+                <div style={{ width: 10, height: 10, borderRadius: theme.radius.full, background: color, flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <span style={{ fontSize: theme.font.body, fontWeight: 500, color: theme.colors.text.primary }}>{DIMENSIONS[dk]}</span>
                   {showWeights && (
@@ -57,7 +57,7 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
                           style={{
                             width: 28, height: 22, borderRadius: 4,
                             border: w === v ? `1px solid ${color}` : `1px solid ${theme.colors.border.glass}`,
-                            background: w === v ? `${color}20` : 'transparent',
+                            background: w === v ? `${color}15` : 'transparent',
                             color: w === v ? color : theme.colors.text.muted,
                             fontSize: theme.font.xs, fontWeight: w === v ? 700 : 400,
                             cursor: 'pointer', padding: 0, fontFamily: theme.fontMono,
@@ -73,7 +73,7 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
                 {showWeights && w !== 1 && (
                   <span style={{ fontSize: theme.font.xs, color, fontWeight: 600, fontFamily: theme.fontMono }}>{w}x</span>
                 )}
-                <span style={{ fontSize: 22, fontWeight: 800, fontFamily: theme.fontMono, color: avg ? color : theme.colors.text.muted, minWidth: 44, textAlign: 'right', textShadow: avg ? `0 0 16px ${color}40` : 'none' }}>
+                <span style={{ fontSize: 22, fontWeight: 800, fontFamily: theme.fontMono, color: avg ? color : theme.colors.text.muted, minWidth: 44, textAlign: 'right' }}>
                   {avg ? avg.toFixed(1) : '\u2013'}
                 </span>
               </div>
@@ -81,7 +81,7 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
           })}
         </div>
 
-        {/* Overall score (weighted) */}
+        {/* Overall score */}
         <div style={{ marginTop: theme.spacing.lg, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14, padding: '16px 24px', background: `linear-gradient(135deg, ${theme.colors.accent.indigoDark}, ${theme.colors.accent.indigo})`, borderRadius: theme.radius.md, color: '#fff', boxShadow: theme.shadow.glow }}>
           <span style={{ fontSize: theme.font.md, fontWeight: 500, opacity: 0.8 }}>Gewichteter Gesamtscore:</span>
           <span style={{ fontSize: 32, fontWeight: 800, fontFamily: theme.fontMono, letterSpacing: '-1px' }}>{dimScores.weightedOverall ? dimScores.weightedOverall.toFixed(1) : '\u2013'}</span>
@@ -91,7 +91,7 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
 
       {/* Erst impression in Zweit */}
       {isZweit && erst.gesamtNote && (
-        <div style={{ background: theme.colors.info.bg, border: `1px solid ${theme.colors.info.border}`, borderRadius: theme.radius.lg, padding: theme.spacing.lg, marginBottom: theme.spacing.md, backdropFilter: 'blur(12px)' }}>
+        <div style={{ background: theme.colors.info.bg, border: `1px solid ${theme.colors.info.border}`, borderRadius: theme.radius.lg, padding: theme.spacing.lg, marginBottom: theme.spacing.md }}>
           <div style={{ fontSize: theme.font.xs, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: theme.colors.info.text, marginBottom: theme.spacing.sm }}>Gesamteindruck Erstgespräch</div>
           <div style={{ fontSize: theme.font.body, color: theme.colors.info.text, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{erst.gesamtNote}</div>
         </div>
@@ -115,7 +115,7 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
               <button key={opt} onClick={() => dispatch(actions.setRecommendation(opt))} style={{
                 padding: '12px 28px', borderRadius: theme.radius.md,
                 border: sel ? `1px solid ${theme.colors.accent.indigo}` : `1px solid ${theme.colors.border.glass}`,
-                background: sel ? `linear-gradient(135deg, ${theme.colors.accent.indigoDark}, ${theme.colors.accent.indigo})` : 'rgba(255,255,255,0.03)',
+                background: sel ? `linear-gradient(135deg, ${theme.colors.accent.indigoDark}, ${theme.colors.accent.indigo})` : theme.colors.bg.muted,
                 color: sel ? '#fff' : theme.colors.text.secondary,
                 fontSize: theme.font.md, fontWeight: 600, cursor: 'pointer',
                 transition: `all ${theme.transition.fast}`, letterSpacing: '0.01em',

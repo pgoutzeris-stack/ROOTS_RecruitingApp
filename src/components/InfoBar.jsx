@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { theme } from '../theme';
 
-const InfoBar = memo(({ isZweit }) => (
+const InfoBar = memo(({ isZweit, onShowErstScript }) => (
   <div
     style={{
       background: theme.colors.info.bg,
@@ -10,14 +10,36 @@ const InfoBar = memo(({ isZweit }) => (
       color: theme.colors.info.text,
       lineHeight: 1.7,
       borderBottom: `1px solid ${theme.colors.info.border}`,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12,
     }}
     className="no-print"
   >
-    <span style={{ fontWeight: 700 }}>Hinweis:</span>{' '}
-    Wähle pro Phase Fragen aus, hake gestellte ab, notiere Stichworte und bewerte per
-    ausklappbarem Evaluationsanker.{' '}
-    {isZweit && 'Grau hinterlegte Fragen wurden im Erstgespräch bereits gestellt. Bewertungen (EG) und Notizen (Notizen EG) sind übernommen. '}
-    Offene Fragen kann der/die nächste Interviewer:in stellen.
+    <div style={{ flex: 1 }}>
+      <span style={{ fontWeight: 700 }}>Hinweis:</span>{' '}
+      Notiere Stichworte und bewerte per ausklappbarem Evaluationsanker (1–5).{' '}
+      {isZweit && 'Nicht bewertete Fragen aus dem Erstgespräch erscheinen oben automatisch. '}
+    </div>
+    {onShowErstScript && (
+      <button
+        onClick={onShowErstScript}
+        style={{
+          padding: '6px 14px',
+          borderRadius: theme.radius.sm,
+          border: `1px solid ${theme.colors.accent.indigo}30`,
+          background: theme.colors.accent.indigoLight,
+          color: theme.colors.accent.indigo,
+          fontSize: theme.font.sm,
+          fontWeight: 600,
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+          transition: `all ${theme.transition.fast}`,
+        }}
+      >
+        Erstgespräch einsehen
+      </button>
+    )}
   </div>
 ));
 

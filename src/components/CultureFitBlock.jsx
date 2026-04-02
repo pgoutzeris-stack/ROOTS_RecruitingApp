@@ -24,8 +24,8 @@ const CultureFitBlock = memo(({ section, cultureFitAnswers, ratings, dispatch, e
                 border: selected === 'A'
                   ? `2px solid ${theme.colors.accent.indigo}`
                   : `1px solid ${theme.colors.border.glass}`,
-                background: selected === 'A' ? theme.colors.accent.indigoLight : 'rgba(255,255,255,0.03)',
-                color: selected === 'A' ? theme.colors.text.accent : theme.colors.text.secondary,
+                background: selected === 'A' ? theme.colors.accent.indigoLight : theme.colors.bg.muted,
+                color: selected === 'A' ? theme.colors.accent.indigo : theme.colors.text.secondary,
                 fontSize: theme.font.md,
                 fontWeight: selected === 'A' ? 600 : 400,
                 cursor: 'pointer',
@@ -46,8 +46,8 @@ const CultureFitBlock = memo(({ section, cultureFitAnswers, ratings, dispatch, e
                 border: selected === 'B'
                   ? `2px solid ${theme.colors.accent.indigo}`
                   : `1px solid ${theme.colors.border.glass}`,
-                background: selected === 'B' ? theme.colors.accent.indigoLight : 'rgba(255,255,255,0.03)',
-                color: selected === 'B' ? theme.colors.text.accent : theme.colors.text.secondary,
+                background: selected === 'B' ? theme.colors.accent.indigoLight : theme.colors.bg.muted,
+                color: selected === 'B' ? theme.colors.accent.indigo : theme.colors.text.secondary,
                 fontSize: theme.font.md,
                 fontWeight: selected === 'B' ? 600 : 400,
                 cursor: 'pointer',
@@ -62,18 +62,15 @@ const CultureFitBlock = memo(({ section, cultureFitAnswers, ratings, dispatch, e
         );
       })}
 
-      {/* ROOTS-Fit Evaluation (no anchors) */}
+      {/* ROOTS-Fit Evaluation */}
       {section.questions?.map((question) =>
         question.evaluations?.map((ev, evalIdx) => (
           <EvalRow
             key={`${question.id}_${evalIdx}`}
             evaluation={ev}
-            questionId={question.id}
-            evalIndex={evalIdx}
             rating={ratings?.[question.id]?.[evalIdx] ?? null}
             erstRating={erstRatings?.[question.id]?.[evalIdx] ?? null}
-            dispatch={dispatch}
-            isZweit={isZweit}
+            onRate={(v) => dispatch(actions.setRating(question.id, evalIdx, v))}
           />
         ))
       )}

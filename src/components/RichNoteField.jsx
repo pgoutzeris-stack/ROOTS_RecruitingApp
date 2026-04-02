@@ -7,7 +7,7 @@ const toolbarBtnStyle = (active) => ({
   borderRadius: 4,
   border: `1px solid ${active ? theme.colors.accent.indigo : theme.colors.border.glass}`,
   background: active ? theme.colors.accent.indigoLight : 'transparent',
-  color: active ? theme.colors.accent.indigoMid : theme.colors.text.muted,
+  color: active ? theme.colors.accent.indigo : theme.colors.text.muted,
   cursor: 'pointer',
   fontSize: 13,
   fontWeight: active ? 700 : 500,
@@ -24,8 +24,6 @@ const RichNoteField = memo(({ value, onChange, placeholder }) => {
   const [isFocused, setIsFocused] = useState(false);
   const isInternalChange = useRef(false);
 
-  // Sync editor content from external value changes only (e.g. loading a candidate).
-  // Skip when the change originated from user input to preserve cursor position.
   useEffect(() => {
     if (isInternalChange.current) {
       isInternalChange.current = false;
@@ -64,12 +62,11 @@ const RichNoteField = memo(({ value, onChange, placeholder }) => {
 
   return (
     <div style={{ marginTop: theme.spacing.sm + 4 }}>
-      {/* Toolbar */}
       <div style={{
         display: 'flex', gap: 4, padding: '4px 8px',
-        background: 'rgba(255,255,255,0.02)',
+        background: theme.colors.bg.muted,
         borderRadius: `${theme.radius.md}px ${theme.radius.md}px 0 0`,
-        border: `1px solid ${isFocused ? theme.colors.accent.indigo + '60' : theme.colors.border.glass}`,
+        border: `1px solid ${isFocused ? theme.colors.accent.indigo + '40' : theme.colors.border.glass}`,
         borderBottom: 'none',
         transition: `border-color ${theme.transition.fast}`,
       }}>
@@ -84,7 +81,6 @@ const RichNoteField = memo(({ value, onChange, placeholder }) => {
         </button>
       </div>
 
-      {/* Editor */}
       <div style={{ position: 'relative' }}>
         <div
           ref={editorRef}
@@ -99,11 +95,11 @@ const RichNoteField = memo(({ value, onChange, placeholder }) => {
             width: '100%',
             minHeight: 80,
             padding: '12px 16px',
-            border: `1px solid ${isFocused ? theme.colors.accent.indigo + '60' : theme.colors.border.glass}`,
+            border: `1px solid ${isFocused ? theme.colors.accent.indigo + '40' : theme.colors.border.glass}`,
             borderRadius: `0 0 ${theme.radius.md}px ${theme.radius.md}px`,
             fontSize: theme.font.body,
             fontFamily: 'inherit',
-            background: 'rgba(255,255,255,0.03)',
+            background: '#FAFBFC',
             boxSizing: 'border-box',
             lineHeight: 1.7,
             transition: `border-color ${theme.transition.fast}`,
@@ -118,7 +114,7 @@ const RichNoteField = memo(({ value, onChange, placeholder }) => {
           <div style={{
             position: 'absolute', top: 12, left: 16,
             color: theme.colors.text.muted, fontSize: theme.font.body,
-            pointerEvents: 'none', opacity: 0.5,
+            pointerEvents: 'none', opacity: 0.7,
           }}>
             {placeholder || 'Notizen ...'}
           </div>

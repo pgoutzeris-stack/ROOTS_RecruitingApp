@@ -9,18 +9,17 @@ import CaseBlock from './CaseBlock';
 import CultureFitBlock from './CultureFitBlock';
 import SectionTimer from './SectionTimer';
 import QuestionCard from './QuestionCard';
+import EvalRow from './EvalRow';
 
 const SectionRenderer = memo(({ section, sectionNum, isZweit, erst, zweit, currentState, dispatch, kandidat, interviewer }) => {
-  if (!sectionNum.visible) return null;
+  if (!sectionNum || !sectionNum.visible) return null;
   const caseChecked = section.isCase ? !!currentState.caseChecks[section.caseKey] : false;
-  const caseGreyed = section.isCase && isZweit && !!erst.caseChecks[section.caseKey];
-  const rtiGreyed = section.type === 'rti' && isZweit && erst.rtiDone;
 
   return (
     <div id={`section-${section.id}`} style={{ marginBottom: theme.spacing.xl + 8 }}>
       {section.main && (
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, borderBottom: `1px solid ${theme.colors.border.strong}`, paddingBottom: 14, marginBottom: theme.spacing.lg }}>
-          <span style={{ fontSize: 32, fontWeight: 800, color: theme.colors.accent.indigo, letterSpacing: '-1px', lineHeight: 1, textShadow: `0 0 24px ${theme.colors.accent.indigoGlow}` }}>
+          <span style={{ fontSize: 32, fontWeight: 800, color: theme.colors.accent.indigo, letterSpacing: '-1px', lineHeight: 1 }}>
             {sectionNum.mainNumber}.
           </span>
           <span style={{ fontSize: theme.font.xl, fontWeight: 700, color: theme.colors.text.primary }}>{section.main}</span>
@@ -54,11 +53,6 @@ const SectionRenderer = memo(({ section, sectionNum, isZweit, erst, zweit, curre
               />
             </div>
           )}
-          {caseGreyed && (
-            <span style={{ fontSize: theme.font.xs, color: theme.colors.success.text, fontWeight: 500, padding: '3px 10px', background: theme.colors.success.bg, borderRadius: theme.radius.full }}>
-              &#10003; Im EG durchgeführt
-            </span>
-          )}
         </div>
       )}
 
@@ -71,9 +65,9 @@ const SectionRenderer = memo(({ section, sectionNum, isZweit, erst, zweit, curre
 
       {section.type === 'script' && <ScriptBlock isZweit={isZweit} kandidat={kandidat} interviewer={interviewer} />}
       {section.type === 'roots' && <RootsBlock />}
-      {section.type === 'rti' && <RTIBlock rtiDone={currentState.rtiDone} rtiGreyed={rtiGreyed} isZweit={isZweit} erst={erst} zweit={zweit} dispatch={dispatch} />}
-      {section.type === 'outro' && <OutroBlock isZweit={isZweit} kandidat={kandidat} abschlussNotes={currentState.abschlussNotes} dispatch={dispatch} />}
-      {section.caseText && <CaseBlock caseText={section.caseText} greyed={caseGreyed} />}
+      {section.type === 'rti' && <RTIBlock rtiDone={currentState.rtiDone} rtiGreyed={false} isZweit={isZweit} erst={erst} zweit={zweit} dispatch={dispatch} />}
+      {section.type === 'outro' && <OutroBlock isZweit={isZweit} kandidat={kandidat} abschlussNotes={currentState.abschlussNotes} dispatch={dispatch} outroFields={section.outroFields} />}
+      {section.caseText && <CaseBlock caseText={section.caseText} greyed={false} />}
       {section.type === 'culturefit' && (
         <CultureFitBlock
           section={section}
@@ -85,18 +79,41 @@ const SectionRenderer = memo(({ section, sectionNum, isZweit, erst, zweit, curre
         />
       )}
 
-      {section.type !== 'culturefit' && section.questions?.map((question) => {
-        const greyed = (!section.isCase && isZweit && erst.checks[question.id]) || (section.isCase && caseGreyed);
-        return (
-          <QuestionCard
-            key={question.id} question={question} checks={currentState.checks} notes={currentState.notes}
-            observations={currentState.observations} ratings={currentState.ratings} dispatch={dispatch}
-            greyed={greyed} erstRatings={isZweit ? erst.ratings : null}
-            hideCheck={!!section.isCase || !!section.noQuestionCheck}
-            erstNote={isZweit ? (erst.notes[question.id] || '') : ''} isZweit={isZweit}
-          />
-        );
-      }) || null}
+      {section.type !== 'culturefit' && section.questions?.map((question) => (
+        <QuestionCard
+          key={question.id}
+          question={question}
+          notes={currentState.notes}
+          observations={currentState.observations}
+          ratings={currentState.ratings}
+          dispatch={dispatch}
+          erstRatings={isZweit ? erst.ratings : null}
+          erstNote={isZweit ? (erst.notes[question.id] || '') : ''}
+          isZweit={isZweit}
+          hasBlockEvaluation={!!section.blockEvaluation}
+        />
+      )) || null}
+
+      {/* Block-level evaluation (e.g. Erst Block 4 Motivation) */}
+      {section.blockEvaluation && (
+        <div style={{ marginTop: theme.spacing.md, padding: theme.spacing.md, background: theme.colors.accent.indigoLight, borderRadius: theme.radius.lg, border: `1px solid ${theme.colors.border.glass}` }}>
+          <div style={{ fontSize: theme.font.sm, fontWeight: 700, color: theme.colors.accent.indigo, marginBottom: theme.spacing.sm, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Gesamtbewertung Block
+          </div>
+          {section.blockEvaluation.evaluations.map((ev, evalIdx) => {
+            const er = isZweit && erst.ratings ? (erst.ratings[section.blockEvaluation.id] || {})[evalIdx] : undefined;
+            return (
+              <EvalRow
+                key={evalIdx}
+                evaluation={ev}
+                rating={(currentState.ratings[section.blockEvaluation.id] || {})[evalIdx]}
+                erstRating={er}
+                onRate={(v) => dispatch(actions.setRating(section.blockEvaluation.id, evalIdx, v))}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 });

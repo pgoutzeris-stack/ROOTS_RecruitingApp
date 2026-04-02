@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { SECTIONS } from './data/sections';
+import { getSections, SECTIONS_ERST } from './data/sections';
 import { theme } from './theme';
 import { useInterviewState, actions } from './hooks/useInterviewState';
 import { exportAsJson } from './utils/storage';
@@ -11,6 +11,8 @@ import GesamtEvaluation from './components/GesamtEvaluation';
 import RoundSwitchDialog from './components/RoundSwitchDialog';
 import Dashboard from './components/Dashboard';
 import DetailReport from './components/DetailReport';
+import ErstScriptViewer from './components/ErstScriptViewer';
+import UnevaluatedQuestionsBlock from './components/UnevaluatedQuestionsBlock';
 
 export default function App() {
   const {
@@ -27,16 +29,15 @@ export default function App() {
     loadCandidate,
   } = useInterviewState();
 
-  // View: 'interview' | 'dashboard' | 'detail'
   const [view, setView] = useState('interview');
   const [detailData, setDetailData] = useState(null);
-
   const [showSwitchDialog, setShowSwitchDialog] = useState(false);
+  const [showErstScript, setShowErstScript] = useState(false);
 
   const kandidat = currentState.meta.kandidat;
   const interviewer = currentState.meta.interviewer;
+  const sections = getSections(isZweit);
 
-  /** Wrap round-switch dispatch with confirmation dialog */
   const headerDispatch = useCallback(
     (action) => {
       if (action.type === 'SET_META' && action.field === 'runde' && action.value === 'zweit') {
@@ -53,46 +54,36 @@ export default function App() {
     dispatch(actions.setMeta('runde', 'zweit'));
   }, [dispatch]);
 
-  /** Open dashboard */
-  const handleOpenDashboard = useCallback(() => {
-    setView('dashboard');
-  }, []);
+  const handleOpenDashboard = useCallback(() => setView('dashboard'), []);
 
-  /** Open detail report for a candidate */
   const handleOpenDetail = useCallback((data) => {
     setDetailData(data);
     setView('detail');
   }, []);
 
-  /** Load a candidate into the interview form (e.g. for Zweitgespräch) */
   const handleLoadCandidate = useCallback((data) => {
     loadCandidate(data);
-    // If recommendation allows Zweitgespräch and not already in Zweit, switch
     const rec = data.erst?.recommendation;
     const alreadyZweit = data.erst?.meta?.runde === 'zweit';
     if ((rec === 'Zum Zweitgespräch einladen' || rec === 'Auf Warteliste') && !alreadyZweit) {
-      // Will be switched after load via dispatch
       setTimeout(() => dispatch(actions.setMeta('runde', 'zweit')), 50);
     }
     setView('interview');
     window.scrollTo(0, 0);
   }, [loadCandidate, dispatch]);
 
-  /** Reset all data */
   const handleReset = useCallback(() => {
     resetAll();
     setView('interview');
     window.scrollTo(0, 0);
   }, [resetAll]);
 
-  /** Back to interview (new) from dashboard */
   const handleNewInterview = useCallback(() => {
     resetAll();
     setView('interview');
     window.scrollTo(0, 0);
   }, [resetAll]);
 
-  /** JSON export handler */
   const handleExportJson = useCallback(() => {
     const data = {
       erst,
@@ -105,53 +96,32 @@ export default function App() {
     exportAsJson(data, `roots-interview-${name}-${date}.json`);
   }, [erst, zweit, dimScores, kandidat]);
 
-  /** Keyboard shortcut: Cmd/Ctrl+S to prevent browser save dialog */
   useEffect(() => {
     const handler = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-        e.preventDefault();
-      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') e.preventDefault();
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
   return (
-    <div
-      style={{
-        fontFamily: theme.fontFamily,
-        background: theme.colors.bg.base,
-        minHeight: '100vh',
-        color: theme.colors.text.primary,
-      }}
-    >
-
+    <div style={{ fontFamily: theme.fontFamily, background: theme.colors.bg.base, minHeight: '100vh', color: theme.colors.text.primary }}>
       {showSwitchDialog && (
-        <RoundSwitchDialog
-          onConfirm={confirmSwitch}
-          onCancel={() => setShowSwitchDialog(false)}
-        />
+        <RoundSwitchDialog onConfirm={confirmSwitch} onCancel={() => setShowSwitchDialog(false)} />
       )}
 
-      {/* Dashboard view */}
+      {showErstScript && (
+        <ErstScriptViewer erst={erst} onClose={() => setShowErstScript(false)} />
+      )}
+
       {view === 'dashboard' && (
-        <Dashboard
-          onBack={handleNewInterview}
-          onOpenDetail={handleOpenDetail}
-          onLoadCandidate={handleLoadCandidate}
-        />
+        <Dashboard onBack={handleNewInterview} onOpenDetail={handleOpenDetail} onLoadCandidate={handleLoadCandidate} />
       )}
 
-      {/* Detail report view */}
       {view === 'detail' && detailData && (
-        <DetailReport
-          data={detailData}
-          onBack={() => setView('dashboard')}
-          onLoadCandidate={handleLoadCandidate}
-        />
+        <DetailReport data={detailData} onBack={() => setView('dashboard')} onLoadCandidate={handleLoadCandidate} />
       )}
 
-      {/* Interview view */}
       {view === 'interview' && (
         <>
           <Header
@@ -165,59 +135,30 @@ export default function App() {
             onReset={handleReset}
           />
 
-          <InfoBar isZweit={isZweit} />
+          <InfoBar isZweit={isZweit} onShowErstScript={isZweit ? () => setShowErstScript(true) : null} />
 
-          <Navigation
-            sectionNumbers={sectionNumbers}
-            isZweit={isZweit}
-            currentState={currentState}
-          />
+          <Navigation sectionNumbers={sectionNumbers} isZweit={isZweit} currentState={currentState} />
 
-          <div
-            style={{
-              padding: `${theme.spacing.lg}px ${theme.spacing.xl}px`,
-              maxWidth: 880,
-              margin: '0 auto',
-              marginLeft: 240,
-            }}
-          >
+          <div style={{ padding: `${theme.spacing.lg}px ${theme.spacing.xl}px`, maxWidth: 880, margin: '0 auto', marginLeft: 240 }}>
             {/* Zweitgespräch: notes from first interviewer */}
             {isZweit && erst.zweitAnmerkung && (
-              <div
-                style={{
-                  background: theme.colors.warning.bg,
-                  border: `1px solid ${theme.colors.warning.border}`,
-                  borderRadius: theme.radius.lg,
-                  padding: theme.spacing.lg,
-                  marginBottom: theme.spacing.lg,
-                  boxShadow: theme.shadow.sm,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: theme.font.md,
-                    fontWeight: 700,
-                    color: theme.colors.warning.text,
-                    marginBottom: 6,
-                  }}
-                >
-                  &#128221; Anmerkungen vom Erstinterviewer
+              <div style={{ background: theme.colors.warning.bg, border: `1px solid ${theme.colors.warning.border}`, borderRadius: theme.radius.lg, padding: theme.spacing.lg, marginBottom: theme.spacing.lg }}>
+                <div style={{ fontSize: theme.font.md, fontWeight: 700, color: theme.colors.warning.text, marginBottom: 6 }}>
+                  Anmerkungen vom Erstinterviewer
                 </div>
-                <div
-                  style={{
-                    fontSize: theme.font.body,
-                    lineHeight: 1.6,
-                    color: theme.colors.warning.textDark,
-                    whiteSpace: 'pre-wrap',
-                  }}
-                >
+                <div style={{ fontSize: theme.font.body, lineHeight: 1.6, color: theme.colors.warning.textDark, whiteSpace: 'pre-wrap' }}>
                   {erst.zweitAnmerkung}
                 </div>
               </div>
             )}
 
+            {/* Unevaluated questions from Erst (shown in Zweit) */}
+            {isZweit && (
+              <UnevaluatedQuestionsBlock erst={erst} dispatch={dispatch} currentState={currentState} />
+            )}
+
             {/* Sections */}
-            {SECTIONS.map((section, idx) => (
+            {sections.map((section, idx) => (
               <SectionRenderer
                 key={section.id}
                 section={section}

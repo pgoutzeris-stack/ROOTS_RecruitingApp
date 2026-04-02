@@ -26,9 +26,7 @@ const EvalRow = memo(({ evaluation, rating, erstRating, onRate }) => {
         border: `1px solid ${theme.colors.border.glass}`,
         borderRadius: theme.radius.md,
         overflow: 'hidden',
-        background: theme.colors.bg.elevated,
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
+        background: theme.colors.bg.card,
         boxShadow: theme.shadow.card,
         transition: `all ${theme.transition.fast}`,
       }}
@@ -37,7 +35,7 @@ const EvalRow = memo(({ evaluation, rating, erstRating, onRate }) => {
       role="group"
       aria-label={`Bewertung: ${evaluation.label}`}
     >
-      {/* Collapsed header: label + badge + current rating indicator */}
+      {/* Collapsed header */}
       <div
         onClick={() => setIsOpen((p) => !p)}
         style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', cursor: 'pointer', userSelect: 'none' }}
@@ -47,32 +45,29 @@ const EvalRow = memo(({ evaluation, rating, erstRating, onRate }) => {
         </span>
         <span style={{ fontSize: theme.font.body, fontWeight: 600, flex: 1, color: theme.colors.text.primary }}>{evaluation.label}</span>
         <Badge dimension={evaluation.dimension} />
-        {/* Show compact rating indicator when collapsed */}
         {!isOpen && displayRating != null && (
           <span style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             width: 28, height: 28, borderRadius: theme.radius.sm,
-            border: `2px solid ${color}`, background: `${color}25`,
+            border: `2px solid ${color}`, background: `${color}15`,
             fontSize: theme.font.body, fontWeight: 700, color,
-            boxShadow: `0 0 12px ${color}30`,
           }}>
             {displayRating}
           </span>
         )}
         {!isOpen && isInherited && displayRating != null && (
-          <span style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, fontWeight: 500, padding: '2px 6px', borderRadius: theme.radius.sm, background: 'rgba(255,255,255,0.04)', border: `1px solid ${theme.colors.border.glass}` }}>
+          <span style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, fontWeight: 500, padding: '2px 6px', borderRadius: theme.radius.sm, background: theme.colors.bg.muted, border: `1px solid ${theme.colors.border.glass}` }}>
             EG
           </span>
         )}
       </div>
 
-      {/* Expanded: rating buttons + anchors combined */}
+      {/* Expanded: rating buttons + anchors */}
       {isOpen && (
         <div style={{ padding: '0 16px 16px', borderTop: `1px solid ${theme.colors.border.subtle}` }}>
-          {/* Rating buttons */}
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', paddingTop: 14, paddingBottom: hasAnchors ? 14 : 0 }}>
             {isInherited && (
-              <span style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, marginRight: 4, fontWeight: 500, padding: '2px 8px', borderRadius: theme.radius.sm, background: 'rgba(255,255,255,0.04)', border: `1px solid ${theme.colors.border.glass}` }}>
+              <span style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, marginRight: 4, fontWeight: 500, padding: '2px 8px', borderRadius: theme.radius.sm, background: theme.colors.bg.muted, border: `1px solid ${theme.colors.border.glass}` }}>
                 EG
               </span>
             )}
@@ -85,23 +80,16 @@ const EvalRow = memo(({ evaluation, rating, erstRating, onRate }) => {
                   aria-label={`Bewertung ${n}`}
                   aria-pressed={isActive}
                   style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: theme.radius.sm,
+                    width: 40, height: 40, borderRadius: theme.radius.sm,
                     border: isActive ? `2px solid ${color}` : `1px solid ${theme.colors.border.glass}`,
-                    background: isActive ? `${color}25` : 'rgba(255,255,255,0.02)',
-                    fontSize: theme.font.md,
-                    fontWeight: 700,
+                    background: isActive ? `${color}15` : theme.colors.bg.muted,
+                    fontSize: theme.font.md, fontWeight: 700,
                     color: isActive ? color : theme.colors.text.muted,
-                    cursor: 'pointer',
-                    padding: 0,
+                    cursor: 'pointer', padding: 0,
                     opacity: isInherited && !isActive ? 0.35 : 1,
                     transition: `all ${theme.transition.fast}`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: isActive ? `0 0 12px ${color}30` : 'none',
-                    textShadow: isActive ? `0 0 8px ${color}50` : 'none',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: isActive ? `0 0 8px ${color}20` : 'none',
                   }}
                 >
                   {n}
@@ -110,13 +98,12 @@ const EvalRow = memo(({ evaluation, rating, erstRating, onRate }) => {
             })}
           </div>
 
-          {/* Anchors (if present) */}
           {hasAnchors && (
             <div style={{ display: 'grid', gridTemplateColumns: '44px 1fr', gap: '10px 14px', paddingTop: 10, fontSize: theme.font.sm, lineHeight: 1.7, color: theme.colors.text.secondary, borderTop: `1px solid ${theme.colors.border.subtle}` }}>
               {[
-                { num: 1, text: evaluation.anchor1, color: theme.colors.danger.text, bg: theme.colors.danger.bg },
-                { num: 3, text: evaluation.anchor3, color: '#FBBF24', bg: 'rgba(251, 191, 36, 0.08)' },
-                { num: 5, text: evaluation.anchor5, color: theme.colors.success.text, bg: theme.colors.success.bg },
+                { num: 1, text: evaluation.anchor1, color: '#DC2626', bg: 'rgba(220, 38, 38, 0.06)' },
+                { num: 3, text: evaluation.anchor3, color: '#B45309', bg: 'rgba(245, 158, 11, 0.06)' },
+                { num: 5, text: evaluation.anchor5, color: '#16A34A', bg: 'rgba(34, 197, 94, 0.06)' },
               ].filter(a => a.text).map(({ num, text, color: c, bg }) => (
                 <>
                   <span key={`n${num}`} style={{ fontWeight: 700, color: c, fontSize: theme.font.body, display: 'flex', alignItems: 'center', justifyContent: 'center', background: bg, borderRadius: theme.radius.sm, height: 30 }}>

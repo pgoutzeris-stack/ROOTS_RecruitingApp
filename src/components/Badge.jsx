@@ -16,7 +16,6 @@ const Badge = memo(({ dimension }) => {
         border: `1px solid ${color}30`,
         whiteSpace: 'nowrap',
         letterSpacing: '0.01em',
-        textShadow: `0 0 12px ${color}40`,
       }}
     >
       {DIMENSIONS[dimension]}
