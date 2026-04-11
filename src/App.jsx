@@ -14,6 +14,7 @@ import DetailReport from './components/DetailReport';
 import ErstScriptViewer from './components/ErstScriptViewer';
 import UnevaluatedQuestionsBlock from './components/UnevaluatedQuestionsBlock';
 import GlobalTimer from './components/GlobalTimer';
+import ApiKeyDialog from './components/ApiKeyDialog';
 
 export default function App() {
   const {
@@ -33,6 +34,7 @@ export default function App() {
   const [detailData, setDetailData] = useState(null);
   const [showSwitchDialog, setShowSwitchDialog] = useState(false);
   const [showErstScript, setShowErstScript] = useState(false);
+  const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
 
   const kandidat = currentState.meta.kandidat;
   const interviewer = currentState.meta.interviewer;
@@ -121,6 +123,10 @@ export default function App() {
         <ErstScriptViewer erst={erst} onClose={() => setShowErstScript(false)} />
       )}
 
+      {showApiKeyDialog && (
+        <ApiKeyDialog onClose={() => setShowApiKeyDialog(false)} />
+      )}
+
       {view === 'dashboard' && (
         <Dashboard onBack={handleNewInterview} onOpenDetail={handleOpenDetail} onLoadCandidate={handleLoadCandidate} onEditCandidate={handleEditCandidate} />
       )}
@@ -139,6 +145,7 @@ export default function App() {
             onExportJson={handleExportJson}
             onOpenDashboard={handleOpenDashboard}
             onReset={handleReset}
+            onOpenSettings={() => setShowApiKeyDialog(true)}
           />
 
           <InfoBar isZweit={isZweit} onShowErstScript={isZweit ? () => setShowErstScript(true) : null} />

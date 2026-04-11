@@ -51,6 +51,7 @@ const QuestionCard = memo(({
         value={notes[question.id] || ''}
         onChange={(val) => dispatch(actions.setNote(question.id, val))}
         placeholder="Notizen ..."
+        questionContext={question.text}
       />
 
       {/* Individual evaluations (hidden when block-level evaluation is used) */}

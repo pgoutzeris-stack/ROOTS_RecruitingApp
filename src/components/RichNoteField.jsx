@@ -1,5 +1,6 @@
 import { memo, useRef, useCallback, useState, useEffect } from 'react';
 import { theme } from '../theme';
+import { useVoiceRecorder } from './VoiceRecorder';
 
 const toolbarBtnStyle = (active) => ({
   width: 30,
@@ -19,10 +20,19 @@ const toolbarBtnStyle = (active) => ({
   fontFamily: 'inherit',
 });
 
-const RichNoteField = memo(({ value, onChange, placeholder }) => {
+const RichNoteField = memo(({ value, onChange, placeholder, questionContext }) => {
   const editorRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
   const isInternalChange = useRef(false);
+
+  // Voice recorder – appends AI summary to the field
+  const handleVoiceResult = useCallback((html) => {
+    const current = value || '';
+    const separator = current && current !== '<br>' && current !== '<div><br></div>' ? '<br>' : '';
+    onChange(current + separator + html);
+  }, [value, onChange]);
+
+  const { micBtn, banner } = useVoiceRecorder(handleVoiceResult, questionContext, toolbarBtnStyle);
 
   useEffect(() => {
     if (isInternalChange.current) {
@@ -69,6 +79,7 @@ const RichNoteField = memo(({ value, onChange, placeholder }) => {
         border: `1px solid ${isFocused ? theme.colors.accent.indigo + '40' : theme.colors.border.glass}`,
         borderBottom: 'none',
         transition: `border-color ${theme.transition.fast}`,
+        alignItems: 'center',
       }}>
         <button type="button" style={toolbarBtnStyle(false)} onClick={() => execCmd('bold')} title="Fett (Ctrl+B)">
           <strong>B</strong>
@@ -79,7 +90,16 @@ const RichNoteField = memo(({ value, onChange, placeholder }) => {
         <button type="button" style={toolbarBtnStyle(false)} onClick={() => execCmd('insertUnorderedList')} title="Aufzählung">
           &#8226;
         </button>
+
+        {/* Separator */}
+        <div style={{ width: 1, height: 18, background: theme.colors.border.glass, margin: '0 4px' }} />
+
+        {/* Voice recorder mic button */}
+        {micBtn}
       </div>
+
+      {/* Voice recorder status banner */}
+      {banner}
 
       <div style={{ position: 'relative' }}>
         <div
@@ -96,7 +116,7 @@ const RichNoteField = memo(({ value, onChange, placeholder }) => {
             minHeight: 80,
             padding: '12px 16px',
             border: `1px solid ${isFocused ? theme.colors.accent.indigo + '40' : theme.colors.border.glass}`,
-            borderRadius: `0 0 ${theme.radius.md}px ${theme.radius.md}px`,
+            borderRadius: banner ? 0 : `0 0 ${theme.radius.md}px ${theme.radius.md}px`,
             fontSize: theme.font.body,
             fontFamily: 'inherit',
             background: '#FAFBFC',

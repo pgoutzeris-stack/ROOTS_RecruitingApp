@@ -39,6 +39,7 @@ const OutroBlock = memo(({ isZweit, kandidat, abschlussNotes, dispatch, outroFie
             value={(abschlussNotes['_outroQ_' + outroQuestion.id] || '')}
             onChange={(val) => dispatch(actions.setAbschlussNote('_outroQ_' + outroQuestion.id, val))}
             placeholder="Notizen ..."
+            questionContext={outroQuestion.text}
           />
         </div>
       )}
