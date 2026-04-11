@@ -33,7 +33,7 @@ function getRunde(data) {
   return data.erst?.meta?.runde === 'zweit' ? 'Zweitgespräch' : 'Erstgespräch';
 }
 
-const Dashboard = memo(({ onBack, onOpenDetail, onLoadCandidate }) => {
+const Dashboard = memo(({ onBack, onOpenDetail, onLoadCandidate, onEditCandidate }) => {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -178,6 +178,7 @@ const Dashboard = memo(({ onBack, onOpenDetail, onLoadCandidate }) => {
 
               <div style={{ display: 'flex', gap: theme.spacing.sm, flexWrap: 'wrap' }}>
                 <button onClick={() => onOpenDetail(data, key)} style={btnStyle}>Detailbericht</button>
+                <button onClick={() => onEditCandidate(data)} style={btnStyle}>Bearbeiten</button>
                 {canStartZweit && !isInZweit && (
                   <button onClick={() => handleStartZweit(data)} style={{ ...btnStyle, background: theme.colors.accent.indigoLight, borderColor: `${theme.colors.accent.indigo}30`, color: theme.colors.accent.indigo }}>
                     Zweitgespräch starten

@@ -72,6 +72,13 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [loadCandidate, dispatch]);
 
+  /** Edit mode: load interview without auto-switching to Zweit */
+  const handleEditCandidate = useCallback((data) => {
+    loadCandidate(data);
+    setView('interview');
+    window.scrollTo(0, 0);
+  }, [loadCandidate]);
+
   const handleReset = useCallback(() => {
     resetAll();
     setView('interview');
@@ -115,7 +122,7 @@ export default function App() {
       )}
 
       {view === 'dashboard' && (
-        <Dashboard onBack={handleNewInterview} onOpenDetail={handleOpenDetail} onLoadCandidate={handleLoadCandidate} />
+        <Dashboard onBack={handleNewInterview} onOpenDetail={handleOpenDetail} onLoadCandidate={handleLoadCandidate} onEditCandidate={handleEditCandidate} />
       )}
 
       {view === 'detail' && detailData && (
