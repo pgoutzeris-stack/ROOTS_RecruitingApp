@@ -49,7 +49,9 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
     if (!state) return null;
     const hasContent = state.gesamtNote || state.recommendation ||
       Object.values(state.notes || {}).some(Boolean) ||
-      Object.keys(state.ratings || {}).length > 0;
+      Object.keys(state.ratings || {}).length > 0 ||
+      Object.keys(state.cultureFitAnswers || {}).length > 0 ||
+      Object.values(state.abschlussNotes || {}).some(Boolean);
     if (!hasContent) return null;
 
     const roundSections = getSections(roundIsZweit);
@@ -131,15 +133,17 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
                   <div style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, marginBottom: 2 }}>
                     {n.question.length > 80 ? n.question.slice(0, 80) + '...' : n.question}
                   </div>
-                  <div style={{
-                    fontSize: theme.font.body, color: theme.colors.text.primary,
-                    lineHeight: 1.6, whiteSpace: 'pre-wrap',
-                    padding: '8px 12px', borderRadius: theme.radius.sm,
-                    background: theme.colors.bg.surface,
-                    border: `1px solid ${theme.colors.border.subtle}`,
-                  }}>
-                    {n.note}
-                  </div>
+                  <div
+                    className="rich-note-content"
+                    style={{
+                      fontSize: theme.font.body, color: theme.colors.text.primary,
+                      lineHeight: 1.6,
+                      padding: '8px 12px', borderRadius: theme.radius.sm,
+                      background: theme.colors.bg.surface,
+                      border: `1px solid ${theme.colors.border.subtle}`,
+                    }}
+                    dangerouslySetInnerHTML={{ __html: n.note }}
+                  />
                 </div>
               ))}
             </div>
@@ -177,20 +181,28 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
         {Object.keys(state.cultureFitAnswers || {}).length > 0 && (
           <div style={{ ...glassElevated, padding: theme.spacing.md, marginTop: theme.spacing.sm + 4 }}>
             <div style={sectionLabel}>Culture-Fit Antworten</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {SECTIONS_ERST.find(s => s.id === 's_cf')?.cultureFitQuestions?.map((cfq) => {
                 const answer = state.cultureFitAnswers[cfq.id];
                 if (!answer) return null;
                 const chosen = answer === 'A' ? cfq.optionA : cfq.optionB;
+                const notChosen = answer === 'A' ? cfq.optionB : cfq.optionA;
                 return (
-                  <span key={cfq.id} style={{
-                    padding: '4px 12px', borderRadius: theme.radius.full,
-                    background: theme.colors.accent.indigoLight,
-                    border: `1px solid ${theme.colors.accent.indigo}30`,
-                    fontSize: theme.font.xs, color: theme.colors.text.accent, fontWeight: 600,
-                  }}>
-                    {chosen}
-                  </span>
+                  <div key={cfq.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span className="culture-fit-badge" style={{
+                      padding: '4px 12px', borderRadius: theme.radius.full,
+                      background: theme.colors.accent.indigoLight,
+                      border: `1px solid ${theme.colors.accent.indigo}40`,
+                      fontSize: theme.font.xs, color: theme.colors.text.accent, fontWeight: 700,
+                    }}>
+                      {chosen}
+                    </span>
+                    <span style={{
+                      fontSize: theme.font.xs, color: theme.colors.text.muted, fontStyle: 'italic',
+                    }}>
+                      vs. {notChosen}
+                    </span>
+                  </div>
                 );
               })}
             </div>
@@ -203,8 +215,14 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
             <div style={sectionLabel}>Abschluss-Notizen</div>
             {Object.entries(state.abschlussNotes).filter(([, v]) => v).map(([k, v]) => (
               <div key={k} style={{ marginBottom: theme.spacing.sm }}>
-                <div style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, marginBottom: 2 }}>{k}</div>
-                <div style={{ fontSize: theme.font.body, color: theme.colors.text.primary, whiteSpace: 'pre-wrap' }}>{v}</div>
+                <div style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, marginBottom: 2 }}>
+                  {k.startsWith('_outroQ_') ? 'Abschlussfrage' : k}
+                </div>
+                <div
+                  className="rich-note-content"
+                  style={{ fontSize: theme.font.body, color: theme.colors.text.primary, lineHeight: 1.6 }}
+                  dangerouslySetInnerHTML={{ __html: v }}
+                />
               </div>
             ))}
           </div>

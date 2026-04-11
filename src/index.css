@@ -79,14 +79,38 @@ button:focus-visible {
   color: rgba(0, 0, 0, 0.3);
 }
 
+/* Rich note content – rendered HTML from contentEditable */
+.rich-note-content ul {
+  margin: 4px 0;
+  padding-left: 1.5em;
+  list-style-type: disc;
+}
+.rich-note-content ol {
+  margin: 4px 0;
+  padding-left: 1.5em;
+  list-style-type: decimal;
+}
+.rich-note-content li {
+  margin-bottom: 2px;
+  display: list-item;
+}
+.rich-note-content b,
+.rich-note-content strong {
+  font-weight: 700;
+}
+.rich-note-content i,
+.rich-note-content em {
+  font-style: italic;
+}
+
 /* Print styles */
 @media print {
   body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    font-size: 10px;
+    font-size: 11px;
     background: #fff !important;
-    color: #000;
+    color: #1a1a2e;
     margin: 0;
     padding: 0;
   }
@@ -139,7 +163,7 @@ button:focus-visible {
   /* Compact spacing for print */
   [style*="marginBottom: 40px"],
   [style*="marginBottom: 48px"] {
-    margin-bottom: 16px !important;
+    margin-bottom: 12px !important;
   }
 
   /* Ensure tables and grids fit page width */
@@ -184,5 +208,54 @@ button:focus-visible {
     border: 1px solid #ddd !important;
     padding: 4px 8px !important;
     min-height: 20px !important;
+  }
+
+  /* Rich note content in print */
+  .rich-note-content {
+    white-space: normal !important;
+  }
+  .rich-note-content ul,
+  .rich-note-content ol {
+    margin: 2px 0 !important;
+    padding-left: 1.4em !important;
+  }
+  .rich-note-content li {
+    margin-bottom: 1px !important;
+  }
+
+  /* Culture-Fit badges must be visible in print */
+  .culture-fit-badge {
+    display: inline-block !important;
+    padding: 3px 10px !important;
+    border: 1px solid #6366f1 !important;
+    border-radius: 99px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #4338ca !important;
+    background: #eef2ff !important;
+  }
+
+  /* Section cards: tighter spacing for print */
+  .detail-section-card {
+    padding: 10px 14px !important;
+    margin-bottom: 8px !important;
+    box-shadow: none !important;
+    border: 1px solid #e2e4e8 !important;
+  }
+
+  /* Remove box-shadows for print */
+  [style*="boxShadow"] {
+    box-shadow: none !important;
+  }
+
+  /* Ensure gradient backgrounds print as solid colors */
+  [style*="linear-gradient"] {
+    background: #4f46e5 !important;
+  }
+
+  /* Overall score section */
+  .detail-overall-score {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }
