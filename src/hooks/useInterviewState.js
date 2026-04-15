@@ -93,8 +93,18 @@ const reducer = (state, action) => {
     case SET_WEIGHT:
       return { ...state, weights: { ...state.weights, [action.dimension]: action.value } };
 
-    case LOAD_STATE:
-      return { ...action.payload };
+    case LOAD_STATE: {
+      // Merge payload with INITIAL_STATE so partial data (e.g. `zweit: {}` from DB
+      // default for candidates without a second interview yet) still has all
+      // required fields like `ratings`, `notes`, `checks`.
+      const payload = action.payload || {};
+      return {
+        ...INITIAL_STATE,
+        ...payload,
+        meta: { ...INITIAL_STATE.meta, ...(payload.meta || {}) },
+        weights: { ...DEFAULT_WEIGHTS, ...(payload.weights || {}) },
+      };
+    }
 
     case RESET_STATE:
       return { ...INITIAL_STATE, meta: { ...INITIAL_STATE.meta, sessionId: action.sessionId || generateSessionId() } };
