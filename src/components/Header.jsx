@@ -52,120 +52,132 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
     transition: 'all .15s',
   };
 
+  const actionBtnStyle = {
+    background: 'var(--bg)',
+    border: '1px solid var(--line)',
+    color: 'var(--ink)',
+    borderRadius: 999,
+    padding: '.55rem 1rem',
+    fontSize: '.88rem',
+    fontWeight: 500,
+    cursor: 'pointer',
+    transition: 'all .2s',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+  };
+
+  const sepStyle = { width: 1, height: 22, background: 'var(--line)', margin: '0 4px', flexShrink: 0 };
+
   return (
     <header
       style={{
-        background: theme.colors.bg.header,
-        color: theme.colors.text.primary,
-        padding: '0 1.25rem',
+        background: 'var(--bg)',
+        color: 'var(--ink)',
+        padding: '.75rem 1.25rem .6rem',
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        border: `1px solid ${theme.colors.border.glass}`,
-        borderRadius: theme.radius.lg,
-        boxShadow: theme.shadow.header,
+        border: '1px solid var(--line)',
+        borderRadius: 'var(--radius)',
+        boxShadow: 'var(--shadow)',
         margin: '1rem 1rem 0',
-        minHeight: 64,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 64, gap: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div
-            style={{
-              width: 28, height: 28, borderRadius: 7,
-              background: theme.colors.accent.indigo,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L3 7l9 5 9-5-9-5zM3 12l9 5 9-5M3 17l9 5 9-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <div style={{ width: 1, height: 16, background: theme.colors.border.glass }} />
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.2, color: theme.colors.text.primary }}>
-              ROOTS <span style={{ color: theme.colors.accent.indigo }}>Recruiting</span>
-            </div>
-            <div style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, fontWeight: 400, letterSpacing: '0.02em' }}>
-              Junior Marketing Consultant &middot; Strukturiertes Interview
-            </div>
-          </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 44, gap: 14 }}>
+      {/* LEFT: logo + wordmark + divider + subtitle */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+        <div style={{ width: 28, height: 28, borderRadius: 7, background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
+            <rect x="2" y="2" width="5" height="5" rx="1.5" fill="white" opacity="0.9"/>
+            <rect x="9" y="2" width="5" height="5" rx="1.5" fill="white" opacity="0.6"/>
+            <rect x="2" y="9" width="5" height="5" rx="1.5" fill="white" opacity="0.6"/>
+            <rect x="9" y="9" width="5" height="5" rx="1.5" fill="white" opacity="0.3"/>
+          </svg>
         </div>
-
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }} className="no-print">
-          <select
-            value={meta.runde}
-            onChange={handleRoundChange}
-            style={{
-              ...btnStyle,
-              appearance: 'none',
-              paddingRight: 30,
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%234A5568' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 10px center',
-            }}
-            aria-label="Gesprächsrunde"
-          >
-            <option value="erst" style={{ background: '#fff', color: '#1A1A2E' }}>Erstgespräch</option>
-            <option value="zweit" disabled={!canSwitchToZweit} style={{ background: '#fff', color: canSwitchToZweit ? '#1A1A2E' : '#A0AEC0' }}>
-              {canSwitchToZweit ? 'Zweitgespräch' : 'Zweitgespräch (gesperrt)'}
-            </option>
-          </select>
-
-          {/* Voice settings */}
-          <button onClick={onOpenSettings} style={iconBtnStyle} aria-label="Sprachaufnahme-Einstellungen" title="Sprachaufnahme-Einstellungen">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          </button>
-
-          {/* Export JSON – icon only */}
-          <button onClick={onExportJson} style={iconBtnStyle} aria-label="JSON exportieren" title="JSON exportieren">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          </button>
-
-          {/* PDF drucken */}
-          <button
-            onClick={() => window.print()}
-            style={{ ...iconBtnStyle, background: theme.colors.accent.indigo, border: 'none', color: '#fff', boxShadow: '0 4px 12px rgba(32,110,251,0.3)', borderRadius: 999, width: 'auto', padding: '0 14px', height: 32, fontSize: theme.font.sm, fontWeight: 600, gap: 6, display: 'flex', alignItems: 'center' }}
-            aria-label="PDF drucken"
-            title="PDF drucken"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          </button>
-
-          {/* Dashboard – icon only */}
-          <button
-            onClick={onOpenDashboard}
-            style={{ ...iconBtnStyle, background: theme.colors.accent.indigoLight, borderColor: 'rgba(32,110,251,0.2)', color: theme.colors.accent.indigo }}
-            aria-label="Dashboard"
-            title="Dashboard"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          </button>
-
-          {/* Reset – icon only */}
-          {showResetConfirm ? (
-            <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-              <span style={{ fontSize: theme.font.xs, color: theme.colors.danger.text }}>Reset?</span>
-              <button onClick={() => { onReset(); setShowResetConfirm(false); }} style={{ ...btnStyle, borderColor: 'rgba(220,38,38,0.3)', color: theme.colors.danger.text, padding: '6px 12px' }}>
-                Ja
-              </button>
-              <button onClick={() => setShowResetConfirm(false)} style={{ ...btnStyle, padding: '6px 12px' }}>
-                Nein
-              </button>
-            </div>
-          ) : (
-            <button onClick={() => setShowResetConfirm(true)} style={{ ...iconBtnStyle, color: theme.colors.text.muted }} aria-label="Zurücksetzen" title="Zurücksetzen">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-            </button>
-          )}
-        </div>
+        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', whiteSpace: 'nowrap' }}>
+          ROOTS <span style={{ color: 'var(--brand)' }}>Recruiting</span>
+        </span>
+        <div style={{ width: 1, height: 16, background: 'var(--line)', flexShrink: 0 }} />
+        <span style={{ fontSize: 12, color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          Junior Marketing Consultant · Strukturiertes Interview
+        </span>
       </div>
 
-      <div style={{ display: 'flex', gap: 20, paddingBottom: 14, paddingTop: 4, borderTop: `1px solid ${theme.colors.border.glass}` }}>
+      {/* RIGHT: actions */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }} className="no-print">
+        {/* Runde */}
+        <select
+          value={meta.runde}
+          onChange={handleRoundChange}
+          style={{
+            ...actionBtnStyle,
+            appearance: 'none',
+            WebkitAppearance: 'none',
+            paddingRight: 28,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23475569' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 10px center',
+          }}
+          aria-label="Gesprächsrunde"
+        >
+          <option value="erst">Erstgespräch</option>
+          <option value="zweit" disabled={!canSwitchToZweit}>
+            {canSwitchToZweit ? 'Zweitgespräch' : 'Zweitgespräch (gesperrt)'}
+          </option>
+        </select>
+
+        <div style={sepStyle} />
+
+        <button onClick={onOpenSettings} style={actionBtnStyle} title="Einstellungen">
+          <i className="ri-settings-3-line" />
+          Einstellungen
+        </button>
+
+        <button onClick={onExportJson} style={actionBtnStyle} title="JSON exportieren">
+          <i className="ri-download-2-line" />
+          Export
+        </button>
+
+        <button
+          onClick={() => window.print()}
+          style={{ ...actionBtnStyle, background: 'var(--brand)', border: 'none', color: '#fff', boxShadow: '0 4px 12px rgba(32,110,251,0.3)' }}
+          title="PDF drucken"
+        >
+          <i className="ri-printer-line" />
+          Drucken
+        </button>
+
+        <button
+          onClick={onOpenDashboard}
+          style={{ ...actionBtnStyle, background: 'var(--brand-light)', borderColor: 'rgba(32,110,251,0.2)', color: 'var(--brand)' }}
+          title="Dashboard"
+        >
+          <i className="ri-dashboard-line" />
+          Dashboard
+        </button>
+
+        <div style={sepStyle} />
+
+        {showResetConfirm ? (
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+            <span style={{ fontSize: theme.font.xs, color: 'var(--danger)' }}>Reset?</span>
+            <button onClick={() => { onReset(); setShowResetConfirm(false); }} style={{ ...actionBtnStyle, borderColor: 'rgba(220,38,38,0.3)', color: 'var(--danger)', padding: '5px 10px' }}>Ja</button>
+            <button onClick={() => setShowResetConfirm(false)} style={{ ...actionBtnStyle, padding: '5px 10px' }}>Nein</button>
+          </div>
+        ) : (
+          <button onClick={() => setShowResetConfirm(true)} style={actionBtnStyle} title="Zurücksetzen">
+            <i className="ri-refresh-line" />
+          </button>
+        )}
+      </div>
+      </div>
+
+      {/* META FIELDS ROW */}
+      <div style={{ display: 'flex', gap: 16, paddingTop: '.6rem', borderTop: '1px solid var(--line)', marginTop: '.6rem' }} className="no-print">
         {metaFields.map(({ key, label, type, width }) => (
-          <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            <label style={{ fontSize: theme.font.xs, fontWeight: 500, color: theme.colors.text.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.5px' }}>
               {label}
             </label>
             <input
@@ -175,11 +187,11 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
               placeholder={type === 'date' ? '' : 'Eingabe...'}
               aria-label={label}
               style={{
-                padding: '8px 14px', borderRadius: theme.radius.sm,
-                border: `1px solid ${theme.colors.border.glass}`,
-                background: '#FAFBFC', color: theme.colors.text.primary,
-                fontSize: theme.font.body, fontWeight: 500, width,
-                transition: `border-color ${theme.transition.fast}`,
+                padding: '6px 10px', borderRadius: 8,
+                border: '1px solid var(--line)',
+                background: 'var(--status-bg)', color: 'var(--ink)',
+                fontSize: 13, fontWeight: 500, width,
+                outline: 'none', fontFamily: 'inherit',
               }}
             />
           </div>
