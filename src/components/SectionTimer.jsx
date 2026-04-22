@@ -7,6 +7,20 @@ const parseDefaultMinutes = (timeStr) => {
   return match ? parseInt(match[1], 10) : 5;
 };
 
+/* Shared pill style matching header buttons */
+const pillBtn = {
+  borderRadius: 999,
+  fontSize: 12,
+  fontWeight: 500,
+  fontFamily: 'inherit',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 5,
+  whiteSpace: 'nowrap',
+  transition: 'all .15s',
+};
+
 const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTimer }) => {
   const defaultMin = parseDefaultMinutes(timeStr);
   const configuredMin = timerMinutes?.[sectionId] ?? defaultMin;
@@ -60,20 +74,22 @@ const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTime
     }
   };
 
-  const iconStyle = { fontSize: 13, pointerEvents: 'none' };
-
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit' }}>
-      {/* Target time badge */}
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      {/* "Ziel X Min." – brand pill badge */}
       <span style={{
-        fontSize: 11, color: 'var(--muted)', fontFamily: 'inherit',
-        padding: '2px 8px', borderRadius: 6, background: 'var(--status-bg)',
-        border: '1px solid var(--line)', whiteSpace: 'nowrap',
+        ...pillBtn,
+        padding: '4px 10px',
+        background: 'var(--brand-light)',
+        border: '1px solid rgba(32,110,251,0.2)',
+        color: 'var(--brand)',
+        cursor: 'default',
       }}>
-        Ziel: {configuredMin} Min.
+        <i className="ri-time-line" style={{ fontSize: 12, pointerEvents: 'none' }} />
+        {configuredMin} Min.
       </span>
 
-      {/* Edit minutes (before start) */}
+      {/* "bearbeiten" – muted pill button (before start) */}
       {!started && (
         isEditing ? (
           <input
@@ -86,10 +102,10 @@ const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTime
             onKeyDown={(e) => e.key === 'Enter' && setIsEditing(false)}
             autoFocus
             style={{
-              width: 46, height: 26, textAlign: 'center',
+              width: 52, height: 28, textAlign: 'center',
               background: 'var(--status-bg)',
               border: '1px solid rgba(32,110,251,0.4)',
-              borderRadius: 6,
+              borderRadius: 999,
               color: 'var(--ink)',
               fontSize: 12,
               fontFamily: 'inherit',
@@ -99,15 +115,16 @@ const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTime
         ) : (
           <button
             onClick={() => setIsEditing(true)}
-            title="Klicken zum Ändern"
+            title="Minuten anpassen"
             style={{
-              display: 'flex', alignItems: 'center', gap: 3,
-              padding: '2px 7px', borderRadius: 6, border: 'none',
-              background: 'transparent', cursor: 'pointer',
-              color: 'var(--brand)', fontSize: 11, fontFamily: 'inherit',
+              ...pillBtn,
+              padding: '4px 10px',
+              background: 'var(--bg)',
+              border: '1px solid var(--line)',
+              color: 'var(--muted)',
             }}
           >
-            <i className="ri-edit-line" style={{ fontSize: 12 }} />
+            <i className="ri-edit-line" style={{ fontSize: 12, pointerEvents: 'none' }} />
             bearbeiten
           </button>
         )
@@ -130,12 +147,12 @@ const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTime
         </span>
       )}
 
-      {/* Start/Pause button */}
+      {/* Start/Pause */}
       <button
         onClick={startPause}
         style={{
-          width: 28, height: 28, borderRadius: 7,
-          border: `1px solid ${theme.colors.border.glass}`,
+          width: 28, height: 28, borderRadius: 999,
+          border: `1px solid ${isRunning ? 'rgba(245,158,11,0.3)' : 'rgba(32,110,251,0.2)'}`,
           background: isRunning ? 'rgba(245,158,11,0.08)' : 'var(--brand-light)',
           color: isRunning ? '#B45309' : 'var(--brand)',
           cursor: 'pointer',
@@ -144,17 +161,17 @@ const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTime
         }}
         title={isRunning ? 'Pause' : 'Start'}
       >
-        <i className={isRunning ? 'ri-pause-fill' : 'ri-play-fill'} style={iconStyle} />
+        <i className={isRunning ? 'ri-pause-fill' : 'ri-play-fill'} style={{ fontSize: 13, pointerEvents: 'none' }} />
       </button>
 
-      {/* Reset button */}
+      {/* Reset */}
       {started && (
         <button
           onClick={reset}
           style={{
-            width: 28, height: 28, borderRadius: 7,
-            border: `1px solid ${theme.colors.border.glass}`,
-            background: 'var(--status-bg)',
+            width: 28, height: 28, borderRadius: 999,
+            border: '1px solid var(--line)',
+            background: 'var(--bg)',
             color: 'var(--muted)',
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -162,7 +179,7 @@ const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTime
           }}
           title="Reset"
         >
-          <i className="ri-restart-line" style={iconStyle} />
+          <i className="ri-restart-line" style={{ fontSize: 13, pointerEvents: 'none' }} />
         </button>
       )}
     </div>

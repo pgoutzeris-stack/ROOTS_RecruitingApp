@@ -83,6 +83,23 @@ button {
   text-align: left;
 }
 
+/* Remove native select chrome globally */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Style the date picker indicator to match the design system */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
 /* contentEditable fields */
 [contenteditable] {
   direction: ltr;
