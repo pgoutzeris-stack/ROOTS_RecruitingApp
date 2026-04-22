@@ -134,7 +134,7 @@ export const shared = {
     fontSize: theme.font.body,
     fontFamily: 'inherit',
     resize: 'vertical',
-    background: '#FAFBFC',
+    background: 'var(--status-bg)',
     boxSizing: 'border-box',
     lineHeight: 1.7,
     transition: `border-color ${theme.transition.fast}`,

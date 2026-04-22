@@ -157,9 +157,9 @@ export function useVoiceRecorder(onResult, questionContext, toolbarBtnStyle) {
       title={isRecording ? 'Aufnahme stoppen' : 'Sprachaufnahme starten'}
       style={{
         ...toolbarBtnStyle(isRecording),
-        color: isRecording ? '#DC2626' : status === 'processing' ? theme.colors.text.muted : theme.colors.accent.indigo,
-        borderColor: isRecording ? 'rgba(220,38,38,0.4)' : status === 'processing' ? theme.colors.border.glass : `${theme.colors.accent.indigo}40`,
-        background: isRecording ? 'rgba(220,38,38,0.08)' : status === 'processing' ? theme.colors.bg.muted : theme.colors.accent.indigoLight,
+        color: isRecording ? '#DC2626' : status === 'processing' ? theme.colors.text.muted : 'var(--brand)',
+        borderColor: isRecording ? 'rgba(220,38,38,0.4)' : status === 'processing' ? theme.colors.border.glass : 'rgba(32,110,251,0.4)',
+        background: isRecording ? 'rgba(220,38,38,0.08)' : status === 'processing' ? theme.colors.bg.muted : 'var(--brand-light)',
         position: 'relative',
         overflow: 'visible',
         opacity: status === 'processing' ? 0.5 : 1,

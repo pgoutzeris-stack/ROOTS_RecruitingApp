@@ -32,7 +32,7 @@ const ApiKeyDialog = memo(({ onClose }) => {
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 999,
-        background: 'rgba(0,0,0,0.35)',
+        background: 'rgba(15,23,42,0.6)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         backdropFilter: 'blur(4px)',
       }}
@@ -134,12 +134,10 @@ const ApiKeyDialog = memo(({ onClose }) => {
             style={{
               padding: '8px 18px', borderRadius: theme.radius.sm,
               border: 'none',
-              background: apiKey.trim()
-                ? `linear-gradient(135deg, ${theme.colors.accent.indigoDark}, ${theme.colors.accent.indigo})`
-                : theme.colors.bg.muted,
+              background: apiKey.trim() ? 'var(--brand)' : theme.colors.bg.muted,
               color: apiKey.trim() ? '#fff' : theme.colors.text.muted,
               fontSize: theme.font.sm, fontWeight: 600, cursor: apiKey.trim() ? 'pointer' : 'default',
-              boxShadow: apiKey.trim() ? theme.shadow.glow : 'none',
+              boxShadow: apiKey.trim() ? '0 4px 12px rgba(32,110,251,0.3)' : 'none',
             }}
           >
             Speichern

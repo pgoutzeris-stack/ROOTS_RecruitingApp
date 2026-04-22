@@ -18,7 +18,7 @@ const OutroBlock = memo(({ isZweit, kandidat, abschlussNotes, dispatch, outroFie
           {isZweit ? OUTRO_ZWEIT : makeOutroErst(kandidat)}
         </div>
         {fields.length > 0 && (
-          <div style={{ marginTop: theme.spacing.lg, display: 'grid', gridTemplateColumns: fields.length > 1 ? '1fr 1fr' : '1fr', gap: theme.spacing.sm + 4, padding: theme.spacing.md, background: theme.colors.bg.muted, borderRadius: theme.radius.md, border: `1px solid ${theme.colors.border.subtle}` }}>
+          <div style={{ marginTop: theme.spacing.lg, display: 'grid', gridTemplateColumns: fields.length > 1 ? '1fr 1fr' : '1fr', gap: theme.spacing.sm + 4, padding: theme.spacing.md, background: theme.colors.bg.muted, borderRadius: theme.radius.md, border: `1px solid ${'var(--line)'}` }}>
             {fields.map((field) => (
               <div key={field}>
                 <div style={{ fontSize: theme.font.xs, fontWeight: 600, color: theme.colors.text.muted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{field}</div>

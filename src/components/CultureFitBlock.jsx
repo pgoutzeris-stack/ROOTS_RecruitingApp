@@ -22,16 +22,16 @@ const CultureFitBlock = memo(({ section, cultureFitAnswers, ratings, dispatch, e
                 padding: '10px 16px',
                 borderRadius: theme.radius.md,
                 border: selected === 'A'
-                  ? `2px solid ${theme.colors.accent.indigo}`
+                  ? '2px solid var(--brand)'
                   : `1px solid ${theme.colors.border.glass}`,
-                background: selected === 'A' ? theme.colors.accent.indigoLight : theme.colors.bg.muted,
-                color: selected === 'A' ? theme.colors.accent.indigo : theme.colors.text.secondary,
+                background: selected === 'A' ? 'var(--brand-light)' : theme.colors.bg.muted,
+                color: selected === 'A' ? 'var(--brand)' : theme.colors.text.secondary,
                 fontSize: theme.font.md,
                 fontWeight: selected === 'A' ? 600 : 400,
                 cursor: 'pointer',
                 transition: `all ${theme.transition.fast}`,
                 fontFamily: 'inherit',
-                boxShadow: selected === 'A' ? theme.shadow.glow : 'none',
+                boxShadow: selected === 'A' ? '0 4px 12px rgba(32,110,251,0.3)' : 'none',
               }}
             >
               {q.optionA}
@@ -44,16 +44,16 @@ const CultureFitBlock = memo(({ section, cultureFitAnswers, ratings, dispatch, e
                 padding: '10px 16px',
                 borderRadius: theme.radius.md,
                 border: selected === 'B'
-                  ? `2px solid ${theme.colors.accent.indigo}`
+                  ? '2px solid var(--brand)'
                   : `1px solid ${theme.colors.border.glass}`,
-                background: selected === 'B' ? theme.colors.accent.indigoLight : theme.colors.bg.muted,
-                color: selected === 'B' ? theme.colors.accent.indigo : theme.colors.text.secondary,
+                background: selected === 'B' ? 'var(--brand-light)' : theme.colors.bg.muted,
+                color: selected === 'B' ? 'var(--brand)' : theme.colors.text.secondary,
                 fontSize: theme.font.md,
                 fontWeight: selected === 'B' ? 600 : 400,
                 cursor: 'pointer',
                 transition: `all ${theme.transition.fast}`,
                 fontFamily: 'inherit',
-                boxShadow: selected === 'B' ? theme.shadow.glow : 'none',
+                boxShadow: selected === 'B' ? '0 4px 12px rgba(32,110,251,0.3)' : 'none',
               }}
             >
               {q.optionB}

@@ -28,8 +28,8 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
             onClick={() => setShowWeights(p => !p)}
             style={{
               fontSize: theme.font.xs, color: theme.colors.text.muted,
-              background: showWeights ? theme.colors.accent.indigoLight : theme.colors.bg.muted,
-              border: `1px solid ${showWeights ? theme.colors.accent.indigo + '30' : theme.colors.border.glass}`,
+              background: showWeights ? 'var(--brand-light)' : theme.colors.bg.muted,
+              border: `1px solid ${showWeights ? 'rgba(32,110,251,0.3)' : theme.colors.border.glass}`,
               borderRadius: theme.radius.sm, padding: '4px 10px',
               cursor: 'pointer', fontWeight: 500, transition: `all ${theme.transition.fast}`,
             }}
@@ -44,7 +44,7 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
             const color = DIMENSION_COLORS[dk];
             const w = weights[dk] ?? 1;
             return (
-              <div key={dk} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: theme.radius.md, background: avg ? `${color}08` : theme.colors.bg.muted, border: `1px solid ${avg ? `${color}20` : theme.colors.border.subtle}`, transition: `all ${theme.transition.normal}` }}>
+              <div key={dk} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: theme.radius.md, background: avg ? `${color}08` : theme.colors.bg.muted, border: `1px solid ${avg ? `${color}20` : 'var(--line)'}`, transition: `all ${theme.transition.normal}` }}>
                 <div style={{ width: 10, height: 10, borderRadius: theme.radius.full, background: color, flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <span style={{ fontSize: theme.font.body, fontWeight: 500, color: theme.colors.text.primary }}>{DIMENSIONS[dk]}</span>
@@ -83,7 +83,7 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
         </div>
 
         {/* Overall score */}
-        <div style={{ marginTop: theme.spacing.lg, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14, padding: '16px 24px', background: `linear-gradient(135deg, ${theme.colors.accent.indigoDark}, ${theme.colors.accent.indigo})`, borderRadius: theme.radius.md, color: '#fff', boxShadow: theme.shadow.glow }}>
+        <div style={{ marginTop: theme.spacing.lg, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14, padding: '16px 24px', background: 'var(--brand)', borderRadius: theme.radius.md, color: '#fff', boxShadow: '0 4px 12px rgba(32,110,251,0.3)' }}>
           <span style={{ fontSize: theme.font.md, fontWeight: 500, opacity: 0.8 }}>Gewichteter Gesamtscore:</span>
           <span style={{ fontSize: 32, fontWeight: 800, fontFamily: theme.fontMono, letterSpacing: '-1px' }}>{dimScores.weightedOverall ? dimScores.weightedOverall.toFixed(1) : '\u2013'}</span>
           <span style={{ fontSize: theme.font.body, opacity: 0.5, fontWeight: 500 }}>/ 5.0</span>
@@ -107,7 +107,7 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
       </div>
 
       {/* Recommendation */}
-      <div style={{ ...glassElevated, padding: theme.spacing.lg, boxShadow: theme.shadow.elevated, border: `1px solid ${theme.colors.border.strong}` }}>
+      <div style={{ ...glassElevated, padding: theme.spacing.lg, boxShadow: theme.shadow.elevated, border: `1px solid ${'var(--line)'}` }}>
         <div style={{ fontSize: theme.font.xs, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: theme.colors.text.muted, marginBottom: theme.spacing.md }}>Empfehlung</div>
         <div style={{ display: 'flex', gap: theme.spacing.sm + 4, flexWrap: 'wrap' }}>
           {options.map((opt) => {
@@ -115,12 +115,12 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
             return (
               <button key={opt} onClick={() => dispatch(actions.setRecommendation(opt))} style={{
                 padding: '12px 28px', borderRadius: theme.radius.md,
-                border: sel ? `1px solid ${theme.colors.accent.indigo}` : `1px solid ${theme.colors.border.glass}`,
-                background: sel ? `linear-gradient(135deg, ${theme.colors.accent.indigoDark}, ${theme.colors.accent.indigo})` : theme.colors.bg.muted,
+                border: sel ? '1px solid var(--brand)' : `1px solid ${theme.colors.border.glass}`,
+                background: sel ? 'var(--brand)' : theme.colors.bg.muted,
                 color: sel ? '#fff' : theme.colors.text.secondary,
                 fontSize: theme.font.md, fontWeight: 600, cursor: 'pointer',
                 transition: `all ${theme.transition.fast}`, letterSpacing: '0.01em',
-                boxShadow: sel ? theme.shadow.glow : 'none',
+                boxShadow: sel ? '0 4px 12px rgba(32,110,251,0.3)' : 'none',
               }}>
                 {sel && <span style={{ marginRight: 8 }}>&#10003;</span>}{opt}
               </button>

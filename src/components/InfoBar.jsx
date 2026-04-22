@@ -29,9 +29,9 @@ const InfoBar = memo(({ isZweit, onShowErstScript }) => {
           style={{
             padding: '6px 14px',
             borderRadius: theme.radius.sm,
-            border: `1px solid ${theme.colors.accent.indigo}30`,
-            background: theme.colors.accent.indigoLight,
-            color: theme.colors.accent.indigo,
+            border: '1px solid rgba(32,110,251,0.3)',
+            background: 'var(--brand-light)',
+            color: 'var(--brand)',
             fontSize: theme.font.sm,
             fontWeight: 600,
             cursor: 'pointer',

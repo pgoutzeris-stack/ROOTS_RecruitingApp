@@ -16,19 +16,19 @@ const ErstScriptViewer = memo(({ erst, onClose }) => {
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 200,
-        background: 'rgba(0,0,0,0.4)',
+        background: 'rgba(15,23,42,0.6)',
         display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
         padding: '40px 20px', overflowY: 'auto',
       }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div style={{
-        background: '#fff', borderRadius: theme.radius.xl, maxWidth: 780, width: '100%',
+        background: 'var(--bg)', borderRadius: theme.radius.xl, maxWidth: 780, width: '100%',
         boxShadow: '0 20px 60px rgba(0,0,0,0.15)', padding: theme.spacing.xl,
         maxHeight: 'calc(100vh - 80px)', overflowY: 'auto',
       }}>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.lg, borderBottom: `1px solid ${theme.colors.border.strong}`, paddingBottom: theme.spacing.md }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.lg, borderBottom: `1px solid ${'var(--line)'}`, paddingBottom: theme.spacing.md }}>
           <div>
             <div style={{ fontSize: theme.font.xl, fontWeight: 800, color: theme.colors.text.primary }}>
               Erstgespräch – Befülltes Skript
@@ -66,7 +66,7 @@ const ErstScriptViewer = memo(({ erst, onClose }) => {
               {/* Section header */}
               {section.main && (
                 <div style={{ fontSize: theme.font.lg, fontWeight: 700, color: theme.colors.text.primary, marginBottom: theme.spacing.sm, display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                  <span style={{ color: theme.colors.accent.indigo, fontWeight: 800 }}>{idx + 1}.</span>
+                  <span style={{ color: 'var(--brand)', fontWeight: 800 }}>{idx + 1}.</span>
                   {section.main}
                   {section.time && <span style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, fontWeight: 400 }}>({section.time})</span>}
                 </div>
@@ -80,10 +80,10 @@ const ErstScriptViewer = memo(({ erst, onClose }) => {
                     return (
                       <span key={q.id} style={{
                         padding: '4px 10px', borderRadius: theme.radius.sm,
-                        background: ans ? theme.colors.accent.indigoLight : theme.colors.bg.muted,
-                        color: ans ? theme.colors.accent.indigo : theme.colors.text.muted,
+                        background: ans ? 'var(--brand-light)' : theme.colors.bg.muted,
+                        color: ans ? 'var(--brand)' : theme.colors.text.muted,
                         fontSize: theme.font.xs, fontWeight: 500,
-                        border: `1px solid ${ans ? theme.colors.accent.indigo + '30' : theme.colors.border.subtle}`,
+                        border: `1px solid ${ans ? 'rgba(32,110,251,0.3)' : 'var(--line)'}`,
                       }}>
                         {ans === 'A' ? q.optionA : ans === 'B' ? q.optionB : `${q.optionA} / ${q.optionB}`}
                       </span>
@@ -120,7 +120,7 @@ const ErstScriptViewer = memo(({ erst, onClose }) => {
                 if (!hasData && !q.evaluations) return null;
 
                 return (
-                  <div key={q.id} style={{ padding: '10px 14px', marginBottom: 6, borderRadius: theme.radius.md, background: theme.colors.bg.surface, border: `1px solid ${theme.colors.border.subtle}` }}>
+                  <div key={q.id} style={{ padding: '10px 14px', marginBottom: 6, borderRadius: theme.radius.md, background: 'var(--status-bg)', border: `1px solid ${'var(--line)'}` }}>
                     <div style={{ fontSize: theme.font.body, color: theme.colors.text.primary, lineHeight: 1.6, fontWeight: 450 }}>
                       {q.text}
                     </div>
@@ -147,7 +147,7 @@ const ErstScriptViewer = memo(({ erst, onClose }) => {
 
         {/* Gesamteindruck */}
         {erst.gesamtNote && (
-          <div style={{ marginTop: theme.spacing.md, padding: theme.spacing.md, borderRadius: theme.radius.md, background: theme.colors.bg.surface, border: `1px solid ${theme.colors.border.subtle}` }}>
+          <div style={{ marginTop: theme.spacing.md, padding: theme.spacing.md, borderRadius: theme.radius.md, background: 'var(--status-bg)', border: `1px solid ${'var(--line)'}` }}>
             <div style={{ fontSize: theme.font.sm, fontWeight: 700, color: theme.colors.text.muted, marginBottom: 4, textTransform: 'uppercase' }}>Gesamteindruck</div>
             <div style={{ fontSize: theme.font.body, color: theme.colors.text.primary, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{erst.gesamtNote}</div>
           </div>
@@ -155,7 +155,7 @@ const ErstScriptViewer = memo(({ erst, onClose }) => {
 
         {/* Recommendation */}
         {erst.recommendation && (
-          <div style={{ marginTop: theme.spacing.sm, display: 'inline-block', padding: '6px 16px', borderRadius: theme.radius.full, background: theme.colors.accent.indigoLight, color: theme.colors.accent.indigo, fontWeight: 700, fontSize: theme.font.sm }}>
+          <div style={{ marginTop: theme.spacing.sm, display: 'inline-block', padding: '6px 16px', borderRadius: theme.radius.full, background: 'var(--brand-light)', color: 'var(--brand)', fontWeight: 700, fontSize: theme.font.sm }}>
             Empfehlung: {erst.recommendation}
           </div>
         )}

@@ -87,7 +87,7 @@ const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTime
               style={{
                 width: 44, height: 28, textAlign: 'center',
                 background: theme.colors.bg.muted,
-                border: `1px solid ${theme.colors.accent.indigo}60`,
+                border: '1px solid rgba(32,110,251,0.4)',
                 borderRadius: theme.radius.sm,
                 color: theme.colors.text.primary,
                 fontSize: theme.font.sm,
@@ -99,7 +99,7 @@ const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTime
             <span
               onClick={() => setIsEditing(true)}
               style={{
-                fontSize: theme.font.xs, color: theme.colors.accent.indigo,
+                fontSize: theme.font.xs, color: 'var(--brand)',
                 cursor: 'pointer', fontFamily: theme.fontMono,
                 textDecoration: 'underline',
                 textDecorationStyle: 'dotted',

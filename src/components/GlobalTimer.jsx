@@ -77,7 +77,7 @@ const GlobalTimer = memo(({ isZweit }) => {
         fontFamily: theme.fontMono,
         fontSize: theme.font.lg,
         fontWeight: 800,
-        color: isOvertime ? theme.colors.danger.text : theme.colors.accent.indigo,
+        color: isOvertime ? theme.colors.danger.text : 'var(--brand)',
         minWidth: 56,
         textAlign: 'center',
       }}>

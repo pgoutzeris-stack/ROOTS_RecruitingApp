@@ -31,7 +31,7 @@ const QuestionCard = memo(({
       </div>
 
       {question.checks && (
-        <div style={{ margin: `${theme.spacing.sm + 4}px 0 4px 0`, display: 'flex', flexDirection: 'column', gap: 6, padding: '12px 16px', background: theme.colors.bg.muted, borderRadius: theme.radius.md, border: `1px solid ${theme.colors.border.subtle}` }}>
+        <div style={{ margin: `${theme.spacing.sm + 4}px 0 4px 0`, display: 'flex', flexDirection: 'column', gap: 6, padding: '12px 16px', background: theme.colors.bg.muted, borderRadius: theme.radius.md, border: `1px solid ${'var(--line)'}` }}>
           {question.checks.map((checkText, i) => (
             <label key={i} style={{ fontSize: theme.font.body, color: theme.colors.text.secondary, display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer', lineHeight: 1.6 }}>
               <input type="checkbox" checked={!!(observations[question.id] || {})[i]} onChange={() => dispatch(actions.toggleObservation(question.id, i))} style={{ marginTop: 3, accentColor: theme.colors.accent.indigo }} />

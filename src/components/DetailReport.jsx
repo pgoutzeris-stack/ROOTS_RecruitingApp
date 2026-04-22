@@ -59,8 +59,8 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
     return (
       <div style={{ marginBottom: theme.spacing.xl }}>
         <div style={{
-          fontSize: theme.font.lg, fontWeight: 700, color: theme.colors.text.accent,
-          borderBottom: `1px solid ${theme.colors.border.strong}`,
+          fontSize: theme.font.lg, fontWeight: 700, color: 'var(--brand)',
+          borderBottom: `1px solid ${'var(--line)'}`,
           paddingBottom: 8, marginBottom: theme.spacing.lg,
         }}>
           {label}
@@ -112,7 +112,7 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
               {sectionRatings.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: sectionNotes.length > 0 ? theme.spacing.sm : 0 }}>
                   {sectionRatings.map((r, i) => {
-                    const color = DIMENSION_COLORS[r.dimension] || theme.colors.accent.indigo;
+                    const color = DIMENSION_COLORS[r.dimension] || 'var(--brand)';
                     return (
                       <div key={i} style={{
                         display: 'flex', alignItems: 'center', gap: 6,
@@ -139,8 +139,8 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
                       fontSize: theme.font.body, color: theme.colors.text.primary,
                       lineHeight: 1.6,
                       padding: '8px 12px', borderRadius: theme.radius.sm,
-                      background: theme.colors.bg.surface,
-                      border: `1px solid ${theme.colors.border.subtle}`,
+                      background: 'var(--status-bg)',
+                      border: `1px solid ${'var(--line)'}`,
                     }}
                     dangerouslySetInnerHTML={{ __html: n.note }}
                   />
@@ -191,9 +191,9 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
                   <div key={cfq.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span className="culture-fit-badge" style={{
                       padding: '4px 12px', borderRadius: theme.radius.full,
-                      background: theme.colors.accent.indigoLight,
-                      border: `1px solid ${theme.colors.accent.indigo}40`,
-                      fontSize: theme.font.xs, color: theme.colors.text.accent, fontWeight: 700,
+                      background: 'var(--brand-light)',
+                      border: '1px solid rgba(32,110,251,0.25)',
+                      fontSize: theme.font.xs, color: 'var(--brand)', fontWeight: 700,
                     }}>
                       {chosen}
                     </span>
@@ -232,7 +232,7 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
         {state.recommendation && (
           <div style={{ ...glassElevated, padding: theme.spacing.md, marginTop: theme.spacing.sm + 4 }}>
             <div style={sectionLabel}>Empfehlung</div>
-            <div style={{ fontSize: theme.font.md, fontWeight: 700, color: theme.colors.text.accent }}>
+            <div style={{ fontSize: theme.font.md, fontWeight: 700, color: 'var(--brand)' }}>
               {state.recommendation}
             </div>
           </div>
@@ -252,9 +252,9 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
           {canStartZweit && !isZweit && (
             <button onClick={() => onLoadCandidate(data)} style={{
               ...btnStyle,
-              background: theme.colors.accent.indigoLight,
-              borderColor: theme.colors.accent.indigo + '40',
-              color: theme.colors.text.accent,
+              background: 'var(--brand-light)',
+              borderColor: 'rgba(32,110,251,0.25)',
+              color: 'var(--brand)',
             }}>
               Zweitgespräch starten
             </button>
@@ -262,19 +262,19 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
           {isZweit && (
             <button onClick={() => onLoadCandidate(data)} style={{
               ...btnStyle,
-              background: theme.colors.accent.indigoLight,
-              borderColor: theme.colors.accent.indigo + '40',
-              color: theme.colors.text.accent,
+              background: 'var(--brand-light)',
+              borderColor: 'rgba(32,110,251,0.25)',
+              color: 'var(--brand)',
             }}>
               Zweitgespräch fortsetzen
             </button>
           )}
           <button onClick={() => window.print()} style={{
             ...btnStyle,
-            background: theme.colors.accent.indigo,
+            background: 'var(--brand)',
             border: 'none',
             color: '#fff',
-            boxShadow: `0 0 16px ${theme.colors.accent.indigoGlow}`,
+            boxShadow: '0 4px 12px rgba(32,110,251,0.3)',
           }}>
             PDF drucken
           </button>
@@ -290,21 +290,21 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.md, marginBottom: theme.spacing.lg }}>
           <div style={{
             width: 56, height: 56, borderRadius: theme.radius.full,
-            background: `linear-gradient(135deg, ${theme.colors.accent.indigo}, ${theme.colors.accent.indigoMid})`,
+            background: 'var(--brand)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 24, fontWeight: 800, color: '#fff', flexShrink: 0,
-            boxShadow: theme.shadow.glow,
+            boxShadow: '0 4px 12px rgba(32,110,251,0.3)',
           }}>
             {(meta.kandidat || '?')[0].toUpperCase()}
           </div>
           <div>
-            <div style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.5px', color: theme.colors.text.primary }}>
+            <div style={{ fontSize: theme.font.xl, fontWeight: 800, letterSpacing: '-0.5px', color: theme.colors.text.primary }}>
               {meta.kandidat || 'Unbenannt'}
             </div>
             <div style={{ fontSize: theme.font.body, color: theme.colors.text.muted, display: 'flex', gap: 16 }}>
               {meta.datum && <span>Datum: {meta.datum}</span>}
-              <span>Empfehlung Erst: <strong style={{ color: theme.colors.text.accent }}>{erstRecommendation}</strong></span>
-              {zweitRecommendation && <span>Empfehlung Zweit: <strong style={{ color: theme.colors.text.accent }}>{zweitRecommendation}</strong></span>}
+              <span>Empfehlung Erst: <strong style={{ color: 'var(--brand)' }}>{erstRecommendation}</strong></span>
+              {zweitRecommendation && <span>Empfehlung Zweit: <strong style={{ color: 'var(--brand)' }}>{zweitRecommendation}</strong></span>}
             </div>
           </div>
         </div>
@@ -319,7 +319,7 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
                 display: 'flex', alignItems: 'center', gap: 8,
                 padding: '10px 14px', borderRadius: theme.radius.md,
                 background: avg ? `${color}0A` : 'rgba(255,255,255,0.02)',
-                border: `1px solid ${avg ? `${color}20` : theme.colors.border.subtle}`,
+                border: `1px solid ${avg ? `${color}20` : 'var(--line)'}`,
               }}>
                 <div style={{ width: 8, height: 8, borderRadius: theme.radius.full, background: color, flexShrink: 0 }} />
                 <span style={{ fontSize: theme.font.sm, color: theme.colors.text.secondary, flex: 1 }}>{DIMENSIONS[dk]}</span>
@@ -336,8 +336,8 @@ const DetailReport = memo(({ data, onBack, onLoadCandidate }) => {
           <div style={{
             marginTop: theme.spacing.md, display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
             gap: 14, padding: '14px 22px',
-            background: `linear-gradient(135deg, ${theme.colors.accent.indigoDark}, ${theme.colors.accent.indigo})`,
-            borderRadius: theme.radius.md, color: '#fff', boxShadow: theme.shadow.glow,
+            background: 'var(--brand)',
+            borderRadius: theme.radius.md, color: '#fff', boxShadow: '0 4px 12px rgba(32,110,251,0.3)',
           }}>
             <span style={{ fontSize: theme.font.md, fontWeight: 500, opacity: 0.8 }}>Gesamtscore:</span>
             <span style={{ fontSize: 28, fontWeight: 800, fontFamily: theme.fontMono }}>{scores.weightedOverall.toFixed(1)}</span>

@@ -64,7 +64,7 @@ const EvalRow = memo(({ evaluation, rating, erstRating, onRate }) => {
 
       {/* Expanded: rating buttons + anchors */}
       {isOpen && (
-        <div style={{ padding: '0 16px 16px', borderTop: `1px solid ${theme.colors.border.subtle}` }}>
+        <div style={{ padding: '0 16px 16px', borderTop: `1px solid ${'var(--line)'}` }}>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', paddingTop: 14, paddingBottom: hasAnchors ? 14 : 0 }}>
             {isInherited && (
               <span style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, marginRight: 4, fontWeight: 500, padding: '2px 8px', borderRadius: theme.radius.sm, background: theme.colors.bg.muted, border: `1px solid ${theme.colors.border.glass}` }}>
@@ -99,7 +99,7 @@ const EvalRow = memo(({ evaluation, rating, erstRating, onRate }) => {
           </div>
 
           {hasAnchors && (
-            <div style={{ display: 'grid', gridTemplateColumns: '44px 1fr', gap: '10px 14px', paddingTop: 10, fontSize: theme.font.sm, lineHeight: 1.7, color: theme.colors.text.secondary, borderTop: `1px solid ${theme.colors.border.subtle}` }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '44px 1fr', gap: '10px 14px', paddingTop: 10, fontSize: theme.font.sm, lineHeight: 1.7, color: theme.colors.text.secondary, borderTop: `1px solid ${'var(--line)'}` }}>
               {[
                 { num: 1, text: evaluation.anchor1, color: '#DC2626', bg: 'rgba(220, 38, 38, 0.06)' },
                 { num: 3, text: evaluation.anchor3, color: '#B45309', bg: 'rgba(245, 158, 11, 0.06)' },

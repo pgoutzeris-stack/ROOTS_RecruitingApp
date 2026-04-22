@@ -92,7 +92,7 @@ const Dashboard = memo(({ onBack, onOpenDetail, onLoadCandidate, onEditCandidate
     <div style={{ padding: `${theme.spacing.xl}px`, maxWidth: 1000, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: theme.spacing.xl }}>
         <div>
-          <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', color: theme.colors.text.primary }}>
+          <div style={{ fontSize: theme.font.xl, fontWeight: 800, letterSpacing: '-0.5px', color: theme.colors.text.primary }}>
             Kandidaten-Dashboard
           </div>
           <div style={{ fontSize: theme.font.body, color: theme.colors.text.muted, marginTop: 4 }}>
@@ -100,8 +100,8 @@ const Dashboard = memo(({ onBack, onOpenDetail, onLoadCandidate, onEditCandidate
           </div>
         </div>
         <button onClick={onBack} style={{
-          ...btnStyle, background: theme.colors.accent.indigo, border: 'none',
-          color: '#fff', padding: '10px 22px', fontSize: theme.font.md, boxShadow: theme.shadow.glow,
+          ...btnStyle, background: 'var(--brand)', border: 'none',
+          color: '#fff', padding: '10px 22px', fontSize: theme.font.md, boxShadow: '0 4px 12px rgba(32,110,251,0.3)',
         }}>
           Neues Interview
         </button>
@@ -129,7 +129,7 @@ const Dashboard = memo(({ onBack, onOpenDetail, onLoadCandidate, onEditCandidate
                 <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.md }}>
                   <div style={{
                     width: 44, height: 44, borderRadius: theme.radius.full,
-                    background: `linear-gradient(135deg, ${theme.colors.accent.indigo}, ${theme.colors.accent.indigoMid})`,
+                    background: 'var(--brand)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 18, fontWeight: 800, color: '#fff', flexShrink: 0,
                   }}>
@@ -142,7 +142,7 @@ const Dashboard = memo(({ onBack, onOpenDetail, onLoadCandidate, onEditCandidate
                     <div style={{ fontSize: theme.font.sm, color: theme.colors.text.muted, display: 'flex', gap: 12 }}>
                       {meta.datum && <span>{meta.datum}</span>}
                       {meta.interviewer && <span>Interviewer: {meta.interviewer}</span>}
-                      <span style={{ color: theme.colors.accent.indigo }}>{runde}</span>
+                      <span style={{ color: 'var(--brand)' }}>{runde}</span>
                     </div>
                   </div>
                 </div>
@@ -152,7 +152,7 @@ const Dashboard = memo(({ onBack, onOpenDetail, onLoadCandidate, onEditCandidate
                     {status}
                   </span>
                   {scores.weightedOverall != null && (
-                    <div style={{ padding: '6px 14px', borderRadius: theme.radius.full, background: `linear-gradient(135deg, ${theme.colors.accent.indigoDark}, ${theme.colors.accent.indigo})`, color: '#fff', fontSize: theme.font.md, fontWeight: 800, fontFamily: theme.fontMono, boxShadow: theme.shadow.glow }}>
+                    <div style={{ padding: '6px 14px', borderRadius: theme.radius.full, background: 'var(--brand)', color: '#fff', fontSize: theme.font.md, fontWeight: 800, fontFamily: theme.fontMono, boxShadow: '0 4px 12px rgba(32,110,251,0.3)' }}>
                       {scores.weightedOverall.toFixed(1)}
                     </div>
                   )}
@@ -180,12 +180,12 @@ const Dashboard = memo(({ onBack, onOpenDetail, onLoadCandidate, onEditCandidate
                 <button onClick={() => onOpenDetail(data, key)} style={btnStyle}>Detailbericht</button>
                 <button onClick={() => onEditCandidate(data)} style={btnStyle}>Bearbeiten</button>
                 {canStartZweit && !isInZweit && (
-                  <button onClick={() => handleStartZweit(data)} style={{ ...btnStyle, background: theme.colors.accent.indigoLight, borderColor: `${theme.colors.accent.indigo}30`, color: theme.colors.accent.indigo }}>
+                  <button onClick={() => handleStartZweit(data)} style={{ ...btnStyle, background: 'var(--brand-light)', borderColor: 'rgba(32,110,251,0.3)', color: 'var(--brand)' }}>
                     Zweitgespräch starten
                   </button>
                 )}
                 {isInZweit && (
-                  <button onClick={() => handleStartZweit(data)} style={{ ...btnStyle, background: theme.colors.accent.indigoLight, borderColor: `${theme.colors.accent.indigo}30`, color: theme.colors.accent.indigo }}>
+                  <button onClick={() => handleStartZweit(data)} style={{ ...btnStyle, background: 'var(--brand-light)', borderColor: 'rgba(32,110,251,0.3)', color: 'var(--brand)' }}>
                     Zweitgespräch fortsetzen
                   </button>
                 )}
