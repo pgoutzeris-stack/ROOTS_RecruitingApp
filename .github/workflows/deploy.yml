@@ -26,6 +26,8 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - name: Restore Vite template before build
+        run: cp TEMPLATE.html index.html
       - run: npm run build
       - name: Copy bundled index.html to repo root
         run: cp dist/index.html index.html
