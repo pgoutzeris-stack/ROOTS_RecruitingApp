@@ -1,26 +1,35 @@
 /**
  * Evaluation dimensions and their display colors.
- * Each dimension maps to a human-readable label and a brand color.
+ *
+ * Color logic – each hue maps to the semantic character of the dimension:
+ *   ownership    → amber   (energy, drive, initiative)
+ *   analytik     → indigo  (intellect, reasoning, structure)
+ *   kommunikation→ sky     (openness, expression, presence)
+ *   projektmgmt  → emerald (execution, organisation, delivery)
+ *   qualitat     → violet  (precision, standards, excellence)
+ *   resilienz    → orange  (strength, persistence, adaptability)
+ *   marketing    → pink    (creativity, brand, impact)
+ *   team         → teal    (collaboration, people, cohesion)
  */
 
 export const DIMENSIONS = {
-  ownership: 'Ownership & Drive',
-  analytik: 'Analytisches & strukturiertes Denken',
+  ownership:     'Ownership & Drive',
+  analytik:      'Analytisches & strukturiertes Denken',
   kommunikation: 'Sicheres Auftreten & Kommunikation',
-  projektmgmt: 'Projektmanagement',
-  qualitat: 'Qualitätsanspruch',
-  resilienz: 'Resilienz',
-  marketing: 'Marketingfachwissen',
-  team: 'Teamfähigkeit',
+  projektmgmt:   'Projektmanagement',
+  qualitat:      'Qualitätsanspruch',
+  resilienz:     'Resilienz',
+  marketing:     'Marketingfachwissen',
+  team:          'Teamfähigkeit',
 };
 
 export const DIMENSION_COLORS = {
-  ownership: '#6366f1',
-  analytik: '#0891b2',
-  kommunikation: '#059669',
-  projektmgmt: '#2563eb',
-  qualitat: '#dc2626',
-  resilienz: '#7c3aed',
-  marketing: '#0d9488',
-  team: '#e11d48',
+  ownership:     '#f59e0b',  // amber
+  analytik:      '#6366f1',  // indigo
+  kommunikation: '#0ea5e9',  // sky
+  projektmgmt:   '#10b981',  // emerald
+  qualitat:      '#8b5cf6',  // violet
+  resilienz:     '#f97316',  // orange
+  marketing:     '#ec4899',  // pink
+  team:          '#14b8a6',  // teal
 };

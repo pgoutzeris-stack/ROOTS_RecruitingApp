@@ -86,18 +86,21 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }} className="no-print">
 
           {/* Custom select wrapper: Runde */}
-          <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+          <div style={{
+            position: 'relative', display: 'inline-flex', alignItems: 'center',
+            background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 999,
+            height: 34, overflow: 'hidden',
+          }}>
             <select
               value={meta.runde}
               onChange={handleRoundChange}
               aria-label="Gesprächsrunde"
               style={{
-                ...pillBtn,
-                paddingRight: 30,
-                appearance: 'none',
-                WebkitAppearance: 'none',
-                MozAppearance: 'none',
-                cursor: 'pointer',
+                WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none',
+                background: 'transparent', border: 'none', outline: 'none',
+                padding: '0 30px 0 14px', height: '100%',
+                fontSize: 13, fontWeight: 500, fontFamily: 'inherit',
+                color: 'var(--ink)', cursor: 'pointer',
               }}
             >
               <option value="erst">Erstgespräch</option>
@@ -105,7 +108,7 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
                 {canSwitchToZweit ? 'Zweitgespräch' : 'Zweitgespräch (gesperrt)'}
               </option>
             </select>
-            <i className="ri-arrow-down-s-line" style={{ position: 'absolute', right: 10, pointerEvents: 'none', color: 'var(--muted)', fontSize: 15 }} />
+            <i className="ri-arrow-down-s-line" style={{ position: 'absolute', right: 9, pointerEvents: 'none', color: 'var(--muted)', fontSize: 15 }} />
           </div>
 
           <div style={sepStyle} />
@@ -162,10 +165,11 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
               {label}
             </label>
             {type === 'date' ? (
-              /* Custom date wrapper */
+              /* Custom date wrapper — native picker indicator hidden via CSS class */
               <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', width }}>
                 <input
                   type="date"
+                  className="roots-date-input"
                   value={meta[key]}
                   onChange={handleMetaChange(key)}
                   aria-label={label}
@@ -180,11 +184,11 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
                     fontWeight: 500,
                     fontFamily: 'inherit',
                     outline: 'none',
-                    appearance: 'none',
-                    WebkitAppearance: 'none',
+                    cursor: 'pointer',
+                    position: 'relative',
                   }}
                 />
-                <i className="ri-calendar-line" style={{ position: 'absolute', right: 9, pointerEvents: 'none', color: 'var(--muted)', fontSize: 14 }} />
+                <i className="ri-calendar-line" style={{ position: 'absolute', right: 8, pointerEvents: 'none', color: 'var(--muted)', fontSize: 14 }} />
               </div>
             ) : (
               <input

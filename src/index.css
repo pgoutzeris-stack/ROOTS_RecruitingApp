@@ -90,14 +90,21 @@ select {
   appearance: none;
 }
 
-/* Style the date picker indicator to match the design system */
-input[type="date"]::-webkit-calendar-picker-indicator {
+/* Hide all native date input chrome; clicking anywhere in the input still opens the picker */
+.roots-date-input::-webkit-calendar-picker-indicator {
   opacity: 0;
+  cursor: pointer;
   position: absolute;
-  right: 0;
+  top: 0; right: 0; bottom: 0;
   width: 100%;
   height: 100%;
-  cursor: pointer;
+}
+.roots-date-input::-webkit-inner-spin-button,
+.roots-date-input::-webkit-outer-spin-button {
+  display: none;
+}
+.roots-date-input::-webkit-clear-button {
+  display: none;
 }
 
 /* contentEditable fields */
