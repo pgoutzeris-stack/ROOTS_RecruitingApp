@@ -179,12 +179,10 @@ const Navigation = memo(({ sectionNumbers, isZweit, currentState }) => {
                 ) : null}
               </div>
 
-              {/* Progress bar only – no counter text */}
+              {/* Progress bar + compact counter */}
               {chapterProgress && !isComplete && (
-                <div style={{ marginTop: 5, paddingLeft: 24 }}>
-                  <div style={{
-                    height: 3, background: 'var(--line)', borderRadius: 2, overflow: 'hidden',
-                  }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5, paddingLeft: 24 }}>
+                  <div style={{ flex: 1, height: 3, background: 'var(--line)', borderRadius: 2, overflow: 'hidden', maxWidth: 56 }}>
                     <div style={{
                       width: `${pct}%`,
                       height: '100%',
@@ -193,6 +191,14 @@ const Navigation = memo(({ sectionNumbers, isZweit, currentState }) => {
                       transition: 'width .3s ease',
                     }} />
                   </div>
+                  {chapterProgress.rated > 0 && (
+                    <span style={{
+                      fontSize: 10, fontWeight: 600,
+                      color: 'var(--brand)',
+                    }}>
+                      {chapterProgress.rated}/{chapterProgress.total}
+                    </span>
+                  )}
                 </div>
               )}
             </div>
