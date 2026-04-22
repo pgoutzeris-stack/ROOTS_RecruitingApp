@@ -3,8 +3,14 @@ import { memo, useState, useEffect, useRef } from 'react';
 const MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 const WEEKDAYS = ['Mo','Di','Mi','Do','Fr','Sa','So'];
 
-export const getTodayCET = () =>
-  new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin' }).format(new Date());
+export const getTodayCET = () => {
+  const parts = new Intl.DateTimeFormat('de-DE', {
+    timeZone: 'Europe/Berlin',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const p = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  return `${p.year}-${p.month}-${p.day}`;
+};
 
 const formatDisplay = (iso) => {
   if (!iso) return 'Datum wählen';
