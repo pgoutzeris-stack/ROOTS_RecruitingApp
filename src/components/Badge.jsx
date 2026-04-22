@@ -2,8 +2,16 @@ import { memo } from 'react';
 import { DIMENSIONS, DIMENSION_COLORS } from '../data/dimensions';
 import { theme } from '../theme';
 
-const Badge = memo(({ dimension }) => {
-  const color = DIMENSION_COLORS[dimension];
+const RATING_COLORS = {
+  1: '#DC2626',
+  2: '#EA580C',
+  3: '#D97706',
+  4: '#059669',
+  5: '#10b981',
+};
+
+const Badge = memo(({ dimension, rating }) => {
+  const color = rating != null ? RATING_COLORS[rating] : DIMENSION_COLORS[dimension];
   return (
     <span
       style={{
@@ -16,6 +24,7 @@ const Badge = memo(({ dimension }) => {
         border: `1px solid ${color}30`,
         whiteSpace: 'nowrap',
         letterSpacing: '0.01em',
+        transition: 'color .2s, background .2s, border-color .2s',
       }}
     >
       {DIMENSIONS[dimension]}

@@ -44,7 +44,7 @@ const EvalRow = memo(({ evaluation, rating, erstRating, onRate }) => {
           &#9654;
         </span>
         <span style={{ fontSize: theme.font.body, fontWeight: 600, flex: 1, color: theme.colors.text.primary }}>{evaluation.label}</span>
-        <Badge dimension={evaluation.dimension} />
+        <Badge dimension={evaluation.dimension} rating={displayRating} />
         {!isOpen && displayRating != null && (
           <span style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',

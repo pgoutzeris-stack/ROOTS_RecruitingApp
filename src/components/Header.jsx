@@ -1,19 +1,22 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useState, useRef, useEffect } from 'react';
 import { theme } from '../theme';
 import { actions } from '../hooks/useInterviewState';
 
 const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDashboard, onReset, onOpenSettings }) => {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [roundMenuOpen, setRoundMenuOpen] = useState(false);
+  const roundMenuRef = useRef(null);
   const meta = erst.meta;
 
-  const handleRoundChange = useCallback(
-    (e) => {
-      const value = e.target.value;
-      if (value === 'zweit' && !canSwitchToZweit) return;
-      dispatch(actions.setMeta('runde', value));
-    },
-    [dispatch, canSwitchToZweit],
-  );
+  useEffect(() => {
+    const handler = (e) => {
+      if (roundMenuRef.current && !roundMenuRef.current.contains(e.target)) {
+        setRoundMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const handleMetaChange = useCallback(
     (field) => (e) => dispatch(actions.setMeta(field, e.target.value)),
@@ -85,30 +88,56 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
         {/* RIGHT: actions */}
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }} className="no-print">
 
-          {/* Custom select wrapper: Runde */}
-          <div style={{
-            position: 'relative', display: 'inline-flex', alignItems: 'center',
-            background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 999,
-            height: 34, overflow: 'hidden',
-          }}>
-            <select
-              value={meta.runde}
-              onChange={handleRoundChange}
-              aria-label="Gesprächsrunde"
-              style={{
-                WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none',
-                background: 'transparent', border: 'none', outline: 'none',
-                padding: '0 30px 0 14px', height: '100%',
-                fontSize: 13, fontWeight: 500, fontFamily: 'inherit',
-                color: 'var(--ink)', cursor: 'pointer',
-              }}
+          {/* Custom dropdown: Runde */}
+          <div ref={roundMenuRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setRoundMenuOpen((p) => !p)}
+              aria-haspopup="listbox"
+              aria-expanded={roundMenuOpen}
+              style={{ ...pillBtn }}
             >
-              <option value="erst">Erstgespräch</option>
-              <option value="zweit" disabled={!canSwitchToZweit}>
-                {canSwitchToZweit ? 'Zweitgespräch' : 'Zweitgespräch (gesperrt)'}
-              </option>
-            </select>
-            <i className="ri-arrow-down-s-line" style={{ position: 'absolute', right: 9, pointerEvents: 'none', color: 'var(--muted)', fontSize: 15 }} />
+              <i className={meta.runde === 'erst' ? 'ri-chat-1-line' : 'ri-chat-2-line'} style={{ fontSize: 14 }} />
+              {meta.runde === 'erst' ? 'Erstgespräch' : 'Zweitgespräch'}
+              <i className="ri-arrow-down-s-line" style={{ fontSize: 14, marginLeft: -2, transition: 'transform .2s', transform: roundMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+            </button>
+            {roundMenuOpen && (
+              <div role="listbox" style={{
+                position: 'absolute', top: 'calc(100% + 6px)', left: 0,
+                background: 'var(--bg)', border: '1px solid var(--line)',
+                borderRadius: 10, boxShadow: 'var(--shadow)',
+                minWidth: '100%', zIndex: 200, overflow: 'hidden',
+              }}>
+                {[
+                  { value: 'erst', label: 'Erstgespräch', icon: 'ri-chat-1-line' },
+                  { value: 'zweit', label: 'Zweitgespräch', icon: 'ri-chat-2-line', disabled: !canSwitchToZweit },
+                ].map(({ value, label, icon, disabled }) => (
+                  <div
+                    key={value}
+                    role="option"
+                    aria-selected={meta.runde === value}
+                    onClick={() => {
+                      if (!disabled) { dispatch(actions.setMeta('runde', value)); setRoundMenuOpen(false); }
+                    }}
+                    style={{
+                      padding: '.55rem 1rem', fontSize: 13, fontFamily: 'inherit',
+                      cursor: disabled ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      color: disabled ? 'var(--muted)' : meta.runde === value ? 'var(--brand)' : 'var(--ink)',
+                      background: meta.runde === value ? 'var(--brand-light)' : 'transparent',
+                      opacity: disabled ? 0.5 : 1,
+                      fontWeight: meta.runde === value ? 600 : 500,
+                      transition: 'background .15s',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <i className={icon} style={{ fontSize: 14 }} />
+                    {label}
+                    {disabled && <span style={{ fontSize: 11, color: 'var(--muted)', marginLeft: 2 }}>gesperrt</span>}
+                    {meta.runde === value && <i className="ri-check-line" style={{ fontSize: 13, marginLeft: 'auto' }} />}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div style={sepStyle} />
