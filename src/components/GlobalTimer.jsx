@@ -2,7 +2,6 @@ import { memo, useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { theme } from '../theme';
 import { getSections } from '../data/sections';
 
-/** Parse "X Min." or "X–Y Min." to get the first number */
 const parseMinutes = (timeStr) => {
   if (!timeStr) return 0;
   const match = timeStr.match(/(\d+)/);
@@ -55,59 +54,69 @@ const GlobalTimer = memo(({ isZweit }) => {
   const diffMins = Math.floor(absDiff / 60);
   const diffSecs = absDiff % 60;
 
+  const iconStyle = { fontSize: 12, pointerEvents: 'none' };
+
   return (
     <div
       style={{
-        display: 'flex',
+        display: 'inline-flex',
         alignItems: 'center',
         gap: 10,
-        padding: '8px 16px',
-        borderRadius: theme.radius.md,
-        background: isOvertime ? 'rgba(220, 38, 38, 0.06)' : 'var(--brand-light)',
-        border: `1px solid ${isOvertime ? 'rgba(220, 38, 38, 0.2)' : 'rgba(32, 110, 251, 0.2)'}`,
+        padding: '8px 14px',
+        borderRadius: 10,
+        background: isOvertime ? 'rgba(220,38,38,0.06)' : 'var(--brand-light)',
+        border: `1px solid ${isOvertime ? 'rgba(220,38,38,0.2)' : 'rgba(32,110,251,0.2)'}`,
         transition: `all ${theme.transition.normal}`,
+        fontFamily: 'inherit',
       }}
       className="no-print"
     >
-      <span style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, fontWeight: 500 }}>
+      <i className="ri-timer-line" style={{ fontSize: 14, color: isOvertime ? '#dc2626' : 'var(--brand)' }} />
+
+      <span style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 500 }}>
         Gesamt
       </span>
 
       <span style={{
-        fontFamily: theme.fontMono,
-        fontSize: theme.font.lg,
-        fontWeight: 800,
-        color: isOvertime ? theme.colors.danger.text : 'var(--brand)',
-        minWidth: 56,
+        fontFamily: "'Courier New', Courier, monospace",
+        fontSize: 15,
+        fontWeight: 700,
+        color: isOvertime ? '#dc2626' : 'var(--brand)',
+        minWidth: 52,
         textAlign: 'center',
+        letterSpacing: '0.04em',
       }}>
         {started ? display : '0:00'}
       </span>
 
-      <span style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, fontFamily: theme.fontMono }}>
+      <span style={{ fontSize: 11, color: 'var(--muted)', whiteSpace: 'nowrap' }}>
         / {totalTargetMinutes} Min.
       </span>
 
       {started && (
         <span style={{
-          fontSize: theme.font.xs,
+          fontSize: 11,
           fontWeight: 700,
-          fontFamily: theme.fontMono,
-          color: isOvertime ? theme.colors.danger.text : theme.colors.success.text,
+          fontFamily: "'Courier New', Courier, monospace",
+          color: isOvertime ? '#dc2626' : '#10b981',
           padding: '2px 6px',
-          borderRadius: theme.radius.sm,
-          background: isOvertime ? 'rgba(220, 38, 38, 0.08)' : 'rgba(34, 197, 94, 0.08)',
+          borderRadius: 5,
+          background: isOvertime ? 'rgba(220,38,38,0.08)' : 'rgba(16,185,129,0.08)',
+          letterSpacing: '0.04em',
         }}>
-          {diff <= 0 ? `-${diffMins}:${diffSecs.toString().padStart(2, '0')}` : `+${diffMins}:${diffSecs.toString().padStart(2, '0')}`}
+          {diff <= 0
+            ? `-${diffMins}:${diffSecs.toString().padStart(2, '0')}`
+            : `+${diffMins}:${diffSecs.toString().padStart(2, '0')}`}
         </span>
       )}
 
+      {/* Start/Pause */}
       <button
         onClick={startPause}
         style={{
-          width: 26, height: 26, borderRadius: theme.radius.sm,
+          width: 28, height: 28, borderRadius: 7,
           border: `1px solid ${theme.colors.border.glass}`,
-          background: isRunning ? 'rgba(245, 158, 11, 0.08)' : 'var(--brand-light)',
+          background: isRunning ? 'rgba(245,158,11,0.08)' : 'var(--brand-light)',
           color: isRunning ? '#B45309' : 'var(--brand)',
           cursor: 'pointer', fontSize: 11,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -115,24 +124,25 @@ const GlobalTimer = memo(({ isZweit }) => {
         }}
         title={isRunning ? 'Pause' : 'Start'}
       >
-        {isRunning ? '\u275A\u275A' : '\u25B6'}
+        <i className={isRunning ? 'ri-pause-fill' : 'ri-play-fill'} style={iconStyle} />
       </button>
 
+      {/* Reset */}
       {started && (
         <button
           onClick={reset}
           style={{
-            width: 26, height: 26, borderRadius: theme.radius.sm,
+            width: 28, height: 28, borderRadius: 7,
             border: `1px solid ${theme.colors.border.glass}`,
-            background: theme.colors.bg.muted,
-            color: theme.colors.text.muted,
-            cursor: 'pointer', fontSize: 11,
+            background: 'var(--status-bg)',
+            color: 'var(--muted)',
+            cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: 0,
           }}
           title="Reset"
         >
-          ↺
+          <i className="ri-restart-line" style={iconStyle} />
         </button>
       )}
     </div>

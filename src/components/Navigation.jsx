@@ -31,7 +31,7 @@ const Navigation = memo(({ sectionNumbers, isZweit, currentState }) => {
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
       (entries) => { for (const e of entries) { if (e.isIntersecting) setActiveId(e.target.id); } },
-      { rootMargin: '-100px 0px -60% 0px', threshold: 0.1 },
+      { rootMargin: '-80px 0px -55% 0px', threshold: 0.05 },
     );
     sections.forEach((s) => { const el = document.getElementById(`section-${s.id}`); if (el) observerRef.current.observe(el); });
     return () => observerRef.current?.disconnect();
@@ -68,7 +68,6 @@ const Navigation = memo(({ sectionNumbers, isZweit, currentState }) => {
       if (!q.evaluations) continue;
       for (let i = 0; i < q.evaluations.length; i++) { total++; if ((currentState.ratings[q.id] || {})[i] != null) rated++; }
     }
-    // Include block evaluation
     if (sec.blockEvaluation) {
       const be = sec.blockEvaluation;
       for (let i = 0; i < be.evaluations.length; i++) { total++; if ((currentState.ratings[be.id] || {})[i] != null) rated++; }
@@ -89,20 +88,30 @@ const Navigation = memo(({ sectionNumbers, isZweit, currentState }) => {
   return (
     <nav
       style={{
-        position: 'fixed', left: '1rem', top: 158, width: 220,
-        maxHeight: 'calc(100vh - 175px)', overflowY: 'auto',
-        padding: '1rem .75rem',
+        position: 'fixed', left: '1rem', top: 168, width: 252,
+        maxHeight: 'calc(100vh - 185px)', overflowY: 'auto',
+        padding: '10px 8px',
         zIndex: 10,
         background: 'var(--bg)',
         border: '1px solid var(--line)',
         borderRadius: 'var(--radius)',
         boxShadow: 'var(--shadow)',
+        fontFamily: "'Circular Std', system-ui, sans-serif",
       }}
       className="no-print"
       aria-label="Sektions-Navigation"
     >
-      <div style={{ fontSize: theme.font.xs, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.5px', color: theme.colors.text.muted, marginBottom: 12, paddingLeft: 8 }}>
-        Kapitel
+      {/* Header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 6,
+        padding: '4px 8px 10px',
+        borderBottom: '1px solid var(--line)',
+        marginBottom: 6,
+      }}>
+        <i className="ri-list-check" style={{ fontSize: 13, color: 'var(--brand)' }} />
+        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--muted)' }}>
+          Kapitel
+        </span>
       </div>
 
       {chapters.map((chapter) => {
@@ -114,46 +123,75 @@ const Navigation = memo(({ sectionNumbers, isZweit, currentState }) => {
 
         return (
           <div key={chapter.main.id} style={{ marginBottom: 2 }}>
+            {/* Chapter row */}
             <div
               onClick={() => { setManualExpanded(isExpanded ? null : chapter.main.id); scrollTo(chapter.main.id); }}
               style={{
-                padding: '8px 10px', borderRadius: 8, cursor: 'pointer',
+                padding: '9px 10px',
+                borderRadius: 10,
+                cursor: 'pointer',
                 background: isChapterActive ? 'var(--brand-light)' : 'transparent',
-                borderLeft: isChapterActive ? '2px solid var(--brand)' : '2px solid transparent',
-                color: isChapterActive ? 'var(--brand)' : theme.colors.text.secondary,
-                fontWeight: 600, transition: 'all .15s', lineHeight: 1.4,
+                borderLeft: isChapterActive ? '3px solid var(--brand)' : '3px solid transparent',
+                color: isChapterActive ? 'var(--brand)' : 'var(--muted)',
+                fontWeight: isChapterActive ? 700 : 500,
+                transition: 'all .15s ease',
+                userSelect: 'none',
               }}
-              role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && scrollTo(chapter.main.id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && scrollTo(chapter.main.id)}
             >
-              <div style={{ fontSize: theme.font.sm, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ opacity: 0.4, fontWeight: 500, minWidth: 26, fontFamily: theme.fontMono, fontSize: theme.font.xs }}>
+              {/* Title row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{
+                  fontSize: 11, fontWeight: 600, minWidth: 22, color: isChapterActive ? 'var(--brand)' : 'var(--muted)',
+                  opacity: isChapterActive ? 1 : 0.6,
+                }}>
                   {chapter.mainNumber}.
                 </span>
-                <span style={{ flex: 1 }}>{chapter.main.main}</span>
-                {hasSubs && (
-                  <span style={{ fontSize: 9, opacity: 0.4, transition: `transform ${theme.transition.fast}`, transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)', display: 'inline-block' }}>
-                    &#9654;
-                  </span>
-                )}
+                <span style={{ flex: 1, fontSize: 13, lineHeight: 1.35, color: isChapterActive ? 'var(--brand)' : 'var(--ink)' }}>
+                  {chapter.main.main}
+                </span>
                 {isComplete && (
-                  <span style={{ color: theme.colors.success.badge, fontSize: theme.font.xs }}>&#10003;</span>
+                  <i className="ri-check-line" style={{ fontSize: 13, color: '#10b981', flexShrink: 0 }} />
+                )}
+                {hasSubs && !isComplete && (
+                  <i
+                    className="ri-arrow-right-s-line"
+                    style={{
+                      fontSize: 15, color: 'var(--muted)', flexShrink: 0,
+                      transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                      transition: `transform ${theme.transition.fast}`,
+                    }}
+                  />
                 )}
               </div>
+
+              {/* Progress row */}
               {chapterProgress && (
-                <div style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, marginTop: 3, paddingLeft: 32, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  {chapter.main.time && !hasSubs && <span style={{ opacity: 0.6 }}>{chapter.main.time}</span>}
-                  <span style={{ color: isComplete ? 'var(--success)' : theme.colors.text.muted, fontWeight: isComplete ? 600 : 400, fontFamily: theme.fontMono }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, paddingLeft: 28 }}>
+                  <div style={{ flex: 1, height: 3, background: 'var(--line)', borderRadius: 2, overflow: 'hidden', maxWidth: 60 }}>
+                    <div style={{
+                      width: `${(chapterProgress.rated / chapterProgress.total) * 100}%`,
+                      height: '100%',
+                      background: isComplete ? '#10b981' : 'var(--brand)',
+                      borderRadius: 2,
+                      transition: 'width .3s ease',
+                    }} />
+                  </div>
+                  <span style={{
+                    fontSize: 11, fontWeight: 600,
+                    color: isComplete ? '#10b981' : 'var(--muted)',
+                  }}>
                     {chapterProgress.rated}/{chapterProgress.total}
                   </span>
-                  <div style={{ flex: 1, height: 2, background: 'var(--line)', borderRadius: 1, overflow: 'hidden', maxWidth: 36 }}>
-                    <div style={{ width: `${(chapterProgress.rated / chapterProgress.total) * 100}%`, height: '100%', background: isComplete ? 'var(--success)' : 'var(--brand)', borderRadius: 1, transition: 'width .3s' }} />
-                  </div>
                 </div>
               )}
             </div>
 
+            {/* Sub-sections */}
             {isExpanded && hasSubs && (
-              <div style={{ overflow: 'hidden', transition: `all ${theme.transition.normal}` }}>
+              <div style={{ paddingLeft: 8 }}>
                 {chapter.subs.map(({ section, nums }) => {
                   const isSubActive = activeId === `section-${section.id}`;
                   const progress = getProgress(section);
@@ -164,21 +202,34 @@ const Navigation = memo(({ sectionNumbers, isZweit, currentState }) => {
                       key={section.id}
                       onClick={() => scrollTo(section.id)}
                       style={{
-                        padding: '6px 10px 6px 36px', marginBottom: 1, borderRadius: 8, cursor: 'pointer',
+                        padding: '7px 10px 7px 12px',
+                        marginBottom: 1,
+                        borderRadius: 8,
+                        cursor: 'pointer',
                         background: isSubActive ? 'var(--brand-light)' : 'transparent',
-                        color: isSubActive ? 'var(--brand)' : theme.colors.text.muted,
-                        fontWeight: isSubActive ? 500 : 400, transition: 'all .15s', lineHeight: 1.4,
+                        borderLeft: isSubActive ? '2px solid var(--brand)' : '2px solid var(--line)',
+                        color: isSubActive ? 'var(--brand)' : 'var(--muted)',
+                        fontWeight: isSubActive ? 600 : 400,
+                        transition: 'all .15s ease',
+                        userSelect: 'none',
                       }}
-                      role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && scrollTo(section.id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === 'Enter' && scrollTo(section.id)}
                     >
-                      <div style={{ fontSize: theme.font.xs, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ opacity: 0.4, fontFamily: theme.fontMono, minWidth: 30 }}>{nums.subNumber}</span>
-                        <span style={{ flex: 1 }}>{section.sub}</span>
-                        {subComplete && <span style={{ color: theme.colors.success.badge, fontSize: 10 }}>&#10003;</span>}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 10, opacity: 0.55, minWidth: 28, color: 'var(--muted)' }}>{nums.subNumber}</span>
+                        <span style={{ flex: 1, fontSize: 12, lineHeight: 1.35, color: isSubActive ? 'var(--brand)' : 'var(--ink)' }}>
+                          {section.sub}
+                        </span>
+                        {subComplete && (
+                          <i className="ri-check-line" style={{ fontSize: 12, color: '#10b981', flexShrink: 0 }} />
+                        )}
                       </div>
                       {section.time && (
-                        <div style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, marginTop: 2, paddingLeft: 36, opacity: 0.6 }}>
-                          {section.time}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3, paddingLeft: 34 }}>
+                          <i className="ri-time-line" style={{ fontSize: 10, color: 'var(--muted)', opacity: 0.6 }} />
+                          <span style={{ fontSize: 10, color: 'var(--muted)', opacity: 0.6 }}>{section.time}</span>
                         </div>
                       )}
                     </div>

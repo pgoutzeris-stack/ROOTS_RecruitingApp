@@ -82,13 +82,13 @@ const RichNoteField = memo(({ value, onChange, placeholder, questionContext }) =
         alignItems: 'center',
       }}>
         <button type="button" style={toolbarBtnStyle(false)} onClick={() => execCmd('bold')} title="Fett (Ctrl+B)">
-          <strong>B</strong>
+          <i className="ri-bold" style={{ fontSize: 14, pointerEvents: 'none' }} />
         </button>
         <button type="button" style={toolbarBtnStyle(false)} onClick={() => execCmd('italic')} title="Kursiv (Ctrl+I)">
-          <em>I</em>
+          <i className="ri-italic" style={{ fontSize: 14, pointerEvents: 'none' }} />
         </button>
         <button type="button" style={toolbarBtnStyle(false)} onClick={() => execCmd('insertUnorderedList')} title="Aufzählung">
-          &#8226;
+          <i className="ri-list-unordered" style={{ fontSize: 14, pointerEvents: 'none' }} />
         </button>
 
         {/* Separator */}
