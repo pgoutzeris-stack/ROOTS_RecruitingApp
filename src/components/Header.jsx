@@ -1,12 +1,21 @@
 import { memo, useCallback, useState, useRef, useEffect } from 'react';
 import { theme } from '../theme';
 import { actions } from '../hooks/useInterviewState';
+import DatePicker, { getTodayCET } from './DatePicker';
 
 const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDashboard, onReset, onOpenSettings }) => {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [roundMenuOpen, setRoundMenuOpen] = useState(false);
   const roundMenuRef = useRef(null);
   const meta = erst.meta;
+
+  /* Auto-set today (CET) if datum is empty */
+  useEffect(() => {
+    if (!meta.datum) {
+      dispatch(actions.setMeta('datum', getTodayCET()));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const handler = (e) => {
@@ -23,20 +32,11 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
     [dispatch],
   );
 
-  const formatDate = (iso) => {
-    if (!iso) return '';
-    const [y, m, d] = iso.split('-');
-    if (!y || !m || !d) return iso;
-    return `${d}.${m}.${y}`;
-  };
-
-  const metaFields = [
-    { key: 'kandidat', label: 'Kandidat:in', type: 'text', width: 180 },
-    { key: 'interviewer', label: 'Interviewer:in', type: 'text', width: 180 },
-    { key: 'datum', label: 'Datum', type: 'date', width: 160 },
+  const textFields = [
+    { key: 'kandidat', label: 'Kandidat:in', width: 180 },
+    { key: 'interviewer', label: 'Interviewer:in', width: 180 },
   ];
 
-  /* Shared pill button used throughout header */
   const pillBtn = {
     background: 'var(--bg)',
     border: '1px solid var(--line)',
@@ -73,7 +73,7 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 44, gap: 14 }}>
-        {/* LEFT: logo + wordmark + divider + subtitle */}
+        {/* LEFT: logo + wordmark */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
           <div style={{ width: 28, height: 28, borderRadius: 7, background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
@@ -194,57 +194,40 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
       </div>
 
       {/* META FIELDS ROW */}
-      <div style={{ display: 'flex', gap: 12, paddingTop: '.6rem', borderTop: '1px solid var(--line)', marginTop: '.6rem', flexWrap: 'wrap' }} className="no-print">
-        {metaFields.map(({ key, label, type, width }) => (
+      <div style={{ display: 'flex', gap: 12, paddingTop: '.6rem', borderTop: '1px solid var(--line)', marginTop: '.6rem', flexWrap: 'wrap', alignItems: 'flex-end' }} className="no-print">
+        {textFields.map(({ key, label, width }) => (
           <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.05em' }}>
               {label}
             </label>
-            {type === 'date' ? (
-              /* Fully custom date display; hidden native input triggers the picker */
-              <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', width, height: 32 }}>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '0 10px', height: '100%', width: '100%',
-                  borderRadius: 8, border: '1px solid var(--line)',
-                  background: 'var(--status-bg)', color: meta[key] ? 'var(--ink)' : 'var(--muted)',
-                  fontSize: 13, fontWeight: 500, cursor: 'pointer',
-                  userSelect: 'none', pointerEvents: 'none',
-                }}>
-                  <i className="ri-calendar-line" style={{ fontSize: 14, color: 'var(--muted)', flexShrink: 0 }} />
-                  <span>{meta[key] ? formatDate(meta[key]) : 'TT.MM.JJJJ'}</span>
-                </div>
-                <input
-                  type="date"
-                  value={meta[key]}
-                  onChange={handleMetaChange(key)}
-                  aria-label={label}
-                  style={{
-                    position: 'absolute', top: 0, left: 0,
-                    width: '100%', height: '100%',
-                    opacity: 0, cursor: 'pointer',
-                    border: 'none', background: 'transparent',
-                  }}
-                />
-              </div>
-            ) : (
-              <input
-                type={type}
-                value={meta[key]}
-                onChange={handleMetaChange(key)}
-                placeholder="Eingabe..."
-                aria-label={label}
-                style={{
-                  padding: '6px 10px', borderRadius: 8,
-                  border: '1px solid var(--line)',
-                  background: 'var(--status-bg)', color: 'var(--ink)',
-                  fontSize: 13, fontWeight: 500, width,
-                  outline: 'none', fontFamily: 'inherit',
-                }}
-              />
-            )}
+            <input
+              type="text"
+              value={meta[key]}
+              onChange={handleMetaChange(key)}
+              placeholder="Eingabe..."
+              aria-label={label}
+              style={{
+                padding: '6px 10px', borderRadius: 8, height: 32,
+                border: '1px solid var(--line)',
+                background: 'var(--status-bg)', color: 'var(--ink)',
+                fontSize: 13, fontWeight: 500, width,
+                outline: 'none', fontFamily: 'inherit',
+              }}
+            />
           </div>
         ))}
+
+        {/* Custom DatePicker */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+            Datum
+          </label>
+          <DatePicker
+            value={meta.datum}
+            onChange={(iso) => dispatch(actions.setMeta('datum', iso))}
+            width={160}
+          />
+        </div>
       </div>
     </header>
   );
