@@ -112,7 +112,7 @@ export default function App() {
   }, []);
 
   return (
-    <div style={{ fontFamily: theme.fontFamily, background: theme.colors.bg.base, minHeight: '100vh', color: theme.colors.text.primary }}>
+    <div style={{ fontFamily: theme.fontFamily, background: 'var(--app-bg)', minHeight: '100vh', color: theme.colors.text.primary }}>
       {showSwitchDialog && (
         <RoundSwitchDialog onConfirm={confirmSwitch} onCancel={() => setShowSwitchDialog(false)} />
       )}
@@ -150,7 +150,7 @@ export default function App() {
 
           <Navigation sectionNumbers={sectionNumbers} isZweit={isZweit} currentState={currentState} />
 
-          <div style={{ padding: `${theme.spacing.lg}px ${theme.spacing.xl}px`, maxWidth: 880, margin: '0 auto', marginLeft: 240 }}>
+          <div style={{ padding: '1.5rem 2rem', maxWidth: 900, margin: '0 auto', marginLeft: 248 }}>
             {/* Global Timer */}
             <div style={{ marginBottom: theme.spacing.lg }}>
               <GlobalTimer isZweit={isZweit} />

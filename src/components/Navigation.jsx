@@ -89,15 +89,19 @@ const Navigation = memo(({ sectionNumbers, isZweit, currentState }) => {
   return (
     <nav
       style={{
-        position: 'fixed', left: 0, top: 140, width: 230,
-        maxHeight: 'calc(100vh - 150px)', overflowY: 'auto',
-        padding: `${theme.spacing.lg}px ${theme.spacing.md}px ${theme.spacing.lg}px ${theme.spacing.lg}px`,
+        position: 'fixed', left: '1rem', top: 140, width: 220,
+        maxHeight: 'calc(100vh - 160px)', overflowY: 'auto',
+        padding: '1rem .75rem',
         zIndex: 10,
+        background: 'var(--bg)',
+        border: '1px solid var(--line)',
+        borderRadius: 'var(--radius)',
+        boxShadow: 'var(--shadow)',
       }}
       className="no-print"
       aria-label="Sektions-Navigation"
     >
-      <div style={{ fontSize: theme.font.xs, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: theme.colors.text.muted, marginBottom: theme.spacing.md, paddingLeft: 10 }}>
+      <div style={{ fontSize: theme.font.xs, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.5px', color: theme.colors.text.muted, marginBottom: 12, paddingLeft: 8 }}>
         Kapitel
       </div>
 
@@ -113,11 +117,11 @@ const Navigation = memo(({ sectionNumbers, isZweit, currentState }) => {
             <div
               onClick={() => { setManualExpanded(isExpanded ? null : chapter.main.id); scrollTo(chapter.main.id); }}
               style={{
-                padding: '9px 12px', borderRadius: theme.radius.sm, cursor: 'pointer',
-                background: isChapterActive ? theme.colors.accent.indigoLight : 'transparent',
-                borderLeft: isChapterActive ? `2px solid ${theme.colors.accent.indigo}` : '2px solid transparent',
-                color: isChapterActive ? theme.colors.accent.indigo : theme.colors.text.secondary,
-                fontWeight: 600, transition: `all ${theme.transition.fast}`, lineHeight: 1.4,
+                padding: '8px 10px', borderRadius: 8, cursor: 'pointer',
+                background: isChapterActive ? 'var(--brand-light)' : 'transparent',
+                borderLeft: isChapterActive ? '2px solid var(--brand)' : '2px solid transparent',
+                color: isChapterActive ? 'var(--brand)' : theme.colors.text.secondary,
+                fontWeight: 600, transition: 'all .15s', lineHeight: 1.4,
               }}
               role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && scrollTo(chapter.main.id)}
             >
@@ -138,11 +142,11 @@ const Navigation = memo(({ sectionNumbers, isZweit, currentState }) => {
               {chapterProgress && (
                 <div style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, marginTop: 3, paddingLeft: 32, display: 'flex', alignItems: 'center', gap: 6 }}>
                   {chapter.main.time && !hasSubs && <span style={{ opacity: 0.6 }}>{chapter.main.time}</span>}
-                  <span style={{ color: isComplete ? theme.colors.success.badge : theme.colors.text.muted, fontWeight: isComplete ? 600 : 400, fontFamily: theme.fontMono }}>
+                  <span style={{ color: isComplete ? 'var(--success)' : theme.colors.text.muted, fontWeight: isComplete ? 600 : 400, fontFamily: theme.fontMono }}>
                     {chapterProgress.rated}/{chapterProgress.total}
                   </span>
-                  <div style={{ flex: 1, height: 2, background: 'rgba(0,0,0,0.06)', borderRadius: 1, overflow: 'hidden', maxWidth: 36 }}>
-                    <div style={{ width: `${(chapterProgress.rated / chapterProgress.total) * 100}%`, height: '100%', background: isComplete ? theme.colors.success.badge : theme.colors.accent.indigo, borderRadius: 1, transition: `width ${theme.transition.slow}` }} />
+                  <div style={{ flex: 1, height: 2, background: 'var(--line)', borderRadius: 1, overflow: 'hidden', maxWidth: 36 }}>
+                    <div style={{ width: `${(chapterProgress.rated / chapterProgress.total) * 100}%`, height: '100%', background: isComplete ? 'var(--success)' : 'var(--brand)', borderRadius: 1, transition: 'width .3s' }} />
                   </div>
                 </div>
               )}
@@ -160,10 +164,10 @@ const Navigation = memo(({ sectionNumbers, isZweit, currentState }) => {
                       key={section.id}
                       onClick={() => scrollTo(section.id)}
                       style={{
-                        padding: '7px 12px 7px 40px', marginBottom: 1, borderRadius: theme.radius.sm, cursor: 'pointer',
-                        background: isSubActive ? 'rgba(99, 102, 241, 0.06)' : 'transparent',
-                        color: isSubActive ? theme.colors.accent.indigo : theme.colors.text.muted,
-                        fontWeight: isSubActive ? 500 : 400, transition: `all ${theme.transition.fast}`, lineHeight: 1.4,
+                        padding: '6px 10px 6px 36px', marginBottom: 1, borderRadius: 8, cursor: 'pointer',
+                        background: isSubActive ? 'var(--brand-light)' : 'transparent',
+                        color: isSubActive ? 'var(--brand)' : theme.colors.text.muted,
+                        fontWeight: isSubActive ? 500 : 400, transition: 'all .15s', lineHeight: 1.4,
                       }}
                       role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && scrollTo(section.id)}
                     >

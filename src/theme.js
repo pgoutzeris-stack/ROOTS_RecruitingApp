@@ -1,71 +1,64 @@
-/**
- * ROOTS Interview App – Light Theme
- *
- * Clean white background, dark text, subtle shadows.
- * Designed for fast readability in interview situations.
- */
-
 export const theme = {
   colors: {
     bg: {
-      deep: '#F5F6F8',
-      base: '#FFFFFF',
+      deep: '#f4f7fb',
+      base: '#ffffff',
       elevated: 'rgba(0, 0, 0, 0.02)',
-      card: '#FFFFFF',
-      cardHover: '#F8F9FA',
-      surface: '#F8F9FA',
-      muted: '#F1F3F5',
-      header: 'rgba(255, 255, 255, 0.92)',
+      card: '#ffffff',
+      cardHover: '#f8fafc',
+      surface: '#f8fafc',
+      muted: '#f8fafc',
+      header: '#ffffff',
     },
     border: {
-      glass: 'rgba(0, 0, 0, 0.08)',
-      glassHover: 'rgba(0, 0, 0, 0.14)',
-      active: 'rgba(99, 102, 241, 0.5)',
-      strong: 'rgba(0, 0, 0, 0.12)',
-      subtle: 'rgba(0, 0, 0, 0.05)',
+      glass: '#e2e8f0',
+      glassHover: '#cbd5e1',
+      active: 'rgba(32, 110, 251, 0.5)',
+      strong: '#e2e8f0',
+      subtle: '#f1f5f9',
     },
     text: {
-      primary: '#1A1A2E',
-      secondary: '#4A5568',
-      muted: '#A0AEC0',
-      accent: '#4F46E5',
-      white: '#FFFFFF',
+      primary: '#0f172a',
+      secondary: '#475569',
+      muted: '#94a3b8',
+      accent: '#206efb',
+      white: '#ffffff',
     },
     accent: {
-      indigo: '#6366F1',
-      indigoDark: '#4F46E5',
-      indigoLight: 'rgba(99, 102, 241, 0.08)',
-      indigoGlow: 'rgba(99, 102, 241, 0.12)',
-      indigoMid: '#6366F1',
+      indigo: '#206efb',
+      indigoDark: '#165fd9',
+      indigoLight: '#eff6ff',
+      indigoGlow: 'rgba(32, 110, 251, 0.12)',
+      indigoMid: '#206efb',
     },
     info: {
-      bg: 'rgba(99, 102, 241, 0.06)',
-      border: 'rgba(99, 102, 241, 0.15)',
-      text: '#4F46E5',
+      bg: '#eff6ff',
+      border: 'rgba(32, 110, 251, 0.2)',
+      text: '#165fd9',
     },
     warning: {
-      bg: 'rgba(245, 158, 11, 0.06)',
-      border: 'rgba(245, 158, 11, 0.2)',
-      text: '#B45309',
-      textDark: '#92400E',
+      bg: '#fffbf0',
+      border: '#fbbf24',
+      text: '#b45309',
+      textDark: '#92400e',
     },
     hint: {
-      bg: 'rgba(245, 158, 11, 0.06)',
-      border: 'rgba(245, 158, 11, 0.15)',
-      text: '#B45309',
+      bg: '#fffbf0',
+      border: 'rgba(245, 158, 11, 0.3)',
+      text: '#b45309',
     },
     case: {
       bg: 'rgba(14, 165, 233, 0.06)',
-      border: 'rgba(14, 165, 233, 0.15)',
-      text: '#0369A1',
+      border: 'rgba(14, 165, 233, 0.2)',
+      text: '#0369a1',
     },
     success: {
-      bg: 'rgba(34, 197, 94, 0.06)',
-      text: '#15803D',
-      badge: '#16A34A',
+      bg: 'rgba(16, 185, 129, 0.06)',
+      text: '#10b981',
+      badge: '#10b981',
     },
     danger: {
-      text: '#DC2626',
+      text: '#dc2626',
       bg: 'rgba(220, 38, 38, 0.06)',
     },
     eval: {
@@ -89,20 +82,20 @@ export const theme = {
     hero: 32,
   },
 
-  fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  fontFamily: "'Circular Std', system-ui, sans-serif",
   fontMono: "'JetBrains Mono', ui-monospace, monospace",
 
   shadow: {
-    glow: '0 2px 12px rgba(99, 102, 241, 0.15)',
-    card: '0 1px 3px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04)',
-    elevated: '0 4px 16px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04)',
-    header: '0 1px 3px rgba(0, 0, 0, 0.06)',
+    glow: '0 4px 12px rgba(32, 110, 251, 0.3)',
+    card: '0 6px 20px rgba(15, 23, 42, .08)',
+    elevated: '0 6px 20px rgba(15, 23, 42, .08)',
+    header: '0 6px 20px rgba(15, 23, 42, .08)',
   },
 
   transition: {
-    fast: '150ms cubic-bezier(0.16, 1, 0.3, 1)',
-    normal: '250ms cubic-bezier(0.16, 1, 0.3, 1)',
-    slow: '400ms cubic-bezier(0.16, 1, 0.3, 1)',
+    fast: '150ms ease',
+    normal: '200ms ease',
+    slow: '300ms ease',
   },
 };
 

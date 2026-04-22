@@ -28,60 +28,66 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
 
   const btnStyle = {
     padding: '8px 18px',
-    borderRadius: theme.radius.sm,
+    borderRadius: 999,
     border: `1px solid ${theme.colors.border.glass}`,
     fontSize: theme.font.sm,
-    fontWeight: 600,
-    background: theme.colors.bg.muted,
+    fontWeight: 500,
+    background: theme.colors.bg.base,
     color: theme.colors.text.secondary,
     cursor: 'pointer',
-    transition: `all ${theme.transition.fast}`,
-    letterSpacing: '0.02em',
+    transition: 'all .2s',
   };
 
   const iconBtnStyle = {
-    ...btnStyle,
-    padding: '8px 10px',
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    border: `1px solid ${theme.colors.border.glass}`,
+    background: 'transparent',
+    color: theme.colors.text.muted,
+    cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 36,
-    minHeight: 36,
+    transition: 'all .15s',
   };
 
   return (
     <header
       style={{
         background: theme.colors.bg.header,
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
         color: theme.colors.text.primary,
-        padding: '0 32px',
+        padding: '0 1.25rem',
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        borderBottom: `1px solid ${theme.colors.border.glass}`,
+        border: `1px solid ${theme.colors.border.glass}`,
+        borderRadius: theme.radius.lg,
         boxShadow: theme.shadow.header,
+        margin: '1rem 1rem 0',
+        minHeight: 64,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 68, gap: theme.spacing.md }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 64, gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div
             style={{
-              width: 40, height: 40, borderRadius: theme.radius.md,
-              background: `linear-gradient(135deg, ${theme.colors.accent.indigo}, ${theme.colors.accent.indigoMid})`,
+              width: 28, height: 28, borderRadius: 7,
+              background: theme.colors.accent.indigo,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 18, fontWeight: 800, color: '#fff',
-              boxShadow: theme.shadow.glow, flexShrink: 0,
+              flexShrink: 0,
             }}
           >
-            R
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L3 7l9 5 9-5-9-5zM3 12l9 5 9-5M3 17l9 5 9-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </div>
+          <div style={{ width: 1, height: 16, background: theme.colors.border.glass }} />
           <div>
-            <div style={{ fontSize: theme.font.xl, fontWeight: 800, letterSpacing: '-0.5px', lineHeight: 1.2 }}>
-              ROOTS <span style={{ color: theme.colors.text.secondary, fontWeight: 400 }}>Interviewleitfaden</span>
+            <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.2, color: theme.colors.text.primary }}>
+              ROOTS <span style={{ color: theme.colors.accent.indigo }}>Recruiting</span>
             </div>
-            <div style={{ fontSize: theme.font.sm, color: theme.colors.text.muted, fontWeight: 400, letterSpacing: '0.02em' }}>
+            <div style={{ fontSize: theme.font.xs, color: theme.colors.text.muted, fontWeight: 400, letterSpacing: '0.02em' }}>
               Junior Marketing Consultant &middot; Strukturiertes Interview
             </div>
           </div>
@@ -120,7 +126,7 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
           {/* PDF drucken */}
           <button
             onClick={() => window.print()}
-            style={{ ...iconBtnStyle, background: theme.colors.accent.indigo, border: 'none', color: '#fff', boxShadow: theme.shadow.glow }}
+            style={{ ...iconBtnStyle, background: theme.colors.accent.indigo, border: 'none', color: '#fff', boxShadow: '0 4px 12px rgba(32,110,251,0.3)', borderRadius: 999, width: 'auto', padding: '0 14px', height: 32, fontSize: theme.font.sm, fontWeight: 600, gap: 6, display: 'flex', alignItems: 'center' }}
             aria-label="PDF drucken"
             title="PDF drucken"
           >
@@ -130,7 +136,7 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
           {/* Dashboard – icon only */}
           <button
             onClick={onOpenDashboard}
-            style={{ ...iconBtnStyle, background: theme.colors.accent.indigoLight, borderColor: `${theme.colors.accent.indigo}30`, color: theme.colors.accent.indigo }}
+            style={{ ...iconBtnStyle, background: theme.colors.accent.indigoLight, borderColor: 'rgba(32,110,251,0.2)', color: theme.colors.accent.indigo }}
             aria-label="Dashboard"
             title="Dashboard"
           >
@@ -156,7 +162,7 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 20, paddingBottom: 16, paddingTop: 4, borderTop: `1px solid ${theme.colors.border.subtle}` }}>
+      <div style={{ display: 'flex', gap: 20, paddingBottom: 14, paddingTop: 4, borderTop: `1px solid ${theme.colors.border.glass}` }}>
         {metaFields.map(({ key, label, type, width }) => (
           <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             <label style={{ fontSize: theme.font.xs, fontWeight: 500, color: theme.colors.text.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
