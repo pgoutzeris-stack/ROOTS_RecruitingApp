@@ -158,12 +158,15 @@ export default function App() {
 
             {/* Zweitgespräch: notes from first interviewer */}
             {isZweit && erst.zweitAnmerkung && (
-              <div style={{ background: theme.colors.warning.bg, border: `1px solid ${theme.colors.warning.border}`, borderRadius: theme.radius.lg, padding: theme.spacing.lg, marginBottom: theme.spacing.lg }}>
-                <div style={{ fontSize: theme.font.md, fontWeight: 700, color: theme.colors.warning.text, marginBottom: 6 }}>
-                  Anmerkungen vom Erstinterviewer
-                </div>
-                <div style={{ fontSize: theme.font.body, lineHeight: 1.6, color: theme.colors.warning.textDark, whiteSpace: 'pre-wrap' }}>
-                  {erst.zweitAnmerkung}
+              <div style={{ background: 'var(--brand-light)', border: '1px solid rgba(32,110,251,0.2)', borderRadius: 'var(--radius)', padding: '16px 20px', marginBottom: 20, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <i className="ri-message-3-line" style={{ fontSize: 16, color: 'var(--brand)', marginTop: 2, flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--brand)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.06em' }}>
+                    Anmerkungen vom Erstinterviewer
+                  </div>
+                  <div style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--ink)', whiteSpace: 'pre-wrap' }}>
+                    {erst.zweitAnmerkung}
+                  </div>
                 </div>
               </div>
             )}

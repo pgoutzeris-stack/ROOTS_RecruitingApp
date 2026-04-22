@@ -5,10 +5,6 @@ import { getUnevaluatedBySection } from '../utils/unevaluated';
 import RichNoteField from './RichNoteField';
 import EvalRow from './EvalRow';
 
-/**
- * Shows ALL unmatched unevaluated questions (those without a Zweit section mapping).
- * Displayed at the top of the Zweitgespräch as a fallback.
- */
 const UnevaluatedQuestionsBlock = memo(({ erst, dispatch, currentState }) => {
   const unmatched = useMemo(() => {
     const grouped = getUnevaluatedBySection(erst.ratings || {});
@@ -18,55 +14,109 @@ const UnevaluatedQuestionsBlock = memo(({ erst, dispatch, currentState }) => {
   if (unmatched.length === 0) return null;
 
   return (
-    <div style={{ marginBottom: theme.spacing.xl, padding: theme.spacing.lg, borderRadius: theme.radius.lg, background: theme.colors.warning.bg, border: `1px solid ${theme.colors.warning.border}` }}>
-      <div style={{ fontSize: theme.font.md, fontWeight: 700, color: theme.colors.warning.text, marginBottom: theme.spacing.sm }}>
-        Weitere offene Fragen aus dem Erstgespräch
-      </div>
-      <div style={{ fontSize: theme.font.sm, color: theme.colors.warning.textDark, marginBottom: theme.spacing.md, lineHeight: 1.6 }}>
-        Die folgenden Fragen wurden im Erstgespräch nicht bewertet.
-      </div>
-
-      {unmatched.map(({ question, sectionMain, hasEvals }) => (
-        <div key={question.id} style={{ ...shared.card, marginBottom: theme.spacing.sm, background: '#fff' }}>
-          <div style={{ fontSize: theme.font.xs, fontWeight: 600, color: theme.colors.text.muted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            {sectionMain}
-          </div>
-          <div style={{ fontSize: theme.font.md, lineHeight: 1.8, color: theme.colors.text.primary, fontWeight: 450 }}>
-            {question.text}
-          </div>
-          {question.followUp && (
-            <div style={{ fontSize: theme.font.body, color: theme.colors.text.secondary, marginTop: 6, lineHeight: 1.6, paddingLeft: 14, borderLeft: `2px solid ${theme.colors.border.glass}` }}>
-              {question.followUp}
-            </div>
-          )}
-
-          {erst.notes[question.id] && (
-            <div style={{ marginTop: theme.spacing.sm, padding: '8px 14px', borderRadius: theme.radius.md, background: theme.colors.info.bg, fontSize: theme.font.sm, color: theme.colors.info.text, lineHeight: 1.6, border: `1px solid ${theme.colors.info.border}` }}>
-              <span style={{ fontWeight: 700 }}>Notizen EG:</span>{' '}
-              <span dangerouslySetInnerHTML={{ __html: erst.notes[question.id] }} />
-            </div>
-          )}
-
-          <RichNoteField
-            value={currentState.notes[question.id] || ''}
-            onChange={(val) => dispatch(actions.setNote(question.id, val))}
-            placeholder="Notizen (Zweitgespräch) ..."
-          />
-
-          {hasEvals && question.evaluations?.map((evaluation, evalIdx) => {
-            const er = (erst.ratings[question.id] || {})[evalIdx];
-            return (
-              <EvalRow
-                key={evalIdx}
-                evaluation={evaluation}
-                rating={(currentState.ratings[question.id] || {})[evalIdx]}
-                erstRating={er}
-                onRate={(v) => dispatch(actions.setRating(question.id, evalIdx, v))}
-              />
-            );
-          })}
+    <div style={{
+      marginBottom: 20,
+      borderRadius: 'var(--radius)',
+      border: '1px solid rgba(32,110,251,0.2)',
+      background: 'var(--brand-light)',
+      overflow: 'hidden',
+    }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '14px 20px',
+        borderBottom: '1px solid rgba(32,110,251,0.15)',
+      }}>
+        <div style={{
+          width: 28, height: 28, borderRadius: 8,
+          background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}>
+          <i className="ri-file-list-3-line" style={{ fontSize: 14, color: '#fff' }} />
         </div>
-      ))}
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--brand)' }}>
+            Offene Fragen aus dem Erstgespräch
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 1 }}>
+            {unmatched.length} {unmatched.length === 1 ? 'Frage' : 'Fragen'} wurden im Erstgespräch nicht bewertet
+          </div>
+        </div>
+      </div>
+
+      {/* Questions */}
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {unmatched.map(({ question, sectionMain, hasEvals }) => (
+          <div key={question.id} style={{
+            background: 'var(--bg)',
+            borderRadius: 12,
+            border: '1px solid var(--line)',
+            overflow: 'hidden',
+          }}>
+            {/* Section label */}
+            <div style={{
+              padding: '8px 14px 0',
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              <i className="ri-corner-right-down-line" style={{ fontSize: 11, color: 'var(--muted)' }} />
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                {sectionMain}
+              </span>
+            </div>
+
+            <div style={{ padding: '8px 14px 14px' }}>
+              {/* Question text */}
+              <div style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--ink)', fontWeight: 450, marginBottom: question.followUp ? 8 : 12 }}>
+                {question.text}
+              </div>
+
+              {question.followUp && (
+                <div style={{
+                  fontSize: 13, color: 'var(--muted)', marginBottom: 12, lineHeight: 1.6,
+                  paddingLeft: 12, borderLeft: '2px solid var(--line)',
+                }}>
+                  {question.followUp}
+                </div>
+              )}
+
+              {/* Note from Erst */}
+              {erst.notes[question.id] && (
+                <div style={{
+                  marginBottom: 12, padding: '8px 12px',
+                  borderRadius: 8, background: 'var(--brand-light)',
+                  border: '1px solid rgba(32,110,251,0.2)',
+                  fontSize: 12, color: 'var(--brand)', lineHeight: 1.6,
+                  display: 'flex', gap: 7, alignItems: 'flex-start',
+                }}>
+                  <i className="ri-sticky-note-line" style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }} />
+                  <span>
+                    <strong>Notizen EG:</strong>{' '}
+                    <span dangerouslySetInnerHTML={{ __html: erst.notes[question.id] }} />
+                  </span>
+                </div>
+              )}
+
+              <RichNoteField
+                value={currentState.notes[question.id] || ''}
+                onChange={(val) => dispatch(actions.setNote(question.id, val))}
+                placeholder="Notizen (Zweitgespräch) ..."
+              />
+
+              {hasEvals && question.evaluations?.map((evaluation, evalIdx) => {
+                const er = (erst.ratings[question.id] || {})[evalIdx];
+                return (
+                  <EvalRow
+                    key={evalIdx}
+                    evaluation={evaluation}
+                    rating={(currentState.ratings[question.id] || {})[evalIdx]}
+                    erstRating={er}
+                    onRate={(v) => dispatch(actions.setRating(question.id, evalIdx, v))}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 });

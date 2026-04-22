@@ -1,5 +1,5 @@
 import { memo, useCallback, useState } from 'react';
-import { DIMENSIONS, DIMENSION_COLORS } from '../data/dimensions';
+import { DIMENSIONS, DIMENSION_COLORS, RATING_COLORS } from '../data/dimensions';
 import { DEFAULT_WEIGHTS } from '../utils/scoring';
 import { theme, shared, glassElevated } from '../theme';
 import { actions } from '../hooks/useInterviewState';
@@ -10,6 +10,11 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
   const handleZweitAnmerkung = useCallback((e) => dispatch(actions.setZweitAnmerkung(e.target.value)), [dispatch]);
   const [showWeights, setShowWeights] = useState(false);
   const weights = currentState.weights || DEFAULT_WEIGHTS;
+
+  const ratingColorForAvg = (avg) => {
+    if (avg == null) return null;
+    return RATING_COLORS[Math.max(1, Math.min(5, Math.round(avg)))];
+  };
 
   return (
     <div style={{ marginTop: theme.spacing.xxl, marginBottom: theme.spacing.xxl, paddingBottom: theme.spacing.xxl }}>
@@ -27,13 +32,15 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
           <button
             onClick={() => setShowWeights(p => !p)}
             style={{
-              fontSize: theme.font.xs, color: theme.colors.text.muted,
+              fontSize: theme.font.xs, color: showWeights ? 'var(--brand)' : theme.colors.text.muted,
               background: showWeights ? 'var(--brand-light)' : theme.colors.bg.muted,
               border: `1px solid ${showWeights ? 'rgba(32,110,251,0.3)' : theme.colors.border.glass}`,
               borderRadius: theme.radius.sm, padding: '4px 10px',
               cursor: 'pointer', fontWeight: 500, transition: `all ${theme.transition.fast}`,
+              display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'inherit',
             }}
           >
+            <i className="ri-equalizer-line" style={{ fontSize: 12 }} />
             Gewichtung {showWeights ? 'ausblenden' : 'anpassen'}
           </button>
         </div>
@@ -41,11 +48,13 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
           {Object.keys(DIMENSIONS).map((dk) => {
             const avg = dimScores.averages[dk];
             const cnt = dimScores.perDimension[dk].count;
-            const color = DIMENSION_COLORS[dk];
+            const dimColor = DIMENSION_COLORS[dk];
+            const rColor = ratingColorForAvg(avg);
+            const color = rColor || dimColor;
             const w = weights[dk] ?? 1;
             return (
-              <div key={dk} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: theme.radius.md, background: avg ? `${color}08` : theme.colors.bg.muted, border: `1px solid ${avg ? `${color}20` : 'var(--line)'}`, transition: `all ${theme.transition.normal}` }}>
-                <div style={{ width: 10, height: 10, borderRadius: theme.radius.full, background: color, flexShrink: 0 }} />
+              <div key={dk} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderRadius: theme.radius.md, background: avg ? `${color}09` : theme.colors.bg.muted, border: `1px solid ${avg ? `${color}30` : 'var(--line)'}`, transition: `background .3s ease, border-color .3s ease` }}>
+                <div style={{ width: 10, height: 10, borderRadius: theme.radius.full, background: dimColor, flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <span style={{ fontSize: theme.font.body, fontWeight: 500, color: theme.colors.text.primary }}>{DIMENSIONS[dk]}</span>
                   {showWeights && (
@@ -92,9 +101,12 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
 
       {/* Erst impression in Zweit */}
       {isZweit && erst.gesamtNote && (
-        <div style={{ background: theme.colors.info.bg, border: `1px solid ${theme.colors.info.border}`, borderRadius: theme.radius.lg, padding: theme.spacing.lg, marginBottom: theme.spacing.md }}>
-          <div style={{ fontSize: theme.font.xs, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: theme.colors.info.text, marginBottom: theme.spacing.sm }}>Gesamteindruck Erstgespräch</div>
-          <div style={{ fontSize: theme.font.body, color: theme.colors.info.text, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{erst.gesamtNote}</div>
+        <div style={{ background: 'var(--brand-light)', border: '1px solid rgba(32,110,251,0.2)', borderRadius: 'var(--radius)', padding: theme.spacing.lg, marginBottom: theme.spacing.md, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+          <i className="ri-chat-history-line" style={{ fontSize: 16, color: 'var(--brand)', flexShrink: 0, marginTop: 2 }} />
+          <div>
+            <div style={{ fontSize: theme.font.xs, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--brand)', marginBottom: theme.spacing.sm }}>Gesamteindruck Erstgespräch</div>
+            <div style={{ fontSize: theme.font.body, color: 'var(--ink)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{erst.gesamtNote}</div>
+          </div>
         </div>
       )}
 
@@ -122,7 +134,7 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
                 transition: `all ${theme.transition.fast}`, letterSpacing: '0.01em',
                 boxShadow: sel ? '0 4px 12px rgba(32,110,251,0.3)' : 'none',
               }}>
-                {sel && <span style={{ marginRight: 8 }}>&#10003;</span>}{opt}
+                {sel && <i className="ri-check-line" style={{ marginRight: 6, fontSize: 15 }} />}{opt}
               </button>
             );
           })}
@@ -130,10 +142,13 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
 
         {!isZweit && canSwitchToZweit && (
           <div style={{ marginTop: theme.spacing.lg, borderTop: `1px solid ${theme.colors.border.glass}`, paddingTop: theme.spacing.md }}>
-            <div style={{ fontSize: theme.font.xs, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: theme.colors.warning.text, marginBottom: theme.spacing.sm + 4 }}>
-              Anmerkungen für den Zweitinterviewer
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: theme.spacing.sm + 4 }}>
+              <i className="ri-edit-2-line" style={{ fontSize: 13, color: 'var(--brand)' }} />
+              <span style={{ fontSize: theme.font.xs, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--brand)' }}>
+                Anmerkungen für den Zweitinterviewer
+              </span>
             </div>
-            <textarea placeholder="Was sollte der Zweitinterviewer wissen oder vertiefen?" value={erst.zweitAnmerkung} onChange={handleZweitAnmerkung} rows={3} style={{ ...shared.dashedInput, borderColor: theme.colors.warning.border, background: theme.colors.warning.bg }} />
+            <textarea placeholder="Was sollte der Zweitinterviewer wissen oder vertiefen?" value={erst.zweitAnmerkung} onChange={handleZweitAnmerkung} rows={3} style={{ ...shared.dashedInput, borderColor: 'rgba(32,110,251,0.3)', background: 'var(--brand-light)' }} />
           </div>
         )}
       </div>
