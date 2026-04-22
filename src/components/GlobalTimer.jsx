@@ -63,8 +63,8 @@ const GlobalTimer = memo(({ isZweit }) => {
         gap: 10,
         padding: '8px 16px',
         borderRadius: theme.radius.md,
-        background: isOvertime ? 'rgba(220, 38, 38, 0.06)' : 'rgba(99, 102, 241, 0.06)',
-        border: `1px solid ${isOvertime ? 'rgba(220, 38, 38, 0.15)' : 'rgba(99, 102, 241, 0.15)'}`,
+        background: isOvertime ? 'rgba(220, 38, 38, 0.06)' : 'var(--brand-light)',
+        border: `1px solid ${isOvertime ? 'rgba(220, 38, 38, 0.2)' : 'rgba(32, 110, 251, 0.2)'}`,
         transition: `all ${theme.transition.normal}`,
       }}
       className="no-print"
@@ -107,8 +107,8 @@ const GlobalTimer = memo(({ isZweit }) => {
         style={{
           width: 26, height: 26, borderRadius: theme.radius.sm,
           border: `1px solid ${theme.colors.border.glass}`,
-          background: isRunning ? 'rgba(245, 158, 11, 0.08)' : 'rgba(99, 102, 241, 0.08)',
-          color: isRunning ? '#B45309' : theme.colors.accent.indigo,
+          background: isRunning ? 'rgba(245, 158, 11, 0.08)' : 'var(--brand-light)',
+          color: isRunning ? '#B45309' : 'var(--brand)',
           cursor: 'pointer', fontSize: 11,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 0,

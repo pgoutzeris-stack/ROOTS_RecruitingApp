@@ -150,7 +150,7 @@ export default function App() {
 
           <Navigation sectionNumbers={sectionNumbers} isZweit={isZweit} currentState={currentState} />
 
-          <div style={{ padding: '1.5rem 2rem', maxWidth: 900, margin: '0 auto', marginLeft: 248 }}>
+          <div style={{ padding: '1.25rem 1.25rem 1.25rem 252px', maxWidth: 1100 }}>
             {/* Global Timer */}
             <div style={{ marginBottom: theme.spacing.lg }}>
               <GlobalTimer isZweit={isZweit} />

@@ -89,8 +89,8 @@ const Navigation = memo(({ sectionNumbers, isZweit, currentState }) => {
   return (
     <nav
       style={{
-        position: 'fixed', left: '1rem', top: 140, width: 220,
-        maxHeight: 'calc(100vh - 160px)', overflowY: 'auto',
+        position: 'fixed', left: '1rem', top: 158, width: 220,
+        maxHeight: 'calc(100vh - 175px)', overflowY: 'auto',
         padding: '1rem .75rem',
         zIndex: 10,
         background: 'var(--bg)',

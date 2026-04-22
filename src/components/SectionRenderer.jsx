@@ -19,11 +19,11 @@ const SectionRenderer = memo(({ section, sectionNum, isZweit, erst, zweit, curre
   return (
     <div id={`section-${section.id}`} style={{ marginBottom: theme.spacing.xl + 8 }}>
       {section.main && (
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, borderBottom: `1px solid ${theme.colors.border.strong}`, paddingBottom: 14, marginBottom: theme.spacing.lg }}>
-          <span style={{ fontSize: 32, fontWeight: 800, color: theme.colors.accent.indigo, letterSpacing: '-1px', lineHeight: 1 }}>
-            {sectionNum.mainNumber}.
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--line)', paddingBottom: 14, marginBottom: theme.spacing.lg }}>
+          <span style={{ fontSize: '.75rem', fontWeight: 700, color: 'var(--bg)', background: 'var(--brand)', padding: '.3rem .75rem', borderRadius: 999, letterSpacing: '.5px', flexShrink: 0 }}>
+            {sectionNum.mainNumber}
           </span>
-          <span style={{ fontSize: theme.font.xl, fontWeight: 700, color: theme.colors.text.primary }}>{section.main}</span>
+          <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)' }}>{section.main}</span>
           {section.time && !section.sub && (
             <div style={{ marginLeft: 'auto' }}>
               <SectionTimer
@@ -39,10 +39,10 @@ const SectionRenderer = memo(({ section, sectionNum, isZweit, erst, zweit, curre
       )}
 
       {section.sub && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${theme.colors.border.glass}`, paddingBottom: 12, marginBottom: theme.spacing.lg }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--line)', paddingBottom: 10, marginBottom: theme.spacing.md }}>
           {section.isCase && <input type="checkbox" checked={caseChecked} onChange={() => dispatch(actions.toggleCaseCheck(section.caseKey))} style={shared.checkbox} />}
-          <span style={{ fontSize: theme.font.body, fontWeight: 500, color: theme.colors.text.muted, fontFamily: theme.fontMono }}>{sectionNum.subNumber}</span>
-          <span style={{ fontSize: theme.font.lg, fontWeight: 600, color: theme.colors.text.primary }}>{section.sub}</span>
+          <span style={{ fontSize: '.75rem', fontWeight: 700, color: 'var(--muted)', fontFamily: theme.fontMono }}>{sectionNum.subNumber}</span>
+          <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--ink)' }}>{section.sub}</span>
           {section.time && (
             <div style={{ marginLeft: 'auto' }}>
               <SectionTimer
@@ -119,8 +119,8 @@ const SectionRenderer = memo(({ section, sectionNum, isZweit, erst, zweit, curre
 
       {/* Block-level evaluation (e.g. Erst Block 4 Motivation) */}
       {section.blockEvaluation && (
-        <div style={{ marginTop: theme.spacing.md, padding: theme.spacing.md, background: theme.colors.accent.indigoLight, borderRadius: theme.radius.lg, border: `1px solid ${theme.colors.border.glass}` }}>
-          <div style={{ fontSize: theme.font.sm, fontWeight: 700, color: theme.colors.accent.indigo, marginBottom: theme.spacing.sm, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div style={{ marginTop: theme.spacing.md, padding: theme.spacing.md, background: 'var(--brand-light)', borderRadius: 'var(--radius)', border: '1px solid var(--line)' }}>
+          <div style={{ fontSize: '.75rem', fontWeight: 700, color: 'var(--brand)', marginBottom: theme.spacing.sm, textTransform: 'uppercase', letterSpacing: '.5px' }}>
             Gesamtbewertung Block
           </div>
           {section.blockEvaluation.evaluations.map((ev, evalIdx) => {

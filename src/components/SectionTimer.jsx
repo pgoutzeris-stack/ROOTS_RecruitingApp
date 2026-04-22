@@ -132,8 +132,8 @@ const SectionTimer = memo(({ sectionId, timeStr, timerMinutes, dispatch, setTime
         style={{
           width: 28, height: 28, borderRadius: theme.radius.sm,
           border: `1px solid ${theme.colors.border.glass}`,
-          background: isRunning ? 'rgba(245, 158, 11, 0.08)' : 'rgba(99, 102, 241, 0.08)',
-          color: isRunning ? '#B45309' : theme.colors.accent.indigo,
+          background: isRunning ? 'rgba(245, 158, 11, 0.08)' : 'var(--brand-light)',
+          color: isRunning ? '#B45309' : 'var(--brand)',
           cursor: 'pointer', fontSize: 12,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 0, transition: `all ${theme.transition.fast}`,

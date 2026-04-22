@@ -5,9 +5,9 @@ import { DIMENSIONS, DIMENSION_COLORS } from '../data/dimensions';
 import { calculateDimensionScores, calculateWeightedOverall, mergeRatings, DEFAULT_WEIGHTS } from '../utils/scoring';
 
 const STATUS_COLORS = {
-  'Zum Zweitgespräch einladen': { bg: 'rgba(99, 102, 241, 0.08)', text: '#4F46E5', border: 'rgba(99, 102, 241, 0.2)' },
+  'Zum Zweitgespräch einladen': { bg: 'var(--brand-light)', text: 'var(--brand)', border: 'rgba(32, 110, 251, 0.2)' },
   'Absage': { bg: 'rgba(220, 38, 38, 0.08)', text: '#DC2626', border: 'rgba(220, 38, 38, 0.2)' },
-  'Zum Case Interview einladen': { bg: 'rgba(34, 197, 94, 0.08)', text: '#16A34A', border: 'rgba(34, 197, 94, 0.2)' },
+  'Zum Case Interview einladen': { bg: 'rgba(16, 185, 129, 0.08)', text: '#10b981', border: 'rgba(16, 185, 129, 0.2)' },
 };
 
 function getCandidateScore(data) {

@@ -13,8 +13,9 @@ const GesamtEvaluation = memo(({ dimScores, isZweit, erst, currentState, dispatc
 
   return (
     <div style={{ marginTop: theme.spacing.xxl, marginBottom: theme.spacing.xxl, paddingBottom: theme.spacing.xxl }}>
-      <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-0.5px', borderBottom: `1px solid ${theme.colors.border.strong}`, paddingBottom: 14, marginBottom: theme.spacing.lg, color: theme.colors.text.primary }}>
-        Gesamtevaluation
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--line)', paddingBottom: 14, marginBottom: theme.spacing.lg }}>
+        <span style={{ fontSize: '.75rem', fontWeight: 700, color: 'var(--bg)', background: 'var(--brand)', padding: '.3rem .75rem', borderRadius: 999 }}>∑</span>
+        <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)' }}>Gesamtevaluation</span>
       </div>
 
       {/* Dimension scores */}
