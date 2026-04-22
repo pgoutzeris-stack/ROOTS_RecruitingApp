@@ -33,6 +33,8 @@ const Navigation = memo(({ sectionNumbers, isZweit, currentState }) => {
       const el = document.getElementById(`section-${s.id}`);
       if (el) observerRef.current.observe(el);
     });
+    const gesamtEl = document.getElementById('section-gesamtevaluation');
+    if (gesamtEl) observerRef.current.observe(gesamtEl);
     return () => observerRef.current?.disconnect();
   }, [isZweit, sections]);
 
@@ -117,6 +119,57 @@ const Navigation = memo(({ sectionNumbers, isZweit, currentState }) => {
           Kapitel
         </span>
       </div>
+
+      {/* Gesamtevaluation – always at top, above chapters */}
+      {(() => {
+        const isActive = activeId === 'section-gesamtevaluation';
+        const isDone = !!currentState.recommendation;
+        return (
+          <div style={{ marginBottom: 4 }}>
+            <div
+              onClick={() => {
+                const el = document.getElementById('section-gesamtevaluation');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              style={{
+                padding: '8px 10px',
+                borderRadius: 10,
+                cursor: 'pointer',
+                background: isActive ? 'var(--brand-light)' : 'transparent',
+                transition: 'background .15s ease',
+                userSelect: 'none',
+              }}
+              role="button"
+              tabIndex={0}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                <span style={{
+                  fontSize: 11, fontWeight: 700,
+                  color: isActive ? 'var(--brand)' : 'var(--muted)',
+                  flexShrink: 0, minWidth: 18,
+                }}>
+                  ∑
+                </span>
+                <span style={{
+                  flex: 1, fontSize: 13, fontWeight: isActive ? 700 : 500,
+                  color: isActive ? 'var(--brand)' : 'var(--ink)',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  lineHeight: 1.3,
+                }}>
+                  Gesamtevaluation
+                </span>
+                {isDone
+                  ? <i className="ri-check-line" style={{ fontSize: 13, color: '#10b981', flexShrink: 0 }} />
+                  : <i className="ri-bar-chart-2-line" style={{ fontSize: 13, color: 'var(--muted)', opacity: 0.5, flexShrink: 0 }} />
+                }
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Divider */}
+      <div style={{ height: 1, background: 'var(--line)', margin: '4px 10px 8px' }} />
 
       {chapters.map((chapter) => {
         const isExpanded = expandedChapter === chapter.main.id;

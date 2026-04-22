@@ -190,14 +190,16 @@ export default function App() {
             ))}
 
             {/* Overall evaluation */}
-            <GesamtEvaluation
-              dimScores={dimScores}
-              isZweit={isZweit}
-              erst={erst}
-              currentState={currentState}
-              dispatch={dispatch}
-              canSwitchToZweit={canSwitchToZweit}
-            />
+            <div id="section-gesamtevaluation">
+              <GesamtEvaluation
+                dimScores={dimScores}
+                isZweit={isZweit}
+                erst={erst}
+                currentState={currentState}
+                dispatch={dispatch}
+                canSwitchToZweit={canSwitchToZweit}
+              />
+            </div>
           </div>
         </>
       )}

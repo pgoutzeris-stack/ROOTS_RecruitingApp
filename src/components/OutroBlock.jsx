@@ -22,7 +22,7 @@ const OutroBlock = memo(({ isZweit, kandidat, abschlussNotes, dispatch, outroFie
             {fields.map((field) => (
               <div key={field}>
                 <div style={{ fontSize: theme.font.xs, fontWeight: 600, color: theme.colors.text.muted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{field}</div>
-                <textarea rows={1} value={abschlussNotes[field] || ''} onChange={(e) => dispatch(actions.setAbschlussNote(field, e.target.value))} style={{ ...shared.dashedInput, padding: '8px 12px', fontSize: theme.font.sm }} />
+                <textarea rows={1} value={abschlussNotes[field] || ''} onChange={(e) => dispatch(actions.setAbschlussNote(field, e.target.value))} style={{ ...shared.dashedInput, padding: '8px 12px', fontSize: theme.font.sm, background: 'var(--bg)', border: '1px solid var(--line)' }} />
               </div>
             ))}
           </div>
