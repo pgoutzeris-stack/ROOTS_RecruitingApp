@@ -1,5 +1,5 @@
 import { memo, useState, useCallback } from 'react';
-import { DIMENSION_COLORS } from '../data/dimensions';
+import { DIMENSION_COLORS, RATING_COLORS } from '../data/dimensions';
 import { theme } from '../theme';
 import Badge from './Badge';
 
@@ -9,6 +9,7 @@ const EvalRow = memo(({ evaluation, rating, erstRating, onRate }) => {
   const displayRating = rating != null ? rating : erstRating;
   const isInherited = rating == null && erstRating != null;
   const hasAnchors = evaluation.anchor1 || evaluation.anchor3 || evaluation.anchor5;
+  const ratingColor = displayRating != null ? RATING_COLORS[displayRating] : null;
 
   const handleKeyDown = useCallback(
     (e) => {
@@ -23,12 +24,12 @@ const EvalRow = memo(({ evaluation, rating, erstRating, onRate }) => {
     <div
       style={{
         marginTop: theme.spacing.sm,
-        border: `1px solid ${theme.colors.border.glass}`,
+        border: `1px solid ${ratingColor ? ratingColor + '40' : theme.colors.border.glass}`,
         borderRadius: theme.radius.md,
         overflow: 'hidden',
-        background: theme.colors.bg.card,
+        background: ratingColor ? `${ratingColor}09` : theme.colors.bg.card,
         boxShadow: theme.shadow.card,
-        transition: `all ${theme.transition.fast}`,
+        transition: `background .3s ease, border-color .3s ease`,
       }}
       tabIndex={0}
       onKeyDown={handleKeyDown}
@@ -49,8 +50,9 @@ const EvalRow = memo(({ evaluation, rating, erstRating, onRate }) => {
           <span style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             width: 28, height: 28, borderRadius: theme.radius.sm,
-            border: `2px solid ${color}`, background: `${color}15`,
-            fontSize: theme.font.body, fontWeight: 700, color,
+            border: `2px solid ${ratingColor}`, background: `${ratingColor}18`,
+            fontSize: theme.font.body, fontWeight: 700, color: ratingColor,
+            transition: 'all .3s ease',
           }}>
             {displayRating}
           </span>

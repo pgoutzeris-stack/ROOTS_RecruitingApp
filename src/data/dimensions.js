@@ -23,6 +23,14 @@ export const DIMENSIONS = {
   team:          'Teamfähigkeit',
 };
 
+export const RATING_COLORS = {
+  1: '#DC2626',
+  2: '#EA580C',
+  3: '#D97706',
+  4: '#059669',
+  5: '#10b981',
+};
+
 export const DIMENSION_COLORS = {
   ownership:     '#f59e0b',  // amber
   analytik:      '#6366f1',  // indigo

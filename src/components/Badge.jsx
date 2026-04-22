@@ -1,14 +1,6 @@
 import { memo } from 'react';
-import { DIMENSIONS, DIMENSION_COLORS } from '../data/dimensions';
+import { DIMENSIONS, DIMENSION_COLORS, RATING_COLORS } from '../data/dimensions';
 import { theme } from '../theme';
-
-const RATING_COLORS = {
-  1: '#DC2626',
-  2: '#EA580C',
-  3: '#D97706',
-  4: '#059669',
-  5: '#10b981',
-};
 
 const Badge = memo(({ dimension, rating }) => {
   const color = rating != null ? RATING_COLORS[rating] : DIMENSION_COLORS[dimension];

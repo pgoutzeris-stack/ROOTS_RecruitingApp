@@ -23,6 +23,13 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
     [dispatch],
   );
 
+  const formatDate = (iso) => {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    if (!y || !m || !d) return iso;
+    return `${d}.${m}.${y}`;
+  };
+
   const metaFields = [
     { key: 'kandidat', label: 'Kandidat:in', type: 'text', width: 180 },
     { key: 'interviewer', label: 'Interviewer:in', type: 'text', width: 180 },
@@ -194,30 +201,31 @@ const Header = memo(({ erst, canSwitchToZweit, dispatch, onExportJson, onOpenDas
               {label}
             </label>
             {type === 'date' ? (
-              /* Custom date wrapper — native picker indicator hidden via CSS class */
-              <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', width }}>
+              /* Fully custom date display; hidden native input triggers the picker */
+              <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', width, height: 32 }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '0 10px', height: '100%', width: '100%',
+                  borderRadius: 8, border: '1px solid var(--line)',
+                  background: 'var(--status-bg)', color: meta[key] ? 'var(--ink)' : 'var(--muted)',
+                  fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                  userSelect: 'none', pointerEvents: 'none',
+                }}>
+                  <i className="ri-calendar-line" style={{ fontSize: 14, color: 'var(--muted)', flexShrink: 0 }} />
+                  <span>{meta[key] ? formatDate(meta[key]) : 'TT.MM.JJJJ'}</span>
+                </div>
                 <input
                   type="date"
-                  className="roots-date-input"
                   value={meta[key]}
                   onChange={handleMetaChange(key)}
                   aria-label={label}
                   style={{
-                    width: '100%',
-                    padding: '6px 30px 6px 10px',
-                    borderRadius: 8,
-                    border: '1px solid var(--line)',
-                    background: 'var(--status-bg)',
-                    color: 'var(--ink)',
-                    fontSize: 13,
-                    fontWeight: 500,
-                    fontFamily: 'inherit',
-                    outline: 'none',
-                    cursor: 'pointer',
-                    position: 'relative',
+                    position: 'absolute', top: 0, left: 0,
+                    width: '100%', height: '100%',
+                    opacity: 0, cursor: 'pointer',
+                    border: 'none', background: 'transparent',
                   }}
                 />
-                <i className="ri-calendar-line" style={{ position: 'absolute', right: 8, pointerEvents: 'none', color: 'var(--muted)', fontSize: 14 }} />
               </div>
             ) : (
               <input
