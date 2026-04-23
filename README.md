@@ -1,16 +1,22 @@
-# React + Vite
+# ROOTS Recruiting App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Dieses Repository enthält die App **als eine statische `index.html`** (gebündelter React-Build) und das **Supabase-Schema** in `supabase-schema.sql`.
 
-Currently, two official plugins are available:
+## Supabase
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- SQL im Supabase-Dashboard (SQL-Editor) ausführen: `supabase-schema.sql`
+- In **`index.html`** ganz am Anfang im `<body>` den Block `window.__ROOTS__` mit **Projekt-URL** und **Anon-Key** füllen (dann committen, oder lokal in der Datei setzen, ohne die Keys öffentlich zu teilen, wenn das Repo öffentlich ist)
 
-## React Compiler
+## Lokal testen
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Im Projektordner:
 
-## Expanding the ESLint configuration
+```bash
+python3 -m http.server 8080
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Browser: `http://localhost:8080` — `index.html` wird als Startseite ausgeliefert.
+
+## Anpassungen am Code
+
+Falls du die App wieder entwickeln willst, nimm eine **separate Branch** mit der alten Vite-Struktur (oder ein Archiv) – dieses `main` ist bewusst **nur** die gebündelte `index.html`.
