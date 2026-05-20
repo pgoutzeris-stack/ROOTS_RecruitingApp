@@ -65,7 +65,7 @@
     /* ─── Header (Onboarding-Stil) ─── */
     .sop-header {
       display:flex; align-items:center; justify-content:space-between;
-      padding:.8rem 1.5rem; min-height:56px;
+      padding:.8rem 1.5rem; min-height:64px;
       background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
       box-shadow:var(--shadow); gap:1.5rem;
       max-width:1400px; width:calc(100% - 3rem); margin:0 auto 1rem; position:relative; z-index:50;
@@ -87,6 +87,42 @@
     .app-container { max-width: 1400px; width: calc(100% - 3rem); margin: 0 auto; }
     .view { display: none; }
     .view.active { display: block; }
+
+    /* ─── Hauptnavigation ─── */
+    .app-nav { display: flex; gap: 6px; max-width: 1400px; width: calc(100% - 3rem); margin: 0 auto .85rem; flex-wrap: wrap; }
+    .app-nav-btn { padding: .5rem 1.1rem; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); font-family: inherit; font-size: .88rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .15s; display: inline-flex; align-items: center; gap: 8px; }
+    .app-nav-btn:hover { border-color: var(--brand); color: var(--brand); }
+    .app-nav-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); box-shadow: 0 4px 12px rgba(32,110,251,.25); }
+
+    /* ─── Bewerbermanagement ─── */
+    .bew-layout { display: grid; grid-template-columns: 340px 1fr; gap: 1.25rem; align-items: start; }
+    .bew-list-panel { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; max-height: calc(100vh - 220px); display: flex; flex-direction: column; }
+    .bew-list-head { padding: 1rem 1.1rem; border-bottom: 1px solid var(--line); }
+    .bew-list-scroll { overflow-y: auto; flex: 1; }
+    .bew-item { padding: .85rem 1.1rem; border-bottom: 1px solid var(--line); cursor: pointer; transition: background .15s; }
+    .bew-item:hover { background: var(--status-bg); }
+    .bew-item.active { background: var(--brand-light); border-left: 3px solid var(--brand); }
+    .bew-item-name { font-weight: 700; font-size: .95rem; margin-bottom: .2rem; }
+    .bew-item-meta { font-size: .78rem; color: var(--muted); }
+    .bew-status { display: inline-block; font-size: .7rem; font-weight: 700; padding: .2rem .5rem; border-radius: 999px; margin-top: .35rem; }
+    .bew-status--new { background: var(--status-bg); color: var(--muted); }
+    .bew-status--erst { background: var(--brand-light); color: var(--brand); }
+    .bew-status--zweit { background: #ede9fe; color: #5b21b6; }
+    .bew-status--hired { background: #d0f4ee; color: #0f6b57; }
+    .bew-status--rejected { background: #fee2e2; color: #b91c1c; }
+    .bew-detail { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.5rem; }
+    .bew-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem 1rem; }
+    .bew-field { display: flex; flex-direction: column; gap: .3rem; }
+    .bew-field.full { grid-column: 1 / -1; }
+    .bew-field label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+    .bew-field input, .bew-field select, .bew-field textarea { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .9rem; color: var(--ink); background: var(--bg); outline: none; }
+    .bew-field input:focus, .bew-field select:focus, .bew-field textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
+    .bew-field textarea { min-height: 72px; resize: vertical; }
+    .bew-docs { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
+    .bew-doc-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: .65rem .85rem; background: var(--status-bg); border-radius: 10px; margin-bottom: .5rem; }
+    .bew-upload-zone { border: 2px dashed var(--line); border-radius: 12px; padding: 1.25rem; text-align: center; color: var(--muted); font-size: .88rem; cursor: pointer; transition: border-color .2s; margin-top: .65rem; }
+    .bew-upload-zone:hover { border-color: var(--brand); color: var(--brand); }
+    @media (max-width: 960px) { .bew-layout { grid-template-columns: 1fr; } .bew-list-panel { max-height: 320px; } .bew-form-grid { grid-template-columns: 1fr; } }
 
     /* ─── Section card (gemeinsam) ─── */
     .panel { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.5rem; margin-bottom: 1.25rem; }
@@ -364,12 +400,6 @@
   </div>
   <div class="header-right">
     <span id="save-badge" class="save-badge save-badge--idle" style="display:none"><i class="fa-solid fa-cloud-arrow-up"></i><span id="save-badge-text">Gespeichert</span></span>
-    <button class="btn-header-action" id="btn-show-dashboard" title="Dashboard">
-      <i class="fa-solid fa-grip"></i> Dashboard
-    </button>
-    <button class="btn-header-action btn-primary-header" id="btn-new-interview" title="Neues Interview">
-      <i class="fa-solid fa-plus"></i> Neu
-    </button>
     <div class="header-sep"></div>
     <div id="roots-header-avatar" style="cursor:pointer" title="Profil"></div>
     <span id="roots-header-name" style="font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap"></span>
@@ -380,8 +410,49 @@
   </div>
 </header>
 
+<nav class="app-nav" id="app-nav">
+  <button type="button" class="app-nav-btn" data-view="bewerber"><i class="fa-solid fa-users"></i> Bewerber</button>
+  <button type="button" class="app-nav-btn active" data-view="dashboard"><i class="fa-solid fa-grip"></i> Interviews</button>
+  <button type="button" class="app-nav-btn" data-view="interview"><i class="fa-solid fa-clipboard-list"></i> Interview führen</button>
+  <button type="button" class="app-nav-btn" id="nav-new-interview" style="margin-left:auto"><i class="fa-solid fa-plus"></i> Neues Interview</button>
+</nav>
+
 <!-- ─── App Container ─── -->
 <div class="app-container">
+
+  <!-- BEWERBER VIEW -->
+  <div class="view" id="view-bewerber">
+    <div class="dash-greeting">
+      <h1>Bewerbermanagement</h1>
+      <p>Stammdaten, CVs und alle relevanten Informationen pro Kandidat:in.</p>
+    </div>
+    <div class="dash-toolbar">
+      <div class="dash-search-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="bew-search" class="dash-search" placeholder="Name oder E-Mail suchen…">
+      </div>
+      <select id="bew-filter-status" class="dash-filter">
+        <option value="all">Alle Status</option>
+        <option value="new">Neu</option>
+        <option value="screening">Screening</option>
+        <option value="erst">Erstgespräch</option>
+        <option value="zweit">Zweitgespräch</option>
+        <option value="offer">Angebot</option>
+        <option value="hired">Eingestellt</option>
+        <option value="rejected">Abgelehnt</option>
+      </select>
+      <button class="btn-primary" id="bew-new-btn"><i class="fa-solid fa-user-plus"></i> Neuer Bewerber</button>
+    </div>
+    <div class="bew-layout">
+      <div class="bew-list-panel">
+        <div class="bew-list-head"><strong id="bew-count">0 Bewerber</strong></div>
+        <div class="bew-list-scroll" id="bew-list"></div>
+      </div>
+      <div class="bew-detail" id="bew-detail">
+        <p style="color:var(--muted);text-align:center;padding:3rem 1rem">Wähle einen Bewerber aus der Liste oder lege einen neuen an.</p>
+      </div>
+    </div>
+  </div>
 
   <!-- DASHBOARD VIEW -->
   <div class="view active" id="view-dashboard">
@@ -547,6 +618,7 @@ document.getElementById('roots-logout-btn').addEventListener('click', () => sb.a
 function onAuthReady() {
   window.RootsUser._loadAndMount(sb);
   loadAllCandidates();
+  loadAllApplicants();
 }
 </script>
 
@@ -811,15 +883,29 @@ const INITIAL_STATE = {
   cultureFitAnswers: {},
 };
 
+const recruitingDb = () => sb.schema('recruiting');
+
 let state = {
   erst: deepClone(INITIAL_STATE),
   zweit: deepClone(INITIAL_STATE),
   view: 'dashboard',
   candidates: [],
+  applicants: [],
+  selectedApplicantId: null,
+  bewFilterText: '',
+  bewFilterStatus: 'all',
   filterText: '',
   filterRunde: 'all',
   sortBy: 'date_desc',
 };
+
+let renderInterviewTimer = null;
+function scheduleRenderInterview(partial = false) {
+  if (renderInterviewTimer) clearTimeout(renderInterviewTimer);
+  renderInterviewTimer = setTimeout(() => {
+    if (state.view === 'interview') renderInterview(partial);
+  }, 80);
+}
 
 function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
 function genSessionId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
@@ -834,13 +920,29 @@ function dispatch(action) {
     : currentSlice();
   applyAction(slice, action);
 
-  // Meta-actions update both slices
   if (action.type === 'SET_META') {
     state.erst.meta[action.field] = action.value;
     state.zweit.meta[action.field] = action.value;
+    updateInterviewSubtitle();
   }
   scheduleSave();
-  renderInterview(true);
+  if (state.view === 'interview' && action.type !== 'SET_META') {
+    scheduleRenderInterview(true);
+  }
+}
+
+function setMetaField(field, value) {
+  state.erst.meta[field] = value;
+  state.zweit.meta[field] = value;
+  updateInterviewSubtitle();
+  scheduleSave();
+}
+
+function updateInterviewSubtitle() {
+  const k = state.erst.meta.kandidat;
+  document.getElementById('header-subtitle').textContent = k
+    ? `Interview · ${k}`
+    : (state.view === 'interview' ? 'Interview führen' : document.getElementById('header-subtitle').textContent);
 }
 
 function applyAction(s, a) {
@@ -955,9 +1057,11 @@ async function saveCurrent() {
   if (!row.kandidat) return;
   setSaveStatus('saving');
   try {
-    savingPromise = sb.from('interviews').upsert(row, { onConflict: 'session_id' });
+    savingPromise = recruitingDb().from('interviews').upsert(row, { onConflict: 'session_id' });
     await savingPromise;
+    await syncApplicantFromInterview(row);
     setSaveStatus('saved');
+    if (state.view === 'bewerber') renderBewerberDetail(state.selectedApplicantId);
   } catch (e) {
     setSaveStatus('idle', 'Offline');
   } finally {
@@ -967,7 +1071,7 @@ async function saveCurrent() {
 
 async function loadAllCandidates() {
   try {
-    const { data, error } = await sb.from('interviews').select('*').order('updated_at', { ascending: false });
+    const { data, error } = await recruitingDb().from('interviews').select('*').order('updated_at', { ascending: false });
     if (error) throw error;
     state.candidates = data || [];
   } catch (e) {
@@ -979,7 +1083,7 @@ async function loadAllCandidates() {
 async function deleteCandidate(sessionId) {
   if (!confirm('Dieses Interview wirklich löschen? Das kann nicht rückgängig gemacht werden.')) return;
   try {
-    await sb.from('interviews').delete().eq('session_id', sessionId);
+    await recruitingDb().from('interviews').delete().eq('session_id', sessionId);
     state.candidates = state.candidates.filter(c => c.session_id !== sessionId);
     renderDashboard();
     toast('Interview gelöscht');
@@ -1006,22 +1110,28 @@ function newInterview() {
   state.zweit.meta.sessionId = sid;
   state.erst.meta.datum = new Date().toISOString().slice(0,10);
   state.zweit.meta.datum = state.erst.meta.datum;
-  // Prefill interviewer with logged-in user
   const p = window.RootsUser._p;
   if (p && p.full_name) {
     state.erst.meta.interviewer = p.full_name;
     state.zweit.meta.interviewer = p.full_name;
   }
   switchView('interview');
+  toast('Neues Interview gestartet – alle Kapitel sind unten verfügbar.');
 }
 
 function switchView(v) {
   state.view = v;
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-  document.getElementById('view-' + v).classList.add('active');
-  document.getElementById('header-subtitle').textContent = v === 'dashboard' ? 'Dashboard' : 'Interview-Leitfaden';
+  const viewEl = document.getElementById('view-' + v);
+  if (viewEl) viewEl.classList.add('active');
+  document.querySelectorAll('.app-nav-btn[data-view]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === v);
+  });
+  const subtitles = { bewerber: 'Bewerbermanagement', dashboard: 'Interview-Übersicht', interview: 'Interview führen' };
+  document.getElementById('header-subtitle').textContent = subtitles[v] || 'ROOTS Recruiting';
   if (v === 'dashboard') renderDashboard();
   else if (v === 'interview') renderInterview();
+  else if (v === 'bewerber') renderBewerberList();
   window.scrollTo(0, 0);
 }
 
@@ -1399,6 +1509,245 @@ function bindMainHandlers() {
 }
 
 /* ──────────────────────────────────────────────
+   Bewerbermanagement
+   ────────────────────────────────────────────── */
+const PIPELINE_LABELS = {
+  new: 'Neu', screening: 'Screening', erst: 'Erstgespräch', zweit: 'Zweitgespräch',
+  offer: 'Angebot', hired: 'Eingestellt', rejected: 'Abgelehnt', withdrawn: 'Zurückgezogen',
+};
+
+function abschlussToApplicant(abs) {
+  if (!abs) return {};
+  return {
+    workload_expectation: abs['Arbeitsaufwand'] || '',
+    home_office_preference: abs['Home Office'] || '',
+    travel_willingness: abs['Reisetätigkeit'] || '',
+    availability_start: abs['Einstiegsdatum'] || null,
+    salary_current: abs['Aktuelles Gehalt'] || '',
+    salary_expected: abs['Gehaltswunsch'] || '',
+    expectations_12_months: abs['Erwartungen 12 Mon.'] || '',
+  };
+}
+
+function pipelineFromInterview(meta, recommendation) {
+  if (recommendation === 'Einstellen') return 'offer';
+  if (recommendation === 'Nicht einstellen' || recommendation === 'Nicht passend') return 'rejected';
+  if (recommendation === 'Zum Zweitgespräch einladen') return 'zweit';
+  if (meta?.runde === 'zweit') return 'zweit';
+  if (meta?.kandidat) return 'erst';
+  return 'new';
+}
+
+async function loadAllApplicants() {
+  try {
+    const { data, error } = await recruitingDb().from('applicants').select('*, applicant_documents(*)').order('updated_at', { ascending: false });
+    if (error) throw error;
+    state.applicants = data || [];
+  } catch (e) {
+    console.error('Applicants load error', e);
+    state.applicants = [];
+  }
+  if (state.view === 'bewerber') renderBewerberList();
+}
+
+async function syncApplicantFromInterview(row) {
+  if (!row.session_id || !row.kandidat) return;
+  const slice = row.runde === 'zweit' ? (row.zweit || {}) : (row.erst || {});
+  const abs = abschlussToApplicant(slice.abschlussNotes || {});
+  const payload = {
+    session_id: row.session_id,
+    full_name: row.kandidat,
+    interview_runde: row.runde || 'erst',
+    recommendation_last: row.recommendation || slice.recommendation || null,
+    weighted_score: row.weighted_overall,
+    pipeline_status: pipelineFromInterview(row, row.recommendation || slice.recommendation),
+    updated_by: window.RootsUser._uid || null,
+    ...abs,
+  };
+  const existing = state.applicants.find(a => a.session_id === row.session_id);
+  if (existing) {
+    await recruitingDb().from('applicants').update(payload).eq('id', existing.id);
+  } else {
+    payload.created_by = window.RootsUser._uid || null;
+    payload.role_title = 'Junior Marketing Consultant';
+    await recruitingDb().from('applicants').upsert(payload, { onConflict: 'session_id' });
+  }
+  await loadAllApplicants();
+}
+
+function renderBewerberList() {
+  const list = document.getElementById('bew-list');
+  let items = state.applicants.slice();
+  if (state.bewFilterText) {
+    const f = state.bewFilterText.toLowerCase();
+    items = items.filter(a => (a.full_name||'').toLowerCase().includes(f) || (a.email||'').toLowerCase().includes(f));
+  }
+  if (state.bewFilterStatus !== 'all') items = items.filter(a => a.pipeline_status === state.bewFilterStatus);
+  document.getElementById('bew-count').textContent = `${items.length} Bewerber`;
+  if (!items.length) {
+    list.innerHTML = '<p style="padding:1.5rem;color:var(--muted);font-size:.9rem;text-align:center">Noch keine Bewerber angelegt.</p>';
+    return;
+  }
+  list.innerHTML = items.map(a => {
+    const st = a.pipeline_status || 'new';
+    return `<div class="bew-item ${a.id === state.selectedApplicantId ? 'active' : ''}" data-id="${a.id}">
+      <div class="bew-item-name">${escapeHtml(a.full_name || 'Unbenannt')}</div>
+      <div class="bew-item-meta">${escapeHtml(a.position_applied || a.role_title || '–')}</div>
+      <span class="bew-status bew-status--${st}">${PIPELINE_LABELS[st] || st}</span>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.bew-item').forEach(el => {
+    el.addEventListener('click', () => {
+      state.selectedApplicantId = el.dataset.id;
+      renderBewerberList();
+      renderBewerberDetail(el.dataset.id);
+    });
+  });
+}
+
+function renderBewerberDetail(id) {
+  const detail = document.getElementById('bew-detail');
+  const a = state.applicants.find(x => x.id === id);
+  if (!a) {
+    detail.innerHTML = '<p style="color:var(--muted);text-align:center;padding:3rem 1rem">Wähle einen Bewerber aus der Liste oder lege einen neuen an.</p>';
+    return;
+  }
+  const docs = a.applicant_documents || [];
+  detail.innerHTML = `
+    <div class="panel-h" style="margin-bottom:1.25rem">
+      <div class="panel-title"><i class="fa-solid fa-user"></i> ${escapeHtml(a.full_name)}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${a.session_id ? `<button class="btn-secondary" id="bew-open-interview"><i class="fa-solid fa-clipboard-list"></i> Interview öffnen</button>` : ''}
+        <button class="btn-primary" id="bew-save-btn"><i class="fa-solid fa-floppy-disk"></i> Speichern</button>
+        <button class="btn-danger" id="bew-delete-btn"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+    <form id="bew-form" class="bew-form-grid">
+      <div class="bew-field"><label>Vollständiger Name *</label><input name="full_name" value="${escapeHtml(a.full_name||'')}" required></div>
+      <div class="bew-field"><label>E-Mail</label><input name="email" type="email" value="${escapeHtml(a.email||'')}"></div>
+      <div class="bew-field"><label>Telefon</label><input name="phone" value="${escapeHtml(a.phone||'')}"></div>
+      <div class="bew-field"><label>LinkedIn</label><input name="linkedin_url" value="${escapeHtml(a.linkedin_url||'')}"></div>
+      <div class="bew-field"><label>Bewerbung auf Stelle</label><input name="position_applied" value="${escapeHtml(a.position_applied||'')}"></div>
+      <div class="bew-field"><label>Rolle / Position</label><input name="role_title" value="${escapeHtml(a.role_title||'Junior Marketing Consultant')}"></div>
+      <div class="bew-field"><label>Quelle</label><input name="application_source" value="${escapeHtml(a.application_source||'')}"></div>
+      <div class="bew-field"><label>Bewerbungsdatum</label><input name="application_date" type="date" value="${a.application_date||''}"></div>
+      <div class="bew-field"><label>Status</label>
+        <select name="pipeline_status">${Object.entries(PIPELINE_LABELS).map(([k,v])=>`<option value="${k}" ${a.pipeline_status===k?'selected':''}>${v}</option>`).join('')}</select>
+      </div>
+      <div class="bew-field"><label>Aktuelles Gehalt</label><input name="salary_current" value="${escapeHtml(a.salary_current||'')}"></div>
+      <div class="bew-field"><label>Gehaltswunsch</label><input name="salary_expected" value="${escapeHtml(a.salary_expected||'')}"></div>
+      <div class="bew-field"><label>Einstiegsdatum</label><input name="availability_start" type="date" value="${a.availability_start||''}"></div>
+      <div class="bew-field"><label>Home Office</label><input name="home_office_preference" value="${escapeHtml(a.home_office_preference||'')}"></div>
+      <div class="bew-field"><label>Reisetätigkeit</label><input name="travel_willingness" value="${escapeHtml(a.travel_willingness||'')}"></div>
+      <div class="bew-field"><label>Arbeitsaufwand</label><input name="workload_expectation" value="${escapeHtml(a.workload_expectation||'')}"></div>
+      <div class="bew-field"><label>Aktueller Arbeitgeber</label><input name="current_employer" value="${escapeHtml(a.current_employer||'')}"></div>
+      <div class="bew-field"><label>Kündigungsfrist</label><input name="notice_period" value="${escapeHtml(a.notice_period||'')}"></div>
+      <div class="bew-field full"><label>Erwartungen erste 12 Monate</label><textarea name="expectations_12_months">${escapeHtml(a.expectations_12_months||'')}</textarea></div>
+      <div class="bew-field full"><label>Interne Notizen</label><textarea name="notes_internal">${escapeHtml(a.notes_internal||'')}</textarea></div>
+      ${a.recommendation_last ? `<div class="bew-field full"><label>Letzte Empfehlung</label><input readonly value="${escapeHtml(a.recommendation_last)}"></div>` : ''}
+      ${a.weighted_score != null ? `<div class="bew-field"><label>Score</label><input readonly value="${Number(a.weighted_score).toFixed(1)} / 5"></div>` : ''}
+    </form>
+    <div class="bew-docs">
+      <div class="panel-title" style="font-size:1rem;margin-bottom:.75rem"><i class="fa-solid fa-file-pdf"></i> Dokumente (CV &amp; mehr)</div>
+      <div id="bew-docs-list">${docs.length ? docs.map(d => `
+        <div class="bew-doc-item">
+          <span><i class="fa-solid fa-file"></i> ${escapeHtml(d.file_name)} <small style="color:var(--muted)">(${escapeHtml(d.doc_type)})</small></span>
+          <a href="${escapeHtml(d.file_url||'#')}" target="_blank" class="btn-ghost" style="font-size:.8rem">Öffnen</a>
+        </div>`).join('') : '<p style="color:var(--muted);font-size:.88rem">Noch keine Dokumente hochgeladen.</p>'}
+      <div class="bew-upload-zone" id="bew-upload-zone"><i class="fa-solid fa-cloud-arrow-up"></i> CV / Dokument hochladen (PDF, DOC, max. 10 MB)</div>
+      <input type="file" id="bew-file-input" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display:none">
+    </div>`;
+
+  document.getElementById('bew-save-btn').onclick = () => saveApplicantFromForm(a.id);
+  document.getElementById('bew-delete-btn').onclick = () => deleteApplicant(a.id);
+  const openIv = document.getElementById('bew-open-interview');
+  if (openIv) openIv.onclick = () => openInterviewForApplicant(a);
+  const uz = document.getElementById('bew-upload-zone');
+  const fi = document.getElementById('bew-file-input');
+  uz.onclick = () => fi.click();
+  fi.onchange = () => { if (fi.files[0]) uploadApplicantDocument(a.id, fi.files[0]); };
+}
+
+async function saveApplicantFromForm(id) {
+  const form = document.getElementById('bew-form');
+  const fd = new FormData(form);
+  const payload = {};
+  for (const [k, v] of fd.entries()) payload[k] = v;
+  payload.updated_by = window.RootsUser._uid || null;
+  if (!payload.full_name?.trim()) { toast('Name ist Pflicht', 'error'); return; }
+  const { error } = await recruitingDb().from('applicants').update(payload).eq('id', id);
+  if (error) { toast('Speichern fehlgeschlagen', 'error'); return; }
+  toast('Bewerber gespeichert');
+  await loadAllApplicants();
+  state.selectedApplicantId = id;
+  renderBewerberDetail(id);
+}
+
+async function createNewApplicant() {
+  const sid = genSessionId();
+  const p = window.RootsUser._p;
+  const payload = {
+    session_id: sid,
+    full_name: 'Neuer Bewerber',
+    role_title: 'Junior Marketing Consultant',
+    pipeline_status: 'new',
+    application_date: new Date().toISOString().slice(0, 10),
+    created_by: window.RootsUser._uid || null,
+  };
+  const { data, error } = await recruitingDb().from('applicants').insert(payload).select().single();
+  if (error) { toast('Anlegen fehlgeschlagen', 'error'); return; }
+  await loadAllApplicants();
+  state.selectedApplicantId = data.id;
+  renderBewerberList();
+  renderBewerberDetail(data.id);
+  toast('Neuer Bewerber angelegt');
+}
+
+async function deleteApplicant(id) {
+  if (!confirm('Bewerber wirklich löschen?')) return;
+  await recruitingDb().from('applicants').delete().eq('id', id);
+  state.selectedApplicantId = null;
+  await loadAllApplicants();
+  document.getElementById('bew-detail').innerHTML = '<p style="color:var(--muted);text-align:center;padding:3rem 1rem">Bewerber gelöscht.</p>';
+  toast('Bewerber gelöscht');
+}
+
+async function uploadApplicantDocument(applicantId, file) {
+  if (file.size > 10 * 1024 * 1024) { toast('Datei zu groß (max. 10 MB)', 'error'); return; }
+  const path = `${applicantId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+  const { error: upErr } = await sb.storage.from('recruiting-documents').upload(path, file, { upsert: true });
+  if (upErr) { toast('Upload fehlgeschlagen: ' + upErr.message, 'error'); return; }
+  const { data: urlData } = await sb.storage.from('recruiting-documents').createSignedUrl(path, 60 * 60 * 24 * 365);
+  await recruitingDb().from('applicant_documents').insert({
+    applicant_id: applicantId,
+    doc_type: file.name.toLowerCase().includes('anschreiben') ? 'cover_letter' : 'cv',
+    file_name: file.name,
+    storage_path: path,
+    file_url: urlData?.signedUrl || null,
+    mime_type: file.type,
+    file_size_bytes: file.size,
+    uploaded_by: window.RootsUser._uid || null,
+  });
+  toast('Dokument hochgeladen');
+  await loadAllApplicants();
+  renderBewerberDetail(applicantId);
+}
+
+async function openInterviewForApplicant(a) {
+  const { data } = await recruitingDb().from('interviews').select('*').eq('session_id', a.session_id).maybeSingle();
+  if (data) {
+    loadCandidateIntoInterview(data);
+  } else {
+    newInterview();
+    state.erst.meta.kandidat = a.full_name;
+    state.erst.meta.sessionId = a.session_id;
+    state.zweit.meta.sessionId = a.session_id;
+    renderInterview();
+    scheduleSave();
+  }
+}
+
+/* ──────────────────────────────────────────────
    Init / Bindings
    ────────────────────────────────────────────── */
 function escapeHtml(s) {
@@ -1413,15 +1762,18 @@ function toast(msg, type = 'info') {
   setTimeout(() => el.classList.remove('visible'), 2200);
 }
 
-// Header buttons
-document.getElementById('btn-show-dashboard').addEventListener('click', () => switchView('dashboard'));
-document.getElementById('btn-new-interview').addEventListener('click', newInterview);
+document.querySelectorAll('.app-nav-btn[data-view]').forEach(btn => {
+  btn.addEventListener('click', () => switchView(btn.dataset.view));
+});
+document.getElementById('nav-new-interview').addEventListener('click', newInterview);
 document.getElementById('dash-new-btn').addEventListener('click', newInterview);
+document.getElementById('bew-new-btn').addEventListener('click', createNewApplicant);
+document.getElementById('bew-search').addEventListener('input', (e) => { state.bewFilterText = e.target.value; renderBewerberList(); });
+document.getElementById('bew-filter-status').addEventListener('change', (e) => { state.bewFilterStatus = e.target.value; renderBewerberList(); });
 
-// Meta inputs
-document.getElementById('iv-meta-kandidat').addEventListener('input', (e) => { dispatch({ type: 'SET_META', field: 'kandidat', value: e.target.value }); });
-document.getElementById('iv-meta-interviewer').addEventListener('input', (e) => { dispatch({ type: 'SET_META', field: 'interviewer', value: e.target.value }); });
-document.getElementById('iv-meta-datum').addEventListener('input', (e) => { dispatch({ type: 'SET_META', field: 'datum', value: e.target.value }); });
+document.getElementById('iv-meta-kandidat').addEventListener('input', (e) => setMetaField('kandidat', e.target.value));
+document.getElementById('iv-meta-interviewer').addEventListener('input', (e) => setMetaField('interviewer', e.target.value));
+document.getElementById('iv-meta-datum').addEventListener('input', (e) => setMetaField('datum', e.target.value));
 document.getElementById('iv-meta-runde').addEventListener('change', (e) => {
   const newVal = e.target.value;
   if (newVal === 'zweit' && state.erst.recommendation !== 'Zum Zweitgespräch einladen') {
