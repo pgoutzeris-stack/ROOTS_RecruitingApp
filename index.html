@@ -167,7 +167,13 @@
     .dash-search:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
     .dash-filter { padding: 0 1rem; height: 42px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); font-family: inherit; font-size: .88rem; color: var(--ink); cursor: pointer; outline: none; }
     .dash-rows { display: flex; flex-direction: column; gap: .5rem; }
-    .cand-row { display: grid; grid-template-columns: minmax(220px, 1fr) auto minmax(160px, 220px) auto; gap: .75rem 1.25rem; align-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: .8rem 1.1rem; box-shadow: var(--shadow); transition: background .15s, border-color .15s, box-shadow .15s; cursor: pointer; }
+    .cand-row { display: grid; grid-template-columns: minmax(200px, 1fr) auto auto minmax(150px, 200px) auto; gap: .75rem 1rem; align-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: .8rem 1.1rem; box-shadow: var(--shadow); transition: background .15s, border-color .15s, box-shadow .15s; cursor: pointer; }
+    .cand-owner { display: flex; align-items: center; gap: 8px; flex-shrink: 0; min-width: 0; }
+    .cand-owner-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .cand-owner-name { font-size: .76rem; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+    .cand-owner-role { font-size: .68rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+    .cand-owner-select { height: 32px; max-width: 150px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .76rem; background: var(--bg); color: var(--ink); cursor: pointer; }
+    .cand-row--zweit { border-left: 3px solid #7c3aed; }
     .cand-row:hover { background: var(--status-bg); border-color: #cbd5e1; box-shadow: 0 8px 24px rgba(15,23,42,.08); }
     .cand-row-main { display: flex; align-items: center; gap: .75rem; min-width: 0; }
     .cand-row-info { min-width: 0; }
@@ -197,6 +203,10 @@
     #view-interview.active { display: flex; flex-direction: column; height: calc(100dvh - 72px); max-height: calc(100dvh - 72px); }
     #view-interview .iv-layout { flex: 1; min-height: 0; overflow: hidden; }
     .iv-sidenav-runde { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); }
+    .iv-sidenav-owner { padding-top: 1rem; margin-top: 1rem; border-top: 1px solid var(--line); }
+    .iv-sidenav-owner select { width: 100%; height: 38px; margin-top: .4rem; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .88rem; background: var(--bg); }
+    .iv-owner-display { display: flex; align-items: center; gap: 10px; margin-top: .5rem; }
+    .iv-owner-display span { font-size: .82rem; font-weight: 600; color: var(--ink); line-height: 1.3; }
     .iv-sidenav-runde select { width: 100%; height: 38px; margin-top: .4rem; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .88rem; background: var(--bg); color: var(--ink); cursor: pointer; }
     .bew-name-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     @media (max-width: 720px) { .bew-name-row { grid-template-columns: 1fr; } }
@@ -349,6 +359,7 @@
 
     @media (max-width: 880px) {
       .cand-row { grid-template-columns: 1fr; gap: .5rem; }
+      .cand-owner { justify-content: flex-start; }
       .cand-row-actions { flex-wrap: wrap; }
       .iv-layout { grid-template-columns: 1fr; height: auto; }
       .iv-sidenav { height: auto; max-height: 280px; padding: .85rem; }
@@ -662,6 +673,7 @@ document.getElementById('roots-logout-btn').addEventListener('click', () => sb.a
 
 function onAuthReady() {
   window.RootsUser._loadAndMount(sb);
+  loadTeamMembers();
   loadAllCandidates();
   loadAllApplicants();
 }
@@ -919,7 +931,7 @@ const RECO_OPTIONS_ZWEIT = ['Einstellen', 'Vielleicht – weitere Diskussion', '
    ────────────────────────────────────────────── */
 const INITIAL_STATE = {
   checks: {}, notes: {}, observations: {}, ratings: {},
-  meta: { kandidat: '', interviewer: '', datum: '', runde: 'erst', sessionId: '' },
+  meta: { kandidat: '', interviewer: '', datum: '', runde: 'erst', sessionId: '', ownerId: '', ownerName: '', zweitCreated: false },
   gesamtNote: '', recommendation: '',
   abschlussNotes: {}, rtiDone: false, caseChecks: {}, zweitAnmerkung: '',
   cultureFitAnswers: {},
@@ -942,6 +954,7 @@ let state = {
   filterText: '',
   filterRunde: 'all',
   sortBy: 'date_desc',
+  teamMembers: [],
 };
 
 let renderInterviewTimer = null;
@@ -968,6 +981,169 @@ function isZweitUnlocked(erstSlice = state.erst) {
 function canStartZweitgespraech(c) {
   const erstReco = String((c?.erst || {}).recommendation || '').trim();
   return erstReco === ZWEIT_INVITE_RECO;
+}
+
+function setSliceOwner(slice, userId, userName) {
+  slice.meta = slice.meta || {};
+  slice.meta.ownerId = userId || '';
+  slice.meta.ownerName = userName || '';
+  if (userName) slice.meta.interviewer = userName;
+}
+
+function getTeamMember(userId) {
+  if (!userId) return null;
+  return state.teamMembers.find(m => m.id === userId) || null;
+}
+
+function resolveOwnerDisplay(slice, fallbackInterviewer) {
+  const member = getTeamMember(slice?.meta?.ownerId);
+  return {
+    id: slice?.meta?.ownerId || '',
+    name: member?.full_name || slice?.meta?.ownerName || fallbackInterviewer || '—',
+    avatar: member?.avatar_url || null,
+    position: member?.position || '',
+  };
+}
+
+function memberAvatarHtml(name, avatarUrl, size = 36) {
+  if (window.RootsUser?._avatarSpan) return window.RootsUser._avatarSpan(avatarUrl, name, size);
+  const ini = (name || '?').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  return `<span style="width:${size}px;height:${size}px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--brand-light);color:var(--brand);font-weight:700;font-size:${Math.floor(size * .36)}px">${ini}</span>`;
+}
+
+function ensureZweitInterviewCreated(erstSlice, zweitSlice) {
+  if ((erstSlice?.recommendation || '') !== ZWEIT_INVITE_RECO) return false;
+  zweitSlice.meta = zweitSlice.meta || deepClone(INITIAL_STATE).meta;
+  if (zweitSlice.meta.zweitCreated) return false;
+  zweitSlice.meta.sessionId = erstSlice.meta?.sessionId || zweitSlice.meta.sessionId || '';
+  zweitSlice.meta.kandidat = erstSlice.meta?.kandidat || '';
+  zweitSlice.meta.datum = new Date().toISOString().slice(0, 10);
+  zweitSlice.meta.runde = 'zweit';
+  const ownerId = erstSlice.meta?.ownerId || window.RootsUser?._uid || '';
+  const ownerName = erstSlice.meta?.ownerName || erstSlice.meta?.interviewer || window.RootsUser?._p?.full_name || '';
+  setSliceOwner(zweitSlice, ownerId, ownerName);
+  zweitSlice.meta.zweitCreated = true;
+  zweitSlice.meta.createdAt = new Date().toISOString();
+  return true;
+}
+
+function buildDashboardEntries(candidates) {
+  const entries = [];
+  for (const c of candidates) {
+    c.erst = c.erst || {};
+    c.zweit = c.zweit || {};
+    if (canStartZweitgespraech(c)) ensureZweitInterviewCreated(c.erst, c.zweit);
+    entries.push({ candidate: c, runde: 'erst' });
+    if (canStartZweitgespraech(c) || c.zweit?.meta?.zweitCreated) {
+      entries.push({ candidate: c, runde: 'zweit' });
+    }
+  }
+  return entries;
+}
+
+async function loadTeamMembers() {
+  try {
+    const { data, error } = await sb.schema('users').from('profiles').select('id, full_name, avatar_url, position').order('full_name');
+    if (error) throw error;
+    state.teamMembers = data || [];
+  } catch (e) {
+    console.error('loadTeamMembers', e);
+    state.teamMembers = window.RootsUser?._p ? [window.RootsUser._p] : [];
+  }
+}
+
+async function persistCandidateSlices(c) {
+  if (!c?.session_id) return;
+  await recruitingDb().from('interviews').upsert({
+    session_id: c.session_id,
+    kandidat: c.kandidat || c.erst?.meta?.kandidat || '',
+    interviewer: c.interviewer || c.erst?.meta?.interviewer || '',
+    datum: c.datum || c.erst?.meta?.datum || '',
+    runde: c.runde || 'erst',
+    erst: c.erst,
+    zweit: c.zweit,
+    recommendation: c.recommendation ?? c.erst?.recommendation ?? null,
+    weighted_overall: c.weighted_overall ?? null,
+  }, { onConflict: 'session_id' });
+}
+
+async function setRoundOwner(sessionId, runde, userId) {
+  const c = state.candidates.find(x => x.session_id === sessionId);
+  if (!c) return;
+  const member = getTeamMember(userId);
+  const slice = runde === 'zweit' ? (c.zweit = c.zweit || deepClone(INITIAL_STATE)) : (c.erst = c.erst || deepClone(INITIAL_STATE));
+  setSliceOwner(slice, userId, member?.full_name || '');
+  try {
+    await persistCandidateSlices(c);
+    toast(runde === 'zweit' ? 'Owner des Zweitgesprächs aktualisiert' : 'Owner aktualisiert');
+    if (state.view === 'dashboard') renderDashboard();
+    if (state.view === 'interview' && state.erst.meta.sessionId === sessionId) {
+      if (runde === 'zweit' && isZweit()) renderSidenav();
+      else if (runde === 'erst' && !isZweit()) renderSidenav();
+    }
+  } catch (e) {
+    console.error('setRoundOwner', e);
+    toast('Owner konnte nicht gespeichert werden', 'error');
+  }
+}
+
+function backfillSliceOwner(slice) {
+  if (!slice || slice.meta?.ownerId) return;
+  const name = (slice.meta?.interviewer || '').trim();
+  const m = state.teamMembers.find(t => (t.full_name || '').trim() === name);
+  if (m) setSliceOwner(slice, m.id, m.full_name);
+  else if (window.RootsUser?._uid && name === (window.RootsUser._p?.full_name || '').trim()) {
+    setSliceOwner(slice, window.RootsUser._uid, name);
+  }
+}
+
+function renderSidenavOwnerHtml() {
+  const runde = isZweit() ? 'zweit' : 'erst';
+  const slice = isZweit() ? state.zweit : state.erst;
+  const owner = resolveOwnerDisplay(slice, state.erst.meta.interviewer);
+  const avatar = memberAvatarHtml(owner.name, owner.avatar, 32);
+  if (runde === 'zweit') {
+    const opts = state.teamMembers.map(m =>
+      `<option value="${escapeHtml(m.id)}" ${m.id === owner.id ? 'selected' : ''}>${escapeHtml(m.full_name || 'Unbenannt')}</option>`
+    ).join('');
+    return `<div class="iv-sidenav-owner">
+      <div class="iv-sidenav-h">Owner · Team einladen</div>
+      <select id="iv-sidenav-owner">${opts}</select>
+      <div class="iv-owner-display">${avatar}<span>${escapeHtml(owner.name)}</span></div>
+    </div>`;
+  }
+  return `<div class="iv-sidenav-owner">
+    <div class="iv-sidenav-h">Owner Erstgespräch</div>
+    <div class="iv-owner-display">${avatar}<span>${escapeHtml(owner.name)}</span></div>
+  </div>`;
+}
+
+function renderOwnerCell(entry) {
+  const c = entry.candidate;
+  const slice = entry.runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
+  const owner = resolveOwnerDisplay(slice, c.interviewer);
+  const avatar = memberAvatarHtml(owner.name, owner.avatar, 38);
+  if (entry.runde === 'zweit') {
+    const opts = state.teamMembers.map(m =>
+      `<option value="${escapeHtml(m.id)}" ${m.id === owner.id ? 'selected' : ''}>${escapeHtml(m.full_name || m.email || 'Unbenannt')}</option>`
+    ).join('');
+    return `<div class="cand-owner" data-stop-row="1">
+      <span class="cand-owner-avatar">${avatar}</span>
+      <div class="cand-owner-meta">
+        <select class="cand-owner-select" data-act="set-owner" data-id="${escapeHtml(c.session_id)}" data-runde="zweit" title="Owner übergeben">
+          ${opts || `<option value="${escapeHtml(owner.id)}">${escapeHtml(owner.name)}</option>`}
+        </select>
+        <span class="cand-owner-role">Zweit · Owner</span>
+      </div>
+    </div>`;
+  }
+  return `<div class="cand-owner" title="Owner Erstgespräch">
+    <span class="cand-owner-avatar">${avatar}</span>
+    <div class="cand-owner-meta">
+      <span class="cand-owner-name">${escapeHtml(owner.name)}</span>
+      <span class="cand-owner-role">Erst · Owner</span>
+    </div>
+  </div>`;
 }
 
 function parseSectionMinutes(timeStr) {
@@ -1174,21 +1350,6 @@ function updateRundeSelect() {
   }
 }
 
-function startZweitgespraechFromCard(c, e) {
-  if (e) e.stopPropagation();
-  if (!canStartZweitgespraech(c)) {
-    toast('Zweitgespräch nur nach Empfehlung „Zum Zweitgespräch einladen“ im Erstgespräch', 'error');
-    return;
-  }
-  loadCandidateIntoInterview(c, { startZweit: true });
-  toast('Zweitgespräch gestartet');
-  requestAnimationFrame(() => {
-    const main = document.getElementById('iv-main');
-    if (main) main.scrollTop = 0;
-    initInterviewScrollAndTimers();
-  });
-}
-
 function dispatch(action) {
   const slice = (action.scope === 'erst' || (action.type === 'SET_ZWEIT_ANMERKUNG'))
     ? state.erst
@@ -1202,6 +1363,9 @@ function dispatch(action) {
   }
   scheduleSave();
   scheduleAbschlussRefresh();
+  if (!isZweit() && action.type === 'SET_RECOMMENDATION' && action.value === ZWEIT_INVITE_RECO) {
+    if (ensureZweitInterviewCreated(state.erst, state.zweit)) scheduleSave();
+  }
   if (state.view === 'interview') {
     if (action.type === 'SET_RECOMMENDATION') {
       updateRundeSelect();
@@ -1469,6 +1633,9 @@ async function finalizeInterview() {
   }
   check.slice.completed = true;
   check.slice.completedAt = new Date().toISOString();
+  if (!isZweit() && state.erst.recommendation === ZWEIT_INVITE_RECO) {
+    ensureZweitInterviewCreated(state.erst, state.zweit);
+  }
   try {
     await saveCurrentImmediate({ throwOnError: true });
     toast(`${check.rundeLabel} abgeschlossen und gespeichert`);
@@ -1492,11 +1659,11 @@ function reopenInterviewRound() {
   renderSidenav();
 }
 
-function printInterviewById(sessionId) {
+function printInterviewById(sessionId, runde = 'erst') {
   const c = state.candidates.find(x => x.session_id === sessionId);
   if (!c) return;
   const prevView = state.view;
-  loadCandidateIntoInterview(c);
+  loadCandidateIntoInterview(c, { runde });
   setTimeout(() => {
     window.print();
     if (prevView !== 'interview') switchView(prevView);
@@ -1507,7 +1674,16 @@ async function loadAllCandidates() {
   try {
     const { data, error } = await recruitingDb().from('interviews').select('*').order('updated_at', { ascending: false });
     if (error) throw error;
-    state.candidates = data || [];
+    state.candidates = (data || []).map(c => {
+      const row = { ...c, erst: c.erst || {}, zweit: c.zweit || {} };
+      if (canStartZweitgespraech(row) && ensureZweitInterviewCreated(row.erst, row.zweit)) row._zweitDirty = true;
+      return row;
+    });
+    const dirty = state.candidates.filter(c => c._zweitDirty);
+    for (const c of dirty) {
+      try { await persistCandidateSlices(c); } catch (e) { console.error('zweit auto-create save', e); }
+      delete c._zweitDirty;
+    }
   } catch (e) {
     state.candidates = [];
   }
@@ -1529,6 +1705,8 @@ function loadCandidateIntoInterview(c, opts = {}) {
   state.zweit = deepClone(INITIAL_STATE);
   if (c.erst) applyAction(state.erst, { type: 'LOAD', payload: c.erst });
   if (c.zweit) applyAction(state.zweit, { type: 'LOAD', payload: c.zweit });
+  backfillSliceOwner(state.erst);
+  backfillSliceOwner(state.zweit);
   state.erst.meta.sessionId = c.session_id || state.erst.meta.sessionId;
   state.zweit.meta.sessionId = state.erst.meta.sessionId;
   const linked = state.applicants.find(a => a.session_id === c.session_id);
@@ -1540,15 +1718,19 @@ function loadCandidateIntoInterview(c, opts = {}) {
   state.zweit.meta.interviewer = state.erst.meta.interviewer;
   state.erst.meta.datum = c.datum || state.erst.meta.datum;
   state.zweit.meta.datum = state.erst.meta.datum;
-  if (opts.startZweit) {
-    if (!isZweitUnlocked()) {
-      toast('Zweitgespräch ist noch nicht freigeschaltet', 'error');
+  if (opts.runde === 'zweit') {
+    if (!canStartZweitgespraech(c)) {
+      toast('Zweitgespräch noch nicht freigeschaltet', 'error');
       state.erst.meta.runde = 'erst';
       state.zweit.meta.runde = 'erst';
     } else {
+      ensureZweitInterviewCreated(state.erst, state.zweit);
       state.erst.meta.runde = 'zweit';
       state.zweit.meta.runde = 'zweit';
     }
+  } else if (opts.runde === 'erst') {
+    state.erst.meta.runde = 'erst';
+    state.zweit.meta.runde = 'erst';
   } else {
     state.erst.meta.runde = c.runde || state.erst.meta.runde || 'erst';
     state.zweit.meta.runde = state.erst.meta.runde;
@@ -1570,9 +1752,10 @@ function newInterview(opts = {}) {
     state.zweit.meta.kandidat = opts.kandidat;
   }
   const p = window.RootsUser._p;
-  if (p && p.full_name) {
-    state.erst.meta.interviewer = p.full_name;
-    state.zweit.meta.interviewer = p.full_name;
+  const uid = window.RootsUser._uid;
+  if (p && uid) {
+    setSliceOwner(state.erst, uid, p.full_name || '');
+    setSliceOwner(state.zweit, uid, p.full_name || '');
   }
   state.linkedApplicantId = opts.applicantId || null;
   updateInterviewSubtitle();
@@ -1670,22 +1853,33 @@ function recoCategory(reco) {
 
 function renderDashboard() {
   const list = document.getElementById('dash-list');
-  let items = state.candidates.slice();
+  let items = buildDashboardEntries(state.candidates.slice());
 
-  // Filter
   if (state.filterText) {
     const f = state.filterText.toLowerCase();
-    items = items.filter(c => (c.kandidat || '').toLowerCase().includes(f)
-      || (c.interviewer || '').toLowerCase().includes(f));
+    items = items.filter(e => {
+      const c = e.candidate;
+      const owner = resolveOwnerDisplay(e.runde === 'zweit' ? c.zweit : c.erst, c.interviewer);
+      return (c.kandidat || '').toLowerCase().includes(f)
+        || owner.name.toLowerCase().includes(f)
+        || (c.interviewer || '').toLowerCase().includes(f);
+    });
   }
   if (state.filterRunde !== 'all') {
-    items = items.filter(c => (c.runde || 'erst') === state.filterRunde);
+    items = items.filter(e => e.runde === state.filterRunde);
   }
-  // Sort
-  if (state.sortBy === 'name') items.sort((a, b) => (a.kandidat||'').localeCompare(b.kandidat||''));
-  else if (state.sortBy === 'score_desc') items.sort((a, b) => (b.weighted_overall||0) - (a.weighted_overall||0));
-  else if (state.sortBy === 'date_asc') items.sort((a, b) => new Date(a.updated_at) - new Date(b.updated_at));
-  else items.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+  if (state.sortBy === 'name') items.sort((a, b) => (a.candidate.kandidat||'').localeCompare(b.candidate.kandidat||''));
+  else if (state.sortBy === 'score_desc') {
+    items.sort((a, b) => {
+      const sa = getRoundScores(a.candidate, a.runde).overall || 0;
+      const sb = getRoundScores(b.candidate, b.runde).overall || 0;
+      return sb - sa;
+    });
+  } else if (state.sortBy === 'date_asc') {
+    items.sort((a, b) => new Date(a.candidate.updated_at) - new Date(b.candidate.updated_at));
+  } else {
+    items.sort((a, b) => new Date(b.candidate.updated_at) - new Date(a.candidate.updated_at));
+  }
 
   if (items.length === 0) {
     list.innerHTML = `<div class="dash-empty">
@@ -1696,62 +1890,86 @@ function renderDashboard() {
     return;
   }
 
-  list.innerHTML = '<div class="dash-rows">' + items.map(c => {
-    const reco = c.recommendation || '';
-    const cat = recoCategory(reco);
-    const score = c.weighted_overall != null ? c.weighted_overall.toFixed(1) : '–';
-    const dateStr = c.datum || (c.updated_at ? c.updated_at.slice(0,10) : '');
-    const runde = (c.runde === 'zweit') ? 'Zweitgespräch' : 'Erstgespräch';
-    const rundeKey = c.runde || 'erst';
-    const completed = isRoundCompletedInData(c, rundeKey);
-    const completedAt = (rundeKey === 'zweit' ? c.zweit : c.erst)?.completedAt;
+  list.innerHTML = '<div class="dash-rows">' + items.map(entry => {
+    const c = entry.candidate;
+    const slice = entry.runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
+    const reco = slice.recommendation || (entry.runde === 'erst' ? '' : '');
+    const cat = recoCategory(reco || (entry.runde === 'erst' && canStartZweitgespraech(c) ? ZWEIT_INVITE_RECO : ''));
+    const scores = getRoundScores(c, entry.runde);
+    const score = scores.overall != null ? scores.overall.toFixed(1) : '–';
+    const dateStr = slice.meta?.datum || c.datum || (c.updated_at ? c.updated_at.slice(0, 10) : '');
+    const rundeLabel = entry.runde === 'zweit' ? 'Zweitgespräch' : 'Erstgespräch';
+    const completed = isRoundCompletedInData(c, entry.runde);
+    const completedAt = slice.completedAt;
     const completedDate = completedAt ? new Date(completedAt).toLocaleDateString('de-DE') : '';
-    const zweitUnlocked = canStartZweitgespraech(c);
-    const zweitDone = isRoundCompletedInData(c, 'zweit');
-    const showZweitBtn = zweitUnlocked;
-    return `<div class="cand-row" data-id="${escapeHtml(c.session_id)}">
+    const recoDisplay = entry.runde === 'erst'
+      ? (reco || (canStartZweitgespraech(c) ? ZWEIT_INVITE_RECO : ''))
+      : reco;
+    const recoCat = recoCategory(recoDisplay);
+    return `<div class="cand-row ${entry.runde === 'zweit' ? 'cand-row--zweit' : ''}" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}">
       <div class="cand-row-main">
         <span class="cand-badge ${completed ? 'cand-badge--done' : 'cand-badge--draft'}"><i class="fa-solid ${completed ? 'fa-circle-check' : 'fa-pen'}"></i>${completed ? 'Abgeschlossen' : 'Entwurf'}${completedDate ? ' · ' + completedDate : ''}</span>
         <div class="cand-row-info">
           <div class="cand-name">${escapeHtml(c.kandidat || 'Unbenannt')}</div>
           <div class="cand-meta">
             <span class="cand-meta-item"><i class="fa-regular fa-calendar"></i>${escapeHtml(dateStr || '—')}</span>
-            <span class="cand-meta-item"><i class="fa-regular fa-user"></i>${escapeHtml(c.interviewer || '—')}</span>
-            <span class="cand-meta-item"><i class="fa-solid fa-layer-group"></i>${runde}</span>
+            <span class="cand-meta-item"><i class="fa-solid fa-layer-group"></i>${rundeLabel}</span>
           </div>
         </div>
       </div>
+      ${renderOwnerCell(entry)}
       <div class="cand-score-pill" title="Gewichteter Gesamtscore">${score}<span style="font-size:.7rem;opacity:.7">/5</span></div>
-      ${reco ? `<div class="cand-reco cand-reco--${cat}">${escapeHtml(reco)}</div>` : `<div class="cand-reco cand-reco--none">Noch keine Empfehlung</div>`}
+      ${recoDisplay ? `<div class="cand-reco cand-reco--${recoCat}">${escapeHtml(recoDisplay)}</div>` : `<div class="cand-reco cand-reco--none">Noch keine Empfehlung</div>`}
       <div class="cand-row-actions">
-        <button class="btn-ghost" data-act="open" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-pen"></i> ${completed ? 'Ansehen' : 'Bearbeiten'}</button>
-        ${showZweitBtn ? `<button class="btn-primary btn-zweit-quick" data-act="zweit" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-forward"></i> ${zweitDone ? 'Zweit' : 'Zweit starten'}</button>` : ''}
-        <button class="btn-secondary" data-act="print" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-file-pdf"></i> PDF</button>
-        <button class="btn-ghost" data-act="delete" data-id="${escapeHtml(c.session_id)}" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
+        <button class="btn-ghost" data-act="open" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}"><i class="fa-solid fa-pen"></i> ${completed ? 'Ansehen' : 'Bearbeiten'}</button>
+        <button class="btn-secondary" data-act="print" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+        ${entry.runde === 'erst' ? `<button class="btn-ghost" data-act="delete" data-id="${escapeHtml(c.session_id)}" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>` : ''}
       </div>
     </div>`;
   }).join('') + '</div>';
 
-  // Bind actions
   list.querySelectorAll('[data-act]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const id = btn.getAttribute('data-id');
+      const runde = btn.dataset.runde || 'erst';
       const c = state.candidates.find(x => x.session_id === id);
       if (!c) return;
-      if (btn.dataset.act === 'open') loadCandidateIntoInterview(c);
-      else if (btn.dataset.act === 'zweit') startZweitgespraechFromCard(c, e);
+      if (btn.dataset.act === 'open') loadCandidateIntoInterview(c, { runde });
       else if (btn.dataset.act === 'delete') deleteCandidate(id);
-      else if (btn.dataset.act === 'print') printInterviewById(id);
+      else if (btn.dataset.act === 'print') printInterviewById(id, runde);
+    });
+  });
+  list.querySelectorAll('[data-act="set-owner"]').forEach(sel => {
+    sel.addEventListener('click', e => e.stopPropagation());
+    sel.addEventListener('change', (e) => {
+      e.stopPropagation();
+      setRoundOwner(sel.dataset.id, sel.dataset.runde, sel.value);
     });
   });
   list.querySelectorAll('.cand-row').forEach(card => {
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('[data-stop-row="1"]')) return;
       const id = card.getAttribute('data-id');
+      const runde = card.getAttribute('data-runde') || 'erst';
       const c = state.candidates.find(x => x.session_id === id);
-      if (c) loadCandidateIntoInterview(c);
+      if (c) loadCandidateIntoInterview(c, { runde });
     });
   });
+}
+
+function getRoundScores(c, runde) {
+  const prevErst = state.erst;
+  const prevZweit = state.zweit;
+  const prevRunde = state.erst.meta?.runde;
+  state.erst = deepClone(c.erst || INITIAL_STATE);
+  state.zweit = deepClone(c.zweit || INITIAL_STATE);
+  state.erst.meta = { ...state.erst.meta, runde };
+  const scores = calculateScores();
+  state.erst = prevErst;
+  state.zweit = prevZweit;
+  if (prevRunde != null) state.erst.meta.runde = prevRunde;
+  return scores;
 }
 
 /* ──────────────────────────────────────────────
@@ -1783,11 +2001,19 @@ function renderSidenav() {
           <option value="zweit">Zweitgespräch</option>
         </select>
       </div>`
+   + renderSidenavOwnerHtml()
    + `<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:.4rem">
         <button class="btn-ghost" id="iv-back-dash" style="justify-content:center"><i class="fa-solid fa-arrow-left"></i> Zurück zu Interviews</button>
       </div>`;
   updateRundeSelect();
   bindRundeSelectHandler(document.getElementById('iv-sidenav-runde'));
+  const ownerSel = document.getElementById('iv-sidenav-owner');
+  if (ownerSel) {
+    ownerSel.addEventListener('change', () => {
+      const runde = isZweit() ? 'zweit' : 'erst';
+      setRoundOwner(state.erst.meta.sessionId, runde, ownerSel.value);
+    });
+  }
   document.getElementById('iv-back-dash').addEventListener('click', () => switchView('dashboard'));
   nav.querySelectorAll('a[data-target]').forEach(a => {
     a.addEventListener('click', (e) => {
