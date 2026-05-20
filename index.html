@@ -33,6 +33,11 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; font-family: 'Circular Std', -apple-system, BlinkMacSystemFont, sans-serif; color: var(--ink); background: var(--app-bg); }
+    html.in-iframe, html.in-iframe body { height: 100%; }
+    body.mode-interview { overflow: hidden; height: 100%; display: flex; flex-direction: column; overscroll-behavior: none; }
+    body.mode-interview .sop-header,
+    body.mode-interview .app-nav { flex-shrink: 0; }
+    body.mode-interview .app-container { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; width: 100%; max-width: none; margin: 0; padding: 0 1.25rem 0; box-sizing: border-box; }
     body { padding: 12px 0 100px; }
 
     /* ─── Login Overlay ─── */
@@ -175,7 +180,10 @@
     .dash-group-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .7rem 1rem; background: linear-gradient(180deg, rgba(15,23,42,.03), transparent); border-bottom: 1px solid var(--line); }
     .dash-group-name { font-size: 1.02rem; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
     .dash-group-sub { font-size: .75rem; color: var(--muted); margin-top: .1rem; }
-    .dash-lane { display: grid; grid-template-columns: minmax(140px, 1fr) auto auto auto; gap: .65rem 1rem; align-items: center; padding: .65rem 1rem; cursor: pointer; transition: background .12s; }
+    .dash-lane { display: grid; grid-template-columns: minmax(120px, 1fr) auto minmax(52px, auto) minmax(72px, 1fr) auto; gap: .65rem 1rem; align-items: center; padding: .65rem 1rem; cursor: pointer; transition: background .12s; width: 100%; max-width: 100%; box-sizing: border-box; }
+    .dash-group-body { overflow-x: auto; }
+    .dash-icon-btn--zweit { color: #6d28d9; border-color: #ddd6fe; background: #f5f3ff; }
+    .dash-icon-btn--zweit:hover { color: #fff; background: #7c3aed; border-color: #7c3aed; }
     .dash-lane + .dash-lane { border-top: 1px solid var(--line); }
     .dash-lane:hover { background: var(--status-bg); }
     .dash-lane--zweit { background: linear-gradient(90deg, rgba(124,58,237,.06), transparent 48%); }
@@ -251,7 +259,7 @@
     .iv-sidenav a:hover { background: var(--status-bg); }
     .iv-sidenav a.active { background: var(--brand); color: #fff; border-left-color: var(--brand-dark); box-shadow: 0 4px 14px rgba(32,110,251,.28); }
     .iv-content-col { min-width: 0; width: 100%; overflow: hidden; display: flex; flex-direction: column; flex: 1; min-height: 0; height: 100%; }
-    #view-interview.active { display: flex; flex-direction: column; height: calc(100dvh - 72px); max-height: calc(100dvh - 72px); }
+    #view-interview.active { display: flex; flex-direction: column; flex: 1; min-height: 0; height: auto; max-height: none; overflow: hidden; }
     #view-interview .iv-layout { flex: 1; min-height: 0; overflow: hidden; }
     .iv-sidenav-spacer { flex: 1; min-height: .75rem; }
     .iv-sidenav-applicant { flex-shrink: 0; padding-top: 1rem; margin-top: .5rem; border-top: 1px solid var(--line); }
@@ -273,8 +281,11 @@
     .iv-sidenav-runde select { width: 100%; height: 38px; margin-top: .4rem; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .88rem; background: var(--bg); color: var(--ink); cursor: pointer; }
     .bew-name-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     @media (max-width: 720px) { .bew-name-row { grid-template-columns: 1fr; } }
-    .iv-main { min-width: 0; width: 100%; flex: 1; height: 100%; min-height: 0; overflow-x: hidden; overflow-y: auto; scroll-snap-type: y proximity; scroll-behavior: smooth; scroll-padding-top: 0; scroll-padding-bottom: 1.5rem; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius) var(--radius) 0 0; border-bottom: none; }
+    .iv-main { min-width: 0; width: 100%; flex: 1; height: 100%; min-height: 0; overflow-x: hidden; overflow-y: auto; scroll-snap-type: none; scroll-behavior: smooth; scroll-padding-top: 0; scroll-padding-bottom: 1.5rem; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
     .iv-interview-footer { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; padding: .85rem 1.25rem; border: 1px solid var(--line); border-radius: 0 0 var(--radius) var(--radius); background: var(--bg); }
+    body.mode-interview .iv-interview-footer { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8500; margin: 0; border-radius: 0; border-left: none; border-right: none; border-bottom: none; box-shadow: 0 -8px 28px rgba(15,23,42,.12); padding: .85rem max(1.25rem, env(safe-area-inset-right)) .85rem max(1.25rem, env(safe-area-inset-left)); padding-bottom: max(.85rem, env(safe-area-inset-bottom)); }
+    body.mode-interview .iv-main { padding-bottom: 5.5rem; border-radius: var(--radius); border-bottom: 1px solid var(--line); }
+    body.mode-interview .iv-content-col .iv-interview-footer[hidden] { display: none !important; }
     .btn-zweit-quick { background: var(--brand); color: #fff; border: none; }
     .btn-zweit-quick:hover { background: var(--brand-dark); color: #fff; }
     .cand-actions-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: .35rem; }
@@ -1245,8 +1256,8 @@ function canOpenTeamPanel(slice, context = {}) {
   if (String(slice.meta.ownerId || '') === uid) return true;
   if (getSliceParticipants(slice).some(p => p.userId === uid)) return true;
   if (isZweitCtx) {
-    ensureInitialOwner(erst);
-    if (String(erst.meta?.initialOwnerId || '') === uid || String(erst.meta?.ownerId || '') === uid) return true;
+    const erst = context.erstSlice || state.erst;
+    if (erst && canOpenTeamPanel(erst, { runde: 'erst', erstSlice: erst })) return true;
   }
   return false;
 }
@@ -2239,7 +2250,23 @@ async function deleteCandidate(sessionId) {
   } catch (e) { toast('Fehler beim Löschen', 'error'); }
 }
 
+function startZweitgespraechFromCard(c, e) {
+  if (e) e.stopPropagation();
+  if (!canStartZweitgespraech(c)) {
+    toast('Zweitgespräch nur nach Empfehlung „Zum Zweitgespräch einladen“ im Erstgespräch', 'error');
+    return;
+  }
+  loadCandidateIntoInterview(c, { startZweit: true });
+  toast('Zweitgespräch geöffnet');
+  requestAnimationFrame(() => {
+    const main = document.getElementById('iv-main');
+    if (main) main.scrollTop = 0;
+    initInterviewScrollAndTimers();
+  });
+}
+
 function loadCandidateIntoInterview(c, opts = {}) {
+  if (opts.startZweit) opts.runde = 'zweit';
   state.erst = deepClone(INITIAL_STATE);
   state.zweit = deepClone(INITIAL_STATE);
   if (c.erst) applyAction(state.erst, { type: 'LOAD', payload: c.erst });
@@ -2369,6 +2396,7 @@ async function startInterviewForApplicant(a) {
 
 function updateAppNavForView(v) {
   const isInterview = v === 'interview';
+  document.body.classList.toggle('mode-interview', isInterview);
   const main = document.getElementById('app-nav-main');
   const def = document.getElementById('app-nav-actions-default');
   const iv = document.getElementById('app-nav-actions-interview');
@@ -2450,6 +2478,11 @@ function renderDashboardLane(entry) {
   const completed = isRoundCompletedInData(c, entry.runde);
   const completedAt = slice.completedAt;
   const rundeLabel = entry.runde === 'zweit' ? 'Zweitgespräch' : 'Erstgespräch';
+  const zweitUnlocked = entry.runde === 'erst' && canStartZweitgespraech(c);
+  const zweitDone = isRoundCompletedInData(c, 'zweit');
+  const zweitBtn = zweitUnlocked
+    ? `<button type="button" class="dash-icon-btn dash-icon-btn--zweit btn-zweit-quick" data-act="zweit" data-id="${escapeHtml(c.session_id)}" data-stop-row="1" title="${zweitDone ? 'Zweitgespräch öffnen' : 'Zweitgespräch starten'}"><i class="fa-solid fa-forward"></i></button>`
+    : '';
   return `<div class="dash-lane ${entry.runde === 'zweit' ? 'dash-lane--zweit' : ''}" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}">
     <div>
       <div class="dash-lane-runde dash-lane-runde--${entry.runde}"><i class="fa-solid ${entry.runde === 'zweit' ? 'fa-forward' : 'fa-user-tie'}"></i> ${rundeLabel}</div>
@@ -2461,7 +2494,8 @@ function renderDashboardLane(entry) {
     ${renderLaneOwnerBtn(entry)}
     <div class="dash-score" title="Score">${score}<small>/5</small></div>
     <div class="dash-reco cand-reco cand-reco--${recoCat}" title="${escapeHtml(recoDisplay || 'Keine Empfehlung')}">${recoDisplay ? escapeHtml(recoDisplay) : '—'}</div>
-    <div class="dash-lane-actions">
+    <div class="dash-lane-actions" data-stop-row="1">
+      ${zweitBtn}
       <button type="button" class="dash-icon-btn" data-act="open" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="${completed ? 'Ansehen' : 'Bearbeiten'}"><i class="fa-solid fa-pen"></i></button>
       <button type="button" class="dash-icon-btn" data-act="print" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="PDF"><i class="fa-solid fa-file-pdf"></i></button>
       ${entry.runde === 'erst' ? `<button type="button" class="dash-icon-btn dash-icon-btn--danger" data-act="delete" data-id="${escapeHtml(c.session_id)}" title="Löschen"><i class="fa-solid fa-trash"></i></button>` : ''}
@@ -2531,6 +2565,7 @@ function renderDashboard() {
       const c = state.candidates.find(x => x.session_id === id);
       if (!c) return;
       if (btn.dataset.act === 'open') loadCandidateIntoInterview(c, { runde });
+      else if (btn.dataset.act === 'zweit') startZweitgespraechFromCard(c, e);
       else if (btn.dataset.act === 'delete') deleteCandidate(id);
       else if (btn.dataset.act === 'print') printInterviewById(id, runde);
       else if (btn.dataset.act === 'team-panel') openTeamPanel(id, runde);
@@ -3322,6 +3357,11 @@ try {
 } catch {}
 
 bindInterviewFooterHandlers();
+try {
+  if (window.self !== window.top) document.documentElement.classList.add('in-iframe');
+} catch {
+  document.documentElement.classList.add('in-iframe');
+}
 switchView('dashboard');
 </script>
 
