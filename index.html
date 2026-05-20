@@ -359,15 +359,7 @@
     .gesamt-note { width: 100%; min-height: 100px; margin-top: 1rem; padding: 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .9rem; resize: vertical; outline: none; }
     .gesamt-note:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
 
-    .abschluss-panel { border: none; background: var(--bg); }
-    .abschluss-status { display: inline-flex; align-items: center; gap: 8px; padding: .45rem .9rem; border-radius: 999px; font-size: .82rem; font-weight: 700; margin-bottom: 1rem; }
-    .abschluss-status--draft { background: #fff7ed; color: #b45309; border: 1px solid #fed7aa; }
-    .abschluss-status--done { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
-    .abschluss-checklist { display: flex; flex-direction: column; gap: 6px; margin: 1rem 0 1.25rem; }
-    .abschluss-check-item { display: flex; align-items: flex-start; gap: 10px; padding: .4rem 0; font-size: .88rem; background: none; border: none; border-bottom: 1px solid var(--line); }
-    .abschluss-check-item.done { color: #065f46; }
-    .abschluss-check-item.missing { color: #991b1b; }
-    .abschluss-check-item i { margin-top: 2px; flex-shrink: 0; }
+    .iv-abschluss-bar { padding: 1.5rem 2rem 2.5rem; max-width: 900px; border-top: 1px solid var(--line); background: var(--bg); }
     .abschluss-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .cand-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 700; padding: .25rem .55rem; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
     .cand-badge--done { background: #ecfdf5; color: #047857; }
@@ -1668,7 +1660,6 @@ function dispatch(action) {
     updateInterviewSubtitle();
   }
   scheduleSave();
-  scheduleAbschlussRefresh();
   if (!isZweit() && action.type === 'SET_RECOMMENDATION' && action.value === ZWEIT_INVITE_RECO) {
     if (ensureZweitInterviewCreated(state.erst, state.zweit)) scheduleSave();
   }
@@ -1716,7 +1707,6 @@ function setMetaField(field, value) {
   state.zweit.meta[field] = value;
   updateInterviewSubtitle();
   scheduleSave();
-  scheduleAbschlussRefresh();
 }
 
 function updateInterviewSubtitle() {
@@ -1954,12 +1944,20 @@ function collectCompletionChecks(runde = null) {
   };
 }
 
+async function saveInterviewDraft() {
+  try {
+    await saveCurrentImmediate({ throwOnError: true });
+    toast('Gespeichert');
+  } catch (e) {
+    console.error('saveInterviewDraft', e);
+    toast('Speichern fehlgeschlagen', 'error');
+  }
+}
+
 async function finalizeInterview() {
   const check = collectCompletionChecks();
-  const el = document.getElementById('sec-abschluss');
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   if (!check.complete) {
-    toast(`Noch ${check.missing.length} Punkt(e) offen – siehe Checkliste unten`, 'error');
+    toast(`Noch ${check.missing.length} Punkt(e) offen`, 'error');
     if (state.view === 'interview') {
       renderMain();
       renderSidenav();
@@ -2347,7 +2345,6 @@ function renderSidenav() {
     const label = s.sub ? `${s.main} · ${s.sub}` : (s.main || '–');
     return `<a href="#${tid}" data-target="${tid}">${escapeHtml(label)}</a>`;
   }).join('')    + `<a href="#sec-gesamt" data-target="sec-gesamt" style="margin-top:.5rem;border-top:1px solid var(--line);padding-top:.65rem">Gesamtbewertung</a>`
-   + `<a href="#sec-abschluss" data-target="sec-abschluss">Abschluss</a>`
    + `<div class="iv-sidenav-spacer"></div>`
    + renderSidenavApplicantHtml()
    + renderSidenavOwnerHtml()
@@ -2389,68 +2386,13 @@ function renderMain() {
   bindMainHandlers();
 }
 
-function renderAbschlussChecklistHtml() {
-  const check = collectCompletionChecks();
-  const allLabels = [...check.done, ...check.missing];
-  if (!allLabels.length) return '<p style="color:var(--muted);font-size:.88rem">Keine Pflichtfelder für diese Runde.</p>';
-  return check.done.map(l => `<div class="abschluss-check-item done"><i class="fa-solid fa-circle-check"></i><span>${escapeHtml(l)}</span></div>`).join('')
-    + check.missing.map(l => `<div class="abschluss-check-item missing"><i class="fa-solid fa-circle-xmark"></i><span>${escapeHtml(l)}</span></div>`).join('');
-}
-
 function renderAbschlussPanel() {
-  const check = collectCompletionChecks();
-  const slice = check.slice;
-  const done = !!slice.completed;
-  const doneDate = slice.completedAt ? new Date(slice.completedAt).toLocaleString('de-DE') : '';
-
-  return `<div class="iv-snap-section abschluss-panel" id="sec-abschluss" data-section-id="sec-abschluss" data-planned-min="5">
-    <div class="sec-title" style="border:none;padding-bottom:0;margin-bottom:1rem">
-      <span class="sec-num"><i class="fa-solid fa-flag-checkered"></i></span>
-      <span class="sec-name">Interview abschließen · ${escapeHtml(check.rundeLabel)}</span>
-      ${timerPillHtml('sec-abschluss', 5)}
-    </div>
-    <div class="sec-body">
-    <p style="font-size:.9rem;color:var(--muted);margin-bottom:.75rem;line-height:1.5">
-      Wenn alle Pflichtfelder ausgefüllt sind, schließe das Interview hier ab. Erst dann gilt die Bewertung als vollständig gespeichert und erscheint in der Interview-Übersicht als <strong>Abgeschlossen</strong>.
-      PDF-Export findest du in der <strong>Interview-Übersicht</strong> (Button „Als PDF“).
-    </p>
-    <div class="abschluss-status ${done ? 'abschluss-status--done' : 'abschluss-status--draft'}">
-      <i class="fa-solid ${done ? 'fa-circle-check' : 'fa-hourglass-half'}"></i>
-      ${done ? `Abgeschlossen${doneDate ? ' · ' + escapeHtml(doneDate) : ''}` : `${check.missing.length} offene Punkt(e) · Entwurf`}
-    </div>
-    <div class="abschluss-checklist" id="abschluss-checklist">${renderAbschlussChecklistHtml()}</div>
+  return `<div class="iv-abschluss-bar" id="sec-abschluss">
     <div class="abschluss-actions">
-      ${done
-        ? `<button type="button" class="btn-secondary" id="iv-reopen-round"><i class="fa-solid fa-pen"></i> Bearbeitung fortsetzen</button>
-           <button type="button" class="btn-primary" id="iv-back-dash-abschluss"><i class="fa-solid fa-grip"></i> Zur Interview-Übersicht</button>`
-        : `<button type="button" class="btn-primary" id="iv-finalize" ${check.complete ? '' : 'disabled style="opacity:.55;cursor:not-allowed"'}><i class="fa-solid fa-cloud-arrow-up"></i> Interview abschließen &amp; speichern</button>
-           <button type="button" class="btn-secondary" id="iv-back-dash-abschluss"><i class="fa-solid fa-grip"></i> Später fortsetzen</button>`}
-    </div>
+      <button type="button" class="btn-primary" id="iv-save-interview"><i class="fa-solid fa-floppy-disk"></i> Speichern</button>
+      <button type="button" class="btn-secondary" id="iv-back-dash-abschluss"><i class="fa-solid fa-clock"></i> Später fortsetzen</button>
     </div>
   </div>`;
-}
-
-let abschlussRefreshTimer = null;
-function scheduleAbschlussRefresh() {
-  if (state.view !== 'interview') return;
-  if (abschlussRefreshTimer) clearTimeout(abschlussRefreshTimer);
-  abschlussRefreshTimer = setTimeout(() => {
-    const list = document.getElementById('abschluss-checklist');
-    const status = document.querySelector('#sec-abschluss .abschluss-status');
-    if (!list) return;
-    const check = collectCompletionChecks();
-    list.innerHTML = renderAbschlussChecklistHtml();
-    const btn = document.getElementById('iv-finalize');
-    if (btn) {
-      btn.disabled = !check.complete;
-      btn.style.opacity = check.complete ? '' : '.55';
-      btn.style.cursor = check.complete ? '' : 'not-allowed';
-    }
-    if (status && !currentSlice().completed) {
-      status.className = 'abschluss-status ' + (check.complete ? 'abschluss-status--done' : 'abschluss-status--draft');
-      status.innerHTML = `<i class="fa-solid ${check.complete ? 'fa-circle-check' : 'fa-hourglass-half'}"></i> ${check.complete ? 'Alle Pflichtfelder erfüllt – bereit zum Abschließen' : check.missing.length + ' offene Punkt(e) · Entwurf'}`;
-    }
-  }, 250);
 }
 
 function renderSection(s, num) {
@@ -2654,10 +2596,7 @@ function renderGesamtEvaluation() {
    ────────────────────────────────────────────── */
 function bindMainHandlers() {
   const main = document.getElementById('iv-main');
-  const fin = document.getElementById('iv-finalize');
-  if (fin) fin.addEventListener('click', () => finalizeInterview());
-  const reopen = document.getElementById('iv-reopen-round');
-  if (reopen) reopen.addEventListener('click', () => reopenInterviewRound());
+  document.getElementById('iv-save-interview')?.addEventListener('click', () => saveInterviewDraft());
   document.getElementById('iv-back-dash-abschluss')?.addEventListener('click', () => leaveInterviewToDashboard());
   main.querySelectorAll('[data-act]').forEach(el => {
     const act = el.dataset.act;
@@ -2669,7 +2608,6 @@ function bindMainHandlers() {
         const slice = currentSlice();
         slice.notes[el.dataset.qid] = v;
         scheduleSave();
-        scheduleAbschlussRefresh();
       });
     } else if (act === 'set-rating') {
       el.addEventListener('click', () => dispatch({ type: 'SET_RATING', qid: el.dataset.qid, evalIdx: +el.dataset.eval, value: +el.dataset.val }));
@@ -2682,18 +2620,13 @@ function bindMainHandlers() {
         const slice = currentSlice();
         slice.abschlussNotes[el.dataset.key] = el.value;
         scheduleSave();
-        scheduleAbschlussRefresh();
       });
     } else if (act === 'set-reco') {
-      el.addEventListener('click', () => {
-        dispatch({ type: 'SET_RECOMMENDATION', value: el.dataset.val });
-        scheduleAbschlussRefresh();
-      });
+      el.addEventListener('click', () => dispatch({ type: 'SET_RECOMMENDATION', value: el.dataset.val }));
     } else if (act === 'set-gesamt-note') {
       el.addEventListener('input', () => {
         currentSlice().gesamtNote = el.value;
         scheduleSave();
-        scheduleAbschlussRefresh();
       });
     } else if (act === 'set-zweitanmerkung') {
       el.addEventListener('input', () => {
