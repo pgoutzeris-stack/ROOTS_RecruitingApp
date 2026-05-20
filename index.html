@@ -157,7 +157,8 @@
 
     /* ─── Buttons ─── */
     .btn-primary { background: var(--brand); color: #fff; border: none; border-radius: 999px; padding: .68rem 1.55rem; font-family: inherit; font-size: .93rem; font-weight: 600; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(32,110,251,.3); }
-    .btn-primary:hover { background: var(--brand-dark); transform: translateY(-2px); }
+    .btn-primary:hover:not(:disabled) { background: var(--brand-dark); transform: translateY(-2px); }
+    .btn-primary:disabled { background: #cbd5e1; color: #64748b; box-shadow: none; transform: none; cursor: not-allowed; opacity: 1; }
     .btn-secondary { background: var(--bg); border: 1px solid var(--line); color: var(--ink); border-radius: 999px; padding: .68rem 1.3rem; font-family: inherit; font-size: .88rem; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; font-weight: 500; }
     .btn-secondary:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
     .btn-danger { background: var(--bg); border: 1px solid var(--line); color: var(--danger); border-radius: 999px; padding: .55rem 1rem; font-family: inherit; font-size: .85rem; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
@@ -1887,6 +1888,8 @@ function applyAction(s, a) {
 
 /* ─── Persistence ─── */
 let saveTimer = null;
+let dbSaveTimer = null;
+let dbAutosaveInFlight = false;
 let savingPromise = null;
 const setSaveStatus = (status, msg) => {
   const badge = document.getElementById('save-badge');
@@ -1908,7 +1911,57 @@ function scheduleSave() {
   saveTimer = setTimeout(() => {
     persistLocalDraft();
     refreshLiveScores();
+    updateInterviewSaveButtons();
   }, 120);
+  scheduleDbAutosave();
+}
+
+function scheduleDbAutosave() {
+  if (state.view !== 'interview') return;
+  if (dbSaveTimer) clearTimeout(dbSaveTimer);
+  dbSaveTimer = setTimeout(() => { persistInterviewDraftToDb(); }, 700);
+}
+
+function isInterviewRoundComplete() {
+  const check = collectCompletionChecks();
+  return check.complete && calculateScores().overall != null;
+}
+
+function updateInterviewSaveButtons() {
+  const btn = document.getElementById('iv-save-interview');
+  if (!btn || state.view !== 'interview') return;
+  const check = collectCompletionChecks();
+  const canFinalize = check.complete && calculateScores().overall != null;
+  btn.disabled = !canFinalize;
+  btn.title = canFinalize
+    ? 'Interview abschließen und speichern'
+    : `Noch ${check.missing.length} Punkt(e) offen – Entwurf wird automatisch gespeichert`;
+}
+
+async function persistInterviewDraftToDb() {
+  if (state.view !== 'interview' || dbAutosaveInFlight) return;
+  const slice = currentSlice();
+  slice.completed = false;
+  slice.completedAt = null;
+  dbAutosaveInFlight = true;
+  try {
+    await saveCurrent({ allowIncomplete: true, silent: true });
+  } catch (e) {
+    console.error('persistInterviewDraftToDb', e);
+  } finally {
+    dbAutosaveInFlight = false;
+    updateInterviewSaveButtons();
+  }
+}
+
+async function flushInterviewDraftToDb() {
+  if (dbSaveTimer) { clearTimeout(dbSaveTimer); dbSaveTimer = null; }
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+  persistLocalDraft();
+  const slice = currentSlice();
+  slice.completed = false;
+  slice.completedAt = null;
+  await saveCurrent({ allowIncomplete: true });
 }
 
 function refreshLiveScores() {
@@ -2025,9 +2078,13 @@ async function saveCurrent(opts = {}) {
         ? `Noch ${check.missing.length} Punkt(e) offen – Speichern nicht möglich`
         : 'Score noch nicht ermittelt – bitte alle Bewertungen ausfüllen';
       if (opts.throwOnError) throw new Error(msg);
-      toast(msg, 'error');
+      if (!opts.silent) toast(msg, 'error');
       return false;
     }
+  } else {
+    const activeSlice = isZweit() ? state.zweit : state.erst;
+    activeSlice.completed = false;
+    activeSlice.completedAt = null;
   }
   const activeSlice = isZweit() ? state.zweit : state.erst;
   const row = {
@@ -2068,34 +2125,46 @@ async function saveCurrentImmediate(opts = {}) {
   await saveCurrent(opts);
 }
 
-async function finishActiveRoundAndGoDashboard() {
+async function saveInterviewComplete() {
   const check = collectCompletionChecks();
   if (!check.complete) {
-    toast(`Noch ${check.missing.length} Punkt(e) offen – nicht gespeichert`, 'error');
-    switchView('dashboard');
+    toast(`Noch ${check.missing.length} Punkt(e) offen`, 'error');
+    updateInterviewSaveButtons();
     return;
   }
-  const scores = calculateScores();
-  if (scores.overall == null) {
+  if (calculateScores().overall == null) {
     toast('Score noch nicht ermittelt – bitte alle Bewertungen ausfüllen', 'error');
-    switchView('dashboard');
+    updateInterviewSaveButtons();
     return;
   }
   try {
     check.slice.completed = true;
     check.slice.completedAt = new Date().toISOString();
+    if (!isZweit() && state.erst.recommendation === ZWEIT_INVITE_RECO) {
+      ensureZweitInterviewCreated(state.erst, state.zweit);
+    }
     await saveCurrentImmediate({ throwOnError: true });
-    toast(`${check.rundeLabel} gespeichert`);
+    toast(`${check.rundeLabel} abgeschlossen und gespeichert`);
     await loadAllCandidates();
+    switchView('dashboard');
   } catch (e) {
-    console.error('finishActiveRoundAndGoDashboard', e);
+    console.error('saveInterviewComplete', e);
+    check.slice.completed = false;
+    check.slice.completedAt = null;
     toast('Speichern fehlgeschlagen', 'error');
   }
-  switchView('dashboard');
 }
 
 async function leaveInterviewToDashboard() {
-  await finishActiveRoundAndGoDashboard();
+  try {
+    await flushInterviewDraftToDb();
+    await loadAllCandidates();
+    toast('Entwurf gespeichert');
+  } catch (e) {
+    console.error('leaveInterviewToDashboard', e);
+    toast('Entwurf konnte nicht gespeichert werden', 'error');
+  }
+  switchView('dashboard');
 }
 
 function isRoundCompletedInData(c, runde) {
@@ -2165,7 +2234,7 @@ function collectCompletionChecks(runde = null) {
 }
 
 async function saveInterviewDraft() {
-  await finishActiveRoundAndGoDashboard();
+  await saveInterviewComplete();
 }
 
 async function finalizeInterview() {
@@ -2582,6 +2651,8 @@ function renderInterview(partial = false) {
     requestAnimationFrame(() => {
       initInterviewScrollAndTimers();
       refreshLiveScores();
+      updateInterviewSaveButtons();
+      scheduleDbAutosave();
     });
   }
 }
@@ -2834,7 +2905,10 @@ let ivFooterHandlersBound = false;
 function bindInterviewFooterHandlers() {
   if (ivFooterHandlersBound) return;
   ivFooterHandlersBound = true;
-  document.getElementById('iv-save-interview')?.addEventListener('click', () => saveInterviewDraft());
+  document.getElementById('iv-save-interview')?.addEventListener('click', () => {
+    if (!isInterviewRoundComplete()) return;
+    saveInterviewDraft();
+  });
   document.getElementById('iv-back-dash-abschluss')?.addEventListener('click', () => leaveInterviewToDashboard());
 }
 
@@ -3241,10 +3315,12 @@ document.querySelectorAll('.app-nav-btn[data-view]').forEach(btn => {
   btn.addEventListener('click', () => {
     const target = btn.dataset.view;
     if (state.view === 'interview' && target !== 'interview') {
-      if (target === 'dashboard') leaveInterviewToDashboard();
-      else {
-        persistLocalDraft();
-        switchView(target);
+      if (target === 'dashboard') {
+        leaveInterviewToDashboard();
+      } else {
+        flushInterviewDraftToDb()
+          .then(() => switchView(target))
+          .catch(() => { persistLocalDraft(); switchView(target); });
       }
       return;
     }
