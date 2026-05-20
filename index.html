@@ -238,7 +238,12 @@
     .iv-content-col { min-width: 0; display: flex; flex-direction: column; flex: 1; min-height: 0; height: 100%; }
     #view-interview.active { display: flex; flex-direction: column; height: calc(100dvh - 72px); max-height: calc(100dvh - 72px); }
     #view-interview .iv-layout { flex: 1; min-height: 0; overflow: hidden; }
-    .iv-sidenav-runde { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); }
+    .iv-sidenav-applicant { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); }
+    .iv-sidenav-applicant-lines { display: flex; flex-direction: column; gap: .4rem; margin-top: .5rem; }
+    .iv-sidenav-applicant-line { font-size: .78rem; color: var(--muted); line-height: 1.4; }
+    .iv-sidenav-applicant-line span { display: block; font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 1px; }
+    .iv-sidenav-applicant-empty { font-size: .8rem; color: var(--muted); margin: .5rem 0 0; line-height: 1.45; }
+    .iv-sidenav-cv-btn { width: 100%; margin-top: .65rem; justify-content: center; font-size: .8rem; padding: .45rem .75rem; }
     .iv-sidenav-owner { padding-top: 1rem; margin-top: 1rem; border-top: 1px solid var(--line); }
     .iv-sidenav-owner select { width: 100%; height: 38px; margin-top: .4rem; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .88rem; background: var(--bg); }
     .iv-owner-display { display: flex; align-items: center; gap: 10px; margin-top: .5rem; }
@@ -626,7 +631,7 @@
 <div class="team-panel-overlay" id="team-panel-overlay">
   <div class="team-panel-card" role="dialog" aria-labelledby="team-panel-title">
     <div class="team-panel-head">
-      <h3 id="team-panel-title">Team &amp; Owner</h3>
+      <h3 id="team-panel-title">Interviewer &amp; Einladungen</h3>
       <p id="team-panel-subtitle"></p>
     </div>
     <div class="team-panel-body" id="team-panel-body"></div>
@@ -1099,6 +1104,7 @@ function ensureZweitInterviewCreated(erstSlice, zweitSlice) {
   const ownerId = erstSlice.meta?.ownerId || window.RootsUser?._uid || '';
   const ownerName = erstSlice.meta?.ownerName || erstSlice.meta?.interviewer || window.RootsUser?._p?.full_name || '';
   setSliceOwner(zweitSlice, ownerId, ownerName);
+  syncInviteesOwner(zweitSlice);
   zweitSlice.meta.zweitCreated = true;
   zweitSlice.meta.createdAt = new Date().toISOString();
   return true;
@@ -1109,9 +1115,9 @@ function buildDashboardEntries(candidates) {
   for (const c of candidates) {
     c.erst = c.erst || {};
     c.zweit = c.zweit || {};
-    if (canStartZweitgespraech(c)) ensureZweitInterviewCreated(c.erst, c.zweit);
     entries.push({ candidate: c, runde: 'erst' });
-    if (canStartZweitgespraech(c) || c.zweit?.meta?.zweitCreated) {
+    if (canStartZweitgespraech(c)) {
+      ensureZweitInterviewCreated(c.erst, c.zweit);
       entries.push({ candidate: c, runde: 'zweit' });
     }
   }
@@ -1368,7 +1374,7 @@ function renderLaneOwnerBtn(entry) {
   const avatar = memberAvatarHtml(owner.name, owner.avatar, 40);
   return `<div class="lane-owner" data-stop-row="1">
     <span class="lane-owner-avatar">${avatar}</span>
-    <button type="button" class="lane-team-btn" data-act="team-panel" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="Team &amp; Owner"><i class="fa-solid fa-users"></i></button>
+    <button type="button" class="lane-team-btn" data-act="team-panel" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="Interviewer"><i class="fa-solid fa-user-tie"></i></button>
   </div>`;
 }
 
@@ -1382,16 +1388,54 @@ function backfillSliceOwner(slice) {
   }
 }
 
+function getApplicantForInterview() {
+  if (state.linkedApplicantId) {
+    return state.applicants.find(a => a.id === state.linkedApplicantId) || null;
+  }
+  const sid = state.erst.meta.sessionId;
+  if (!sid) return null;
+  return state.applicants.find(a => a.session_id === sid) || null;
+}
+
+function renderSidenavApplicantHtml() {
+  const a = getApplicantForInterview();
+  if (!a) {
+    return `<div class="iv-sidenav-applicant">
+      <div class="iv-sidenav-h">Bewerber</div>
+      <p class="iv-sidenav-applicant-empty">Keine Stammdaten verknüpft.</p>
+    </div>`;
+  }
+  const docs = a.applicant_documents || [];
+  const cv = docs.find(d => d.doc_type === 'cv' && d.file_url) || docs.find(d => d.file_url);
+  const line = (label, val) => val
+    ? `<div class="iv-sidenav-applicant-line"><span>${label}</span>${escapeHtml(val)}</div>`
+    : '';
+  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('de-DE') : '';
+  const lines = [
+    line('Rolle', a.role_title),
+    line('E-Mail', a.email),
+    line('Telefon', a.phone),
+    line('Geburtsdatum', fmtDate(a.date_of_birth)),
+    line('Einstieg', fmtDate(a.availability_start)),
+  ].filter(Boolean).join('');
+  const cvBtn = cv
+    ? `<a href="${escapeHtml(cv.file_url)}" target="_blank" rel="noopener" class="btn-secondary iv-sidenav-cv-btn"><i class="fa-solid fa-file-pdf"></i> CV anzeigen</a>`
+    : '';
+  return `<div class="iv-sidenav-applicant">
+    <div class="iv-sidenav-h">Bewerber</div>
+    <div class="iv-sidenav-applicant-lines">${lines || '<p class="iv-sidenav-applicant-empty">Noch keine Details hinterlegt.</p>'}</div>
+    ${cvBtn}
+  </div>`;
+}
+
 function renderSidenavOwnerHtml() {
-  const runde = isZweit() ? 'zweit' : 'erst';
   const slice = isZweit() ? state.zweit : state.erst;
   const owner = resolveOwnerDisplay(slice, state.erst.meta.interviewer);
   const avatar = memberAvatarHtml(owner.name, owner.avatar, 36);
-  const sid = state.erst.meta.sessionId;
   return `<div class="iv-sidenav-owner">
-    <div class="iv-sidenav-h">Team</div>
+    <div class="iv-sidenav-h">Interviewer</div>
     <div class="iv-owner-display">${avatar}
-      <button type="button" class="lane-team-btn" id="iv-sidenav-team-btn" title="Team &amp; Owner"><i class="fa-solid fa-users"></i></button>
+      <button type="button" class="lane-team-btn" id="iv-sidenav-team-btn" title="Interviewer"><i class="fa-solid fa-user-tie"></i></button>
     </div>
   </div>`;
 }
@@ -1618,8 +1662,8 @@ function dispatch(action) {
   }
   if (state.view === 'interview') {
     if (action.type === 'SET_RECOMMENDATION') {
-      updateRundeSelect();
       refreshRecoButtons(action.value);
+      if (state.view === 'interview') renderSidenav();
     } else if (action.type === 'SET_RATING') {
       refreshRatingPills(action.qid, action.evalIdx, action.value);
     } else if (action.type === 'SET_CULTURE_FIT') {
@@ -1987,6 +2031,7 @@ function loadCandidateIntoInterview(c, opts = {}) {
   }
   updateInterviewSubtitle();
   switchView('interview');
+  loadAllApplicants().then(() => { if (state.view === 'interview') renderSidenav(); });
 }
 
 function newInterview(opts = {}) {
@@ -2121,9 +2166,7 @@ function renderDashboardLane(entry) {
   const c = entry.candidate;
   const slice = entry.runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
   const reco = slice.recommendation || '';
-  const recoDisplay = entry.runde === 'erst'
-    ? (reco || (canStartZweitgespraech(c) ? ZWEIT_INVITE_RECO : ''))
-    : reco;
+  const recoDisplay = reco || '';
   const recoCat = recoCategory(recoDisplay);
   const scores = getRoundScores(c, entry.runde);
   const score = scores.overall != null ? scores.overall.toFixed(1) : '–';
@@ -2246,7 +2289,6 @@ function getRoundScores(c, runde) {
    Render: Interview
    ────────────────────────────────────────────── */
 function renderInterview(partial = false) {
-  if (!partial) updateRundeSelect();
   renderSidenav();
   if (!partial) {
     renderMain();
@@ -2264,19 +2306,11 @@ function renderSidenav() {
     return `<a href="#${tid}" data-target="${tid}">${escapeHtml(label)}</a>`;
   }).join('')    + `<a href="#sec-gesamt" data-target="sec-gesamt" style="margin-top:.5rem;border-top:1px solid var(--line);padding-top:.65rem">Gesamtbewertung</a>`
    + `<a href="#sec-abschluss" data-target="sec-abschluss">Abschluss</a>`
-   + `<div class="iv-sidenav-runde">
-        <div class="iv-sidenav-h">Runde</div>
-        <select id="iv-sidenav-runde">
-          <option value="erst">Erstgespräch</option>
-          <option value="zweit">Zweitgespräch</option>
-        </select>
-      </div>`
+   + renderSidenavApplicantHtml()
    + renderSidenavOwnerHtml()
    + `<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:.4rem">
         <button class="btn-ghost" id="iv-back-dash" style="justify-content:center"><i class="fa-solid fa-arrow-left"></i> Zurück zu Interviews</button>
       </div>`;
-  updateRundeSelect();
-  bindRundeSelectHandler(document.getElementById('iv-sidenav-runde'));
   const teamBtn = document.getElementById('iv-sidenav-team-btn');
   if (teamBtn) {
     teamBtn.addEventListener('click', (e) => {
