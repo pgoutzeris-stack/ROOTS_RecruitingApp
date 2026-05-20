@@ -268,7 +268,7 @@
     .iv-sidenav-runde select { width: 100%; height: 38px; margin-top: .4rem; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .88rem; background: var(--bg); color: var(--ink); cursor: pointer; }
     .bew-name-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     @media (max-width: 720px) { .bew-name-row { grid-template-columns: 1fr; } }
-    .iv-main { min-width: 0; flex: 1; height: 100%; min-height: 0; overflow-y: auto; scroll-snap-type: y proximity; scroll-behavior: smooth; scroll-padding-top: 0; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
+    .iv-main { min-width: 0; flex: 1; height: 100%; min-height: 0; overflow-y: auto; scroll-snap-type: y proximity; scroll-behavior: smooth; scroll-padding-top: 0; scroll-padding-bottom: 2rem; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
     .btn-zweit-quick { background: var(--brand); color: #fff; border: none; }
     .btn-zweit-quick:hover { background: var(--brand-dark); color: #fff; }
     .cand-actions-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: .35rem; }
@@ -278,6 +278,7 @@
 
     /* ─── Sections: frei im Kapitel scrollen, beim Verlassen weich einrasten ─── */
     .iv-snap-section { min-height: 100%; scroll-snap-align: start; scroll-snap-stop: always; scroll-margin-top: 0; padding: 1.75rem 2rem 2.5rem; box-sizing: border-box; background: var(--bg); }
+    .gesamt-panel { min-height: auto; scroll-snap-align: none; scroll-snap-stop: normal; padding: 1.75rem 2rem 1rem; box-sizing: border-box; background: var(--bg); }
     .sec-block { margin-bottom: 0; }
     .sec-body { display: flex; flex-direction: column; gap: 1.5rem; max-width: 900px; }
     .sec-title { display: flex; align-items: flex-start; gap: 14px; flex-wrap: nowrap; border-bottom: 1px solid var(--line); padding-bottom: 1.25rem; margin-bottom: 1.5rem; }
@@ -369,7 +370,9 @@
     .gesamt-note { width: 100%; min-height: 100px; margin-top: 1rem; padding: 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .9rem; resize: vertical; outline: none; }
     .gesamt-note:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
 
-    .gesamt-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
+    .gesamt-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 1.5rem; padding: 1.25rem 0 1.5rem; border-top: 1px solid var(--line); position: sticky; bottom: 0; z-index: 6; background: linear-gradient(180deg, rgba(255,255,255,0) 0%, var(--bg) 18%); }
+    [data-admin-only] { display: none !important; }
+    [data-admin-only].is-admin-visible { display: flex !important; }
     .cand-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 700; padding: .25rem .55rem; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
     .cand-badge--done { background: #ecfdf5; color: #047857; }
     .cand-badge--draft { background: #fff7ed; color: #b45309; }
@@ -764,8 +767,11 @@ window.RootsUser = window.RootsUser || {
   _initials(n){if(!n)return'?';return n.trim().split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase()},
   _avatarSpan(url,name,size){const ini=this._initials(name),s=`width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:${Math.floor(size*.38)}px;flex-shrink:0;`;if(url)return`<span style="${s}background:var(--brand-light,#eff6ff)"><img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.innerHTML='<span style=color:var(--brand,#206efb)>${ini}</span>'"></span>`;return`<span style="${s}background:var(--brand-light,#eff6ff);color:var(--brand,#206efb)">${ini}</span>`},
   async _loadAndMount(sb){this._sb=sb;const{data:{session}}=await sb.auth.getSession();if(!session)return;this._uid=session.user.id;const{data}=await sb.schema('users').from('profiles').select('id,email,full_name,position,avatar_url,linkedin_url,app_role').eq('id',this._uid).single();this._p=data||{id:this._uid,email:session.user.email,app_role:'reader'};this._mount();},
-  _mount(){const p=this._p;const avEl=document.getElementById('roots-header-avatar');const nmEl=document.getElementById('roots-header-name');if(avEl){avEl.innerHTML=this._avatarSpan(p.avatar_url,p.full_name,34);avEl.style.cursor='pointer';avEl.onclick=()=>this.openSettings();}if(nmEl){nmEl.textContent=p.full_name||p.email||'';nmEl.style.cursor='pointer';nmEl.onclick=()=>this.openSettings();}
-  },
+  isAdmin(){return String(this._p?.app_role||'').trim()==='admin'},
+  isReader(){return String(this._p?.app_role||'').trim()==='reader'},
+  getProfile(){return this._p},
+  _syncAdminVisibility(){const show=this.isAdmin();document.querySelectorAll('[data-admin-only]').forEach(el=>{el.classList.toggle('is-admin-visible',show);el.setAttribute('aria-hidden',show?'false':'true');});},
+  _mount(){const p=this._p;const avEl=document.getElementById('roots-header-avatar');const nmEl=document.getElementById('roots-header-name');if(avEl){avEl.innerHTML=this._avatarSpan(p.avatar_url,p.full_name,34);avEl.style.cursor='pointer';avEl.onclick=()=>this.openSettings();}if(nmEl){nmEl.textContent=p.full_name||p.email||'';nmEl.style.cursor='pointer';nmEl.onclick=()=>this.openSettings();}this._syncAdminVisibility();},
   _cs:null,
   _cropDraw(){const cv=document.getElementById('rus-crop-canvas');if(!cv)return;const ctx=cv.getContext('2d');ctx.clearRect(0,0,120,120);if(this._cs?.img){const{img,x,y,scale}=this._cs,cr=Math.max(120/img.naturalWidth,120/img.naturalHeight),dw=img.naturalWidth*cr*scale,dh=img.naturalHeight*cr*scale,dx=(120-dw)/2+x,dy=(120-dh)/2+y;ctx.save();ctx.beginPath();ctx.arc(60,60,60,0,Math.PI*2);ctx.clip();ctx.drawImage(img,dx,dy,dw,dh);ctx.restore();}else{ctx.beginPath();ctx.arc(60,60,60,0,Math.PI*2);ctx.fillStyle='#eff6ff';ctx.fill();ctx.fillStyle='#206efb';ctx.font='bold 30px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(this._initials(this._p&&this._p.full_name),60,60);}},
   _cropLoad(file){if(!file||!file.type.startsWith('image/'))return;const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{this._cs={img,x:0,y:0,scale:1,dragging:false,lastX:0,lastY:0};document.getElementById('rus-zoom-row').style.display='flex';document.getElementById('rus-zoom').value=1;this._cropDraw();};img.src=url;},
@@ -1007,7 +1013,7 @@ const RECO_OPTIONS_ZWEIT = ['Einstellen', 'Vielleicht – weitere Diskussion', '
    ────────────────────────────────────────────── */
 const INITIAL_STATE = {
   checks: {}, notes: {}, observations: {}, ratings: {},
-  meta: { kandidat: '', interviewer: '', datum: '', runde: 'erst', sessionId: '', ownerId: '', ownerName: '', zweitCreated: false, invitees: [] },
+  meta: { kandidat: '', interviewer: '', datum: '', runde: 'erst', sessionId: '', ownerId: '', ownerName: '', initialOwnerId: '', zweitCreated: false, invitees: [] },
   gesamtNote: '', recommendation: '',
   abschlussNotes: {}, rtiDone: false, caseChecks: {}, zweitAnmerkung: '',
   cultureFitAnswers: {},
@@ -1118,6 +1124,7 @@ function ensureZweitInterviewCreated(erstSlice, zweitSlice) {
   const ownerId = erstSlice.meta?.ownerId || window.RootsUser?._uid || '';
   const ownerName = erstSlice.meta?.ownerName || erstSlice.meta?.interviewer || window.RootsUser?._p?.full_name || '';
   setSliceOwner(zweitSlice, ownerId, ownerName);
+  zweitSlice.meta.initialOwnerId = erstSlice.meta?.initialOwnerId || erstSlice.meta?.ownerId || ownerId;
   syncInviteesOwner(zweitSlice);
   zweitSlice.meta.zweitCreated = true;
   zweitSlice.meta.createdAt = new Date().toISOString();
@@ -1193,11 +1200,38 @@ async function notifyUsers(userIds, payload) {
   }
 }
 
+function ensureInitialOwner(slice) {
+  if (!slice?.meta) return;
+  if (!slice.meta.initialOwnerId) {
+    slice.meta.initialOwnerId = slice.meta.ownerId || window.RootsUser?._uid || '';
+  }
+}
+
+function canTransferInterviewOwner(slice) {
+  const uid = window.RootsUser?._uid;
+  if (!uid || !slice?.meta) return false;
+  ensureInitialOwner(slice);
+  return String(slice.meta.initialOwnerId || '') === uid;
+}
+
+function canOpenTeamPanel(slice) {
+  const uid = window.RootsUser?._uid;
+  if (!uid || !slice?.meta) return false;
+  ensureInitialOwner(slice);
+  if (canTransferInterviewOwner(slice) || slice.meta.ownerId === uid) return true;
+  return getSliceParticipants(slice).some(p => p.userId === uid);
+}
+
 async function setRoundOwner(sessionId, runde, userId, opts = {}) {
   const c = state.candidates.find(x => x.session_id === sessionId);
   if (!c) return;
   const member = getTeamMember(userId);
   const slice = runde === 'zweit' ? (c.zweit = c.zweit || deepClone(INITIAL_STATE)) : (c.erst = c.erst || deepClone(INITIAL_STATE));
+  ensureInitialOwner(slice);
+  if (!opts.force && userId && userId !== slice.meta?.ownerId && !canTransferInterviewOwner(slice)) {
+    toast('Nur der initiale Owner darf die Owner-Rolle übergeben', 'error');
+    return;
+  }
   const prevOwner = slice.meta?.ownerId;
   setSliceOwner(slice, userId, member?.full_name || '');
   try {
@@ -1270,6 +1304,10 @@ function openTeamPanel(sessionId, runde) {
   const c = state.candidates.find(x => x.session_id === sessionId);
   if (!c) return;
   const slice = runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
+  if (!canOpenTeamPanel(slice)) {
+    toast('Keine Berechtigung für Interviewer-Einstellungen', 'error');
+    return;
+  }
   const ownerId = slice.meta?.ownerId || '';
   const participants = getSliceParticipants(slice).filter(i => i.role === 'participant').map(i => i.userId);
   state.teamPanel = { sessionId, runde, ownerId, participantIds: new Set(participants) };
@@ -1301,12 +1339,18 @@ function renderTeamPanelBody() {
       </span>
     </label>`;
   };
+  const c = state.candidates.find(x => x.session_id === tp.sessionId);
+  const slice = tp.runde === 'zweit' ? (c?.zweit || {}) : (c?.erst || {});
+  const allowOwnerTransfer = canTransferInterviewOwner(slice);
   const members = state.teamMembers.filter(m => m.id !== window.RootsUser._uid);
-  body.innerHTML = `
-    <div class="team-panel-section">
+  const ownerSection = allowOwnerTransfer
+    ? `<div class="team-panel-section">
       <h4>Owner übergeben</h4>
+      <p style="font-size:.8rem;color:var(--muted);margin:0 0 .6rem;line-height:1.45">Nur du als initiale:r Owner:in kannst die Verantwortung übergeben.</p>
       <div class="team-member-grid" id="tp-owner-list">${state.teamMembers.map(m => memberRow(m, 'owner')).join('')}</div>
-    </div>
+    </div>`
+    : '';
+  body.innerHTML = ownerSection + `
     <div class="team-panel-section">
       <h4>Zum Termin einladen</h4>
       <div class="team-member-grid" id="tp-invite-list">${members.length ? members.map(m => memberRow(m, 'participant')).join('') : '<p style="color:var(--muted);font-size:.85rem">Keine weiteren Teammitglieder.</p>'}</div>
@@ -1347,7 +1391,13 @@ async function saveTeamPanel() {
   const prevParticipants = new Set(getSliceParticipants(slice).filter(i => i.role === 'participant').map(i => i.userId));
   const prevOwner = slice.meta?.ownerId;
 
-  if (tp.ownerId) await setRoundOwner(tp.sessionId, tp.runde, tp.ownerId, { notify: tp.ownerId !== prevOwner, silent: true });
+  if (tp.ownerId && tp.ownerId !== prevOwner) {
+    if (!canTransferInterviewOwner(slice)) {
+      toast('Nur der initiale Owner darf die Owner-Rolle übergeben', 'error');
+      return;
+    }
+    await setRoundOwner(tp.sessionId, tp.runde, tp.ownerId, { notify: tp.ownerId !== prevOwner, silent: true });
+  }
 
   const participants = [...tp.participantIds]
     .filter(uid => uid !== slice.meta?.ownerId)
@@ -1421,14 +1471,19 @@ function renderLaneOwnerBtn(entry) {
   const c = entry.candidate;
   const slice = entry.runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
   const members = getLaneTeamMembers(slice, c.interviewer);
+  const editBtn = canOpenTeamPanel(slice)
+    ? `<button type="button" class="lane-team-btn" data-act="team-panel" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="Interviewer bearbeiten"><i class="fa-solid fa-pencil"></i></button>`
+    : '';
   return `<div class="lane-owner" data-stop-row="1">
     <div class="lane-avatar-stack">${renderLaneTeamAvatars(members, 36)}</div>
-    <button type="button" class="lane-team-btn" data-act="team-panel" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="Interviewer bearbeiten"><i class="fa-solid fa-pencil"></i></button>
+    ${editBtn}
   </div>`;
 }
 
 function backfillSliceOwner(slice) {
-  if (!slice || slice.meta?.ownerId) return;
+  if (!slice) return;
+  ensureInitialOwner(slice);
+  if (slice.meta?.ownerId) return;
   const name = (slice.meta?.interviewer || '').trim();
   const m = state.teamMembers.find(t => (t.full_name || '').trim() === name);
   if (m) setSliceOwner(slice, m.id, m.full_name);
@@ -1485,11 +1540,14 @@ function renderSidenavApplicantHtml() {
 function renderSidenavOwnerHtml() {
   const slice = isZweit() ? state.zweit : state.erst;
   const members = getLaneTeamMembers(slice, state.erst.meta.interviewer);
+  const editBtn = canOpenTeamPanel(slice)
+    ? `<button type="button" class="lane-team-btn" id="iv-sidenav-team-btn" title="Interviewer bearbeiten"><i class="fa-solid fa-pencil"></i></button>`
+    : '';
   return `<div class="iv-sidenav-owner">
     <div class="iv-sidenav-h">Interviewer</div>
     <div class="iv-owner-display">
       <div class="lane-avatar-stack">${renderLaneTeamAvatars(members, 32)}</div>
-      <button type="button" class="lane-team-btn" id="iv-sidenav-team-btn" title="Interviewer bearbeiten"><i class="fa-solid fa-pencil"></i></button>
+      ${editBtn}
     </div>
   </div>`;
 }
@@ -2140,6 +2198,8 @@ function newInterview(opts = {}) {
   if (p && uid) {
     setSliceOwner(state.erst, uid, p.full_name || '');
     setSliceOwner(state.zweit, uid, p.full_name || '');
+    state.erst.meta.initialOwnerId = uid;
+    state.zweit.meta.initialOwnerId = uid;
   } else {
     syncInviteesOwner(state.erst);
     syncInviteesOwner(state.zweit);
@@ -2619,7 +2679,7 @@ function renderGesamtEvaluation() {
     </div>`;
   }
 
-  return `<div class="iv-snap-section gesamt-panel" id="sec-gesamt" data-section-id="sec-gesamt" data-planned-min="10">
+  return `<div class="gesamt-panel" id="sec-gesamt" data-section-id="sec-gesamt" data-planned-min="10">
     <div class="sec-title" style="border:none;padding-bottom:0;margin-bottom:1rem">
       <span class="sec-num"><i class="fa-solid fa-star"></i></span>
       <span class="sec-name">Gesamtbewertung ${zweit ? '· Zweitgespräch' : '· Erstgespräch'}</span>
