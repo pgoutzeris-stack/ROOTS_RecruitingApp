@@ -202,7 +202,7 @@
     #view-interview.active { display: flex; flex-direction: column; height: calc(100dvh - 128px); max-height: calc(100dvh - 128px); }
     #view-interview .iv-meta-panel { flex-shrink: 0; margin-bottom: .75rem; }
     #view-interview .iv-layout { flex: 1; min-height: 0; overflow: hidden; }
-    .iv-main { min-width: 0; flex: 1; height: 100%; min-height: 0; overflow-y: auto; scroll-snap-type: y proximity; scroll-behavior: smooth; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
+    .iv-main { min-width: 0; flex: 1; height: 100%; min-height: 0; overflow-y: auto; scroll-snap-type: y mandatory; scroll-behavior: smooth; scroll-padding-top: 0; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
     .btn-zweit-quick { background: var(--brand); color: #fff; border: none; }
     .btn-zweit-quick:hover { background: var(--brand-dark); color: #fff; }
     .cand-actions-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: .35rem; }
@@ -211,17 +211,19 @@
     .iv-zweit-note-body { font-size: .9rem; color: var(--ink); white-space: pre-wrap; line-height: 1.55; }
 
     /* ─── Sections: mind. ein Viewport, weiches Scrollen durch langen Inhalt ─── */
-    .iv-snap-section { min-height: 100%; scroll-snap-align: start; scroll-snap-stop: normal; padding: 1.75rem 2rem 2.5rem; box-sizing: border-box; background: var(--bg); }
+    .iv-snap-section { min-height: 100%; scroll-snap-align: start; scroll-snap-stop: normal; scroll-margin-top: 0; padding: 1.75rem 2rem 2.5rem; box-sizing: border-box; background: var(--bg); }
     .sec-block { margin-bottom: 0; }
     .sec-body { display: flex; flex-direction: column; gap: 1.5rem; max-width: 900px; }
     .sec-title { display: flex; align-items: flex-start; gap: 14px; flex-wrap: nowrap; border-bottom: 1px solid var(--line); padding-bottom: 1.25rem; margin-bottom: 1.5rem; }
     .sec-num { font-size: 2rem; font-weight: 800; color: var(--brand); letter-spacing: -1px; line-height: 1; flex-shrink: 0; }
     .sec-name { font-size: 1.25rem; font-weight: 700; color: var(--ink); flex: 1; min-width: 0; line-height: 1.35; }
     .sec-timer-pill { margin-left: auto; flex-shrink: 0; padding: .4rem .85rem; border-radius: 999px; background: rgba(15,23,42,.04); border: 1px solid var(--line); font-size: .78rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--muted); letter-spacing: .03em; white-space: nowrap; }
-    .sec-timer-pill.is-over { color: #b45309; border-color: #fcd34d; background: #fffbeb; }
-    .sec-timer-pill .t-elapsed { color: var(--ink); font-weight: 700; }
+    .sec-timer-pill.is-over { border-color: #fecaca; background: #fef2f2; }
+    .sec-timer-pill .t-elapsed { color: var(--ink); font-weight: 700; transition: color .2s; }
+    .sec-timer-pill.is-over .t-elapsed { color: #dc2626; }
     .sec-timer-pill .t-sep { margin: 0 .35rem; opacity: .45; font-weight: 500; }
     .sec-timer-pill .t-target { color: var(--muted); font-weight: 500; }
+    .sec-timer-pill.is-over .t-target { color: #f87171; }
     .sec-hint { background: none; border: none; border-left: 3px solid var(--brand); padding: 0 0 0 .85rem; font-size: .88rem; color: var(--muted); display: flex; gap: .5rem; line-height: 1.6; }
     .sec-hint b { color: var(--brand-dark); }
     /* ─── Inhalt: flach, ohne Kacheln-in-Kacheln ─── */
@@ -1003,6 +1005,8 @@ function parseSectionMinutes(timeStr) {
 }
 
 let ivSectionObserver = null;
+let ivScrollSyncTimer = null;
+let ivScrollHandler = null;
 let activeSectionId = null;
 const sectionTimerState = {};
 
@@ -1017,52 +1021,93 @@ function timerPillHtml(sectionId, plannedMin) {
   return `<span class="sec-timer-pill" id="timer-${sectionId}" data-planned-min="${plannedMin}"><span class="t-elapsed">00:00</span><span class="t-sep">/</span><span class="t-target">${target}</span></span>`;
 }
 
-function stopSectionTimer(sectionId) {
+function pauseSectionTimer(sectionId) {
   if (!sectionId || !sectionTimerState[sectionId]) return;
   const st = sectionTimerState[sectionId];
-  if (st.interval) { clearInterval(st.interval); st.interval = null; }
+  if (!st.interval) return;
+  st.elapsed = Math.floor((Date.now() - st.startedAt) / 1000);
+  clearInterval(st.interval);
+  st.interval = null;
 }
 
 function stopAllSectionTimers() {
-  Object.keys(sectionTimerState).forEach(stopSectionTimer);
+  Object.keys(sectionTimerState).forEach(pauseSectionTimer);
 }
 
 function updateTimerDisplay(sectionId, elapsedSec, plannedMin) {
   const el = document.getElementById('timer-' + sectionId);
   if (!el) return;
+  const isOver = elapsedSec > plannedMin * 60;
   const elapsedEl = el.querySelector('.t-elapsed');
   if (elapsedEl) elapsedEl.textContent = formatTimer(elapsedSec);
   else el.textContent = `${formatTimer(elapsedSec)} / ${formatTimer(plannedMin * 60)}`;
-  el.classList.toggle('is-over', elapsedSec > plannedMin * 60);
+  el.classList.toggle('is-over', isOver);
 }
 
-function startSectionTimer(sectionId, plannedMin) {
+function resumeSectionTimer(sectionId, plannedMin) {
   if (!sectionId) return;
-  if (!sectionTimerState[sectionId]) sectionTimerState[sectionId] = { elapsed: 0, interval: null, plannedMin };
+  if (!sectionTimerState[sectionId]) {
+    sectionTimerState[sectionId] = { elapsed: 0, interval: null, plannedMin, startedAt: Date.now() };
+  }
   const st = sectionTimerState[sectionId];
   st.plannedMin = plannedMin;
   if (st.interval) return;
   st.startedAt = Date.now() - (st.elapsed || 0) * 1000;
   st.interval = setInterval(() => {
     st.elapsed = Math.floor((Date.now() - st.startedAt) / 1000);
-    updateTimerDisplay(sectionId, st.elapsed, plannedMin);
+    updateTimerDisplay(sectionId, st.elapsed, st.plannedMin);
   }, 1000);
-  updateTimerDisplay(sectionId, st.elapsed || 0, plannedMin);
+  updateTimerDisplay(sectionId, st.elapsed || 0, st.plannedMin);
 }
 
 function activateInterviewSection(sectionId, plannedMin) {
-  if (!sectionId || activeSectionId === sectionId) return;
-  stopSectionTimer(activeSectionId);
+  if (!sectionId) return;
+  if (activeSectionId && activeSectionId !== sectionId) pauseSectionTimer(activeSectionId);
   activeSectionId = sectionId;
-  startSectionTimer(sectionId, plannedMin);
+  resumeSectionTimer(sectionId, plannedMin);
   const nav = document.getElementById('iv-sidenav');
   nav?.querySelectorAll('a[data-target]').forEach(a => {
     a.classList.toggle('active', a.dataset.target === sectionId);
   });
 }
 
+function syncActiveSectionFromScroll() {
+  const main = document.getElementById('iv-main');
+  if (!main) return;
+  const sections = [...main.querySelectorAll('.iv-snap-section[data-section-id]')];
+  if (!sections.length) return;
+  const mainRect = main.getBoundingClientRect();
+  const anchorY = mainRect.top + Math.min(120, mainRect.height * 0.22);
+  let best = null;
+  let bestScore = -Infinity;
+  sections.forEach(sec => {
+    const r = sec.getBoundingClientRect();
+    if (r.bottom <= mainRect.top + 8 || r.top >= mainRect.bottom - 8) return;
+    const visibleTop = Math.max(r.top, mainRect.top);
+    const visibleBottom = Math.min(r.bottom, mainRect.bottom);
+    const visible = Math.max(0, visibleBottom - visibleTop);
+    const score = visible - Math.abs(r.top - anchorY) * 0.35;
+    if (score > bestScore) {
+      bestScore = score;
+      best = sec;
+    }
+  });
+  if (best) {
+    activateInterviewSection(
+      best.dataset.sectionId,
+      parseInt(best.dataset.plannedMin, 10) || 5
+    );
+  }
+}
+
 function teardownInterviewObservers() {
   if (ivSectionObserver) { ivSectionObserver.disconnect(); ivSectionObserver = null; }
+  const main = document.getElementById('iv-main');
+  if (main && ivScrollHandler) {
+    main.removeEventListener('scroll', ivScrollHandler);
+    ivScrollHandler = null;
+  }
+  if (ivScrollSyncTimer) clearTimeout(ivScrollSyncTimer);
   stopAllSectionTimers();
   activeSectionId = null;
 }
@@ -1075,21 +1120,20 @@ function initInterviewScrollAndTimers() {
   const sections = main.querySelectorAll('.iv-snap-section[data-section-id]');
   if (!sections.length) return;
 
-  ivSectionObserver = new IntersectionObserver((entries) => {
-    let best = null;
-    let bestRatio = 0;
-    entries.forEach(e => {
-      if (e.isIntersecting && e.intersectionRatio >= bestRatio) {
-        bestRatio = e.intersectionRatio;
-        best = e.target;
-      }
-    });
-    if (best) {
-      activateInterviewSection(best.dataset.sectionId, parseInt(best.dataset.plannedMin, 10) || 5);
-    }
-  }, { root: main, threshold: [0.2, 0.45, 0.7], rootMargin: '-20% 0px -55% 0px' });
+  const thresholds = [];
+  for (let i = 0; i <= 20; i++) thresholds.push(i / 20);
+
+  ivSectionObserver = new IntersectionObserver(() => {
+    syncActiveSectionFromScroll();
+  }, { root: main, threshold: thresholds, rootMargin: '-8% 0px -42% 0px' });
 
   sections.forEach(sec => ivSectionObserver.observe(sec));
+
+  ivScrollHandler = () => {
+    if (ivScrollSyncTimer) clearTimeout(ivScrollSyncTimer);
+    ivScrollSyncTimer = setTimeout(syncActiveSectionFromScroll, 60);
+  };
+  main.addEventListener('scroll', ivScrollHandler, { passive: true });
 
   const first = sections[0];
   activateInterviewSection(first.dataset.sectionId, parseInt(first.dataset.plannedMin, 10) || 5);
