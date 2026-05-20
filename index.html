@@ -240,9 +240,10 @@
     .team-member-opt-role { font-size: .72rem; color: var(--muted); }
     .team-panel-foot { padding: 1rem 1.35rem 1.25rem; border-top: 1px solid var(--line); display: flex; gap: .5rem; justify-content: flex-end; }
     #toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 999999; max-width: min(380px, calc(100vw - 40px)); pointer-events: none; }
-    .toast { background: var(--bg); border-left: 4px solid var(--brand); box-shadow: var(--shadow); padding: 12px 20px; border-radius: 8px; display: flex; align-items: flex-start; gap: 12px; min-width: 250px; max-width: 100%; animation: slideIn 0.3s ease; color: var(--ink); font-size: 0.9rem; pointer-events: auto; line-height: 1.45; }
-    .toast.is-persistent { cursor: pointer; }
+    .toast { background: var(--bg); border-left: 4px solid var(--brand); box-shadow: var(--shadow); padding: 12px 20px; border-radius: 8px; display: flex; align-items: flex-start; gap: 12px; min-width: 250px; max-width: 100%; animation: slideIn 0.3s ease; color: var(--ink); font-size: 0.9rem; pointer-events: auto; line-height: 1.45; transition: opacity 0.35s ease; }
+    .toast.is-persistent { cursor: pointer; transition: opacity 0.35s ease; }
     .toast.is-persistent:hover { box-shadow: 0 8px 24px rgba(15,23,42,.12); }
+    .toast.is-fading { opacity: 0; pointer-events: none; }
     .toast.error { border-color: var(--danger); }
     .toast.success { border-color: var(--success); }
     .toast > i { flex-shrink: 0; margin-top: 2px; color: var(--brand); }
@@ -1061,6 +1062,7 @@ let state = {
   teamMembers: [],
   teamPanel: null,
   notifications: [],
+  dismissedNotifIds: new Set(),
 };
 
 let renderInterviewTimer = null;
@@ -1320,12 +1322,29 @@ async function loadNotifications() {
   }
 }
 
+const NOTIF_AUTO_DISMISS_MS = 8000;
+
+function scheduleNotifAutoDismiss(card, notifId) {
+  setTimeout(() => {
+    if (!card.parentElement) return;
+    card.classList.add('is-fading');
+    setTimeout(() => {
+      if (!state.dismissedNotifIds) state.dismissedNotifIds = new Set();
+      state.dismissedNotifIds.add(notifId);
+      state.notifications = (state.notifications || []).filter(x => x.id !== notifId);
+      renderNotificationStack();
+    }, 350);
+  }, NOTIF_AUTO_DISMISS_MS);
+}
+
 function renderNotificationStack() {
   const stack = document.getElementById('toast-container');
   if (!stack) return;
   stack.querySelectorAll('.toast.is-persistent').forEach(el => el.remove());
-  if (!state.notifications.length) return;
-  state.notifications.forEach(n => {
+  if (!state.dismissedNotifIds) state.dismissedNotifIds = new Set();
+  const visible = (state.notifications || []).filter(n => !state.dismissedNotifIds.has(n.id));
+  if (!visible.length) return;
+  visible.forEach(n => {
     const card = document.createElement('div');
     card.className = 'toast info is-persistent';
     card.dataset.notifId = n.id;
@@ -1333,11 +1352,13 @@ function renderNotificationStack() {
     card.dataset.runde = n.runde || 'erst';
     card.innerHTML = `<i class="fa-solid fa-bell"></i><span><span class="toast-title">${escapeHtml(n.title)}</span><span class="toast-body">${escapeHtml(n.message)}</span></span>`;
     stack.appendChild(card);
+    scheduleNotifAutoDismiss(card, n.id);
   });
   stack.querySelectorAll('.toast.is-persistent').forEach(card => {
     card.addEventListener('click', async () => {
       const id = card.dataset.notifId;
       await recruitingDb().from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
+      state.dismissedNotifIds.add(id);
       state.notifications = state.notifications.filter(x => x.id !== id);
       renderNotificationStack();
       const c = state.candidates.find(x => x.session_id === card.dataset.session);
@@ -3374,7 +3395,11 @@ function toast(msg, type = 'info') {
   const icon = type === 'success' ? 'fa-check' : (type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info');
   el.innerHTML = `<i class="fa-solid ${icon}"></i><span>${escapeHtml(msg)}</span>`;
   container.appendChild(el);
-  setTimeout(() => { if (el.parentElement) el.remove(); }, 5000);
+  setTimeout(() => {
+    if (!el.parentElement) return;
+    el.classList.add('is-fading');
+    setTimeout(() => el.remove(), 350);
+  }, 5000);
 }
 
 document.querySelectorAll('.app-nav-btn[data-view]').forEach(btn => {
