@@ -200,28 +200,22 @@
     .iv-sidenav a.active { background: var(--brand); color: #fff; border-left-color: var(--brand-dark); box-shadow: 0 4px 14px rgba(32,110,251,.28); }
     .iv-sidenav a.active .iv-sidenav-num { color: #fff; opacity: 1; }
     .iv-sidenav-num { font-weight: 700; font-size: .8rem; min-width: 18px; text-align: center; opacity: .8; }
-    .iv-content-col { min-width: 0; display: flex; flex-direction: column; min-height: calc(100vh - 200px); }
-    .iv-guide-bar { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: .85rem; box-shadow: var(--shadow); flex-shrink: 0; }
-    .iv-guide-bar h4 { font-size: .95rem; font-weight: 700; margin-bottom: .5rem; display: flex; align-items: center; gap: 8px; }
-    .iv-guide-bar h4 i { color: var(--brand); }
-    .iv-guide-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .65rem 1.25rem; font-size: .82rem; color: var(--muted); line-height: 1.45; }
-    .iv-guide-steps li { list-style: none; padding-left: 1.35rem; position: relative; }
-    .iv-guide-steps li::before { content: ''; position: absolute; left: 0; top: .45rem; width: 7px; height: 7px; border-radius: 50%; background: var(--brand); }
-    .iv-main { min-width: 0; flex: 1; overflow-y: auto; scroll-snap-type: y mandatory; scroll-behavior: smooth; border-radius: var(--radius); border: 1px solid var(--line); background: var(--app-bg); }
-    .iv-zweit-locked-banner { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: .75rem 1rem; font-size: .88rem; color: #9a3412; margin-bottom: .85rem; display: flex; align-items: center; gap: 10px; }
-    .iv-zweit-locked-banner i { flex-shrink: 0; }
-    .btn-zweit-quick { background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%); color: #fff; border: none; box-shadow: 0 4px 14px rgba(91,33,182,.35); }
-    .btn-zweit-quick:hover { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); color: #fff; transform: translateY(-2px); }
+    .iv-content-col { min-width: 0; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    #view-interview.active { display: flex; flex-direction: column; height: calc(100dvh - 128px); max-height: calc(100dvh - 128px); }
+    #view-interview .iv-meta-panel { flex-shrink: 0; margin-bottom: .75rem; }
+    #view-interview .iv-layout { flex: 1; min-height: 0; overflow: hidden; }
+    .iv-main { min-width: 0; flex: 1; height: 100%; min-height: 0; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: auto; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
+    .btn-zweit-quick { background: var(--brand); color: #fff; border: none; }
+    .btn-zweit-quick:hover { background: var(--brand-dark); color: #fff; }
     .cand-actions-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: .35rem; }
-    .iv-zweit-note { background: var(--warning-bg); border: 1px solid #fbbf24; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+    .iv-zweit-note { padding: 0 0 .75rem; margin: 0 0 1rem; border-bottom: 1px solid var(--line); background: none; }
     .iv-zweit-note-h { font-size: .85rem; font-weight: 700; color: var(--warning-text); margin-bottom: .35rem; display: flex; align-items: center; gap: 6px; }
     .iv-zweit-note-body { font-size: .9rem; color: var(--ink); white-space: pre-wrap; line-height: 1.55; }
 
-    /* ─── Sections (Vollbild-Scroll) ─── */
-    .iv-snap-section { min-height: calc(100vh - 240px); scroll-snap-align: start; scroll-snap-stop: always; padding: 2rem 2.25rem 2.5rem; margin-bottom: 0; box-sizing: border-box; display: flex; flex-direction: column; }
-    .iv-snap-section--panel { background: var(--bg); border-bottom: 1px solid var(--line); }
+    /* ─── Sections: exakt ein Viewport pro Kapitel, harter Snap ─── */
+    .iv-snap-section { height: 100%; min-height: 100%; flex-shrink: 0; scroll-snap-align: start; scroll-snap-stop: always; padding: 1.75rem 2rem; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
     .sec-block { margin-bottom: 0; }
-    .sec-body { flex: 1; display: flex; flex-direction: column; gap: 1.25rem; max-width: 920px; }
+    .sec-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; max-width: 900px; scrollbar-width: thin; }
     .sec-title { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 1.25rem; margin-bottom: 1.5rem; flex-shrink: 0; }
     .sec-num { font-size: 2rem; font-weight: 800; color: var(--brand); letter-spacing: -1px; line-height: 1; }
     .sec-name { font-size: 1.35rem; font-weight: 700; color: var(--ink); flex: 1; min-width: 160px; }
@@ -231,33 +225,31 @@
     .sec-timer-wrap.timer-over { background: #fff7ed; border-color: #fed7aa; }
     .sec-timer-label { font-size: .78rem; font-weight: 600; color: var(--muted); }
     .sec-time { padding: .3rem .75rem; border-radius: 999px; background: var(--brand-light); border: 1px solid #c7dbfa; font-size: .78rem; font-weight: 600; color: var(--brand-dark); }
-    .sec-hint { background: var(--brand-light); border: 1px solid #c7dbfa; border-radius: 12px; padding: 1rem 1.15rem; font-size: .88rem; color: var(--brand-dark); display: flex; gap: .5rem; line-height: 1.6; }
+    .sec-hint { background: none; border: none; border-left: 3px solid var(--brand); padding: 0 0 0 .85rem; font-size: .88rem; color: var(--muted); display: flex; gap: .5rem; line-height: 1.6; }
     .sec-hint b { color: var(--brand-dark); }
-    .sec-progress-hint { font-size: .8rem; color: var(--muted); margin-top: auto; padding-top: 1.5rem; text-align: center; }
+    /* ─── Inhalt: flach, ohne Kacheln-in-Kacheln ─── */
+    .script-block, .roots-block, .rti-block, .case-block { padding: 0 0 0 1rem; margin: 0; border: none; border-left: 3px solid var(--line); border-radius: 0; background: none; white-space: pre-wrap; line-height: 1.7; font-size: .95rem; color: var(--ink); }
+    .roots-block { border-left-color: var(--brand); }
+    .rti-block { border-left-color: #f59e0b; }
+    .case-block { border-left-color: var(--muted); }
 
-    /* ─── Script Block ─── */
-    .script-block { background: var(--status-bg); border: 1px solid var(--line); border-left: 4px solid var(--brand); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; white-space: pre-wrap; line-height: 1.65; font-size: .92rem; color: var(--ink); }
-    .roots-block { background: linear-gradient(135deg, var(--brand-light) 0%, #f0f8ff 100%); border: 1px solid #c7dbfa; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; white-space: pre-wrap; line-height: 1.7; font-size: .9rem; color: var(--ink); }
-    .rti-block { background: #fff8eb; border: 1px solid #fbbf24; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; white-space: pre-wrap; line-height: 1.7; font-size: .9rem; color: var(--ink); }
-    .case-block { background: #f3f4f6; border: 1px solid #cbd5e1; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; white-space: pre-wrap; line-height: 1.65; font-size: .92rem; color: var(--ink); }
-
-    /* ─── Question Card ─── */
-    .q-card { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.5rem 1.65rem; box-shadow: var(--shadow); margin-bottom: 0; }
+    .q-block { padding: 0 0 1.25rem; margin: 0; border: none; border-bottom: 1px solid var(--line); border-radius: 0; background: none; box-shadow: none; }
+    .q-block:last-child { border-bottom: none; padding-bottom: 0; }
     .q-text { font-size: 1rem; font-weight: 600; line-height: 1.5; color: var(--ink); margin-bottom: .5rem; }
-    .q-followup { font-size: .82rem; color: var(--muted); margin-bottom: .85rem; padding: .5rem .75rem; background: var(--status-bg); border-left: 3px solid var(--line); border-radius: 4px; line-height: 1.5; }
-    .q-checks { display: flex; flex-direction: column; gap: .4rem; margin-bottom: .9rem; padding: .75rem .9rem; background: var(--status-bg); border-radius: 10px; }
+    .q-followup { font-size: .85rem; color: var(--muted); margin-bottom: .75rem; padding: 0; background: none; border: none; line-height: 1.55; }
+    .q-checks { display: flex; flex-direction: column; gap: .45rem; margin-bottom: .85rem; padding: 0; background: none; }
     .q-check { display: flex; align-items: flex-start; gap: .55rem; font-size: .87rem; line-height: 1.4; cursor: pointer; }
     .q-check input { margin-top: 2px; width: 16px; height: 16px; accent-color: var(--brand); flex-shrink: 0; }
     .q-note { width: 100%; min-height: 78px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .9rem; color: var(--ink); background: var(--bg); resize: vertical; outline: none; line-height: 1.55; transition: border-color .2s, box-shadow .2s; }
     .q-note:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
-    .q-erst-note { font-size: .82rem; color: var(--muted); padding: .5rem .75rem; background: #f1f5f9; border-radius: 6px; margin-bottom: .5rem; white-space: pre-wrap; line-height: 1.5; }
+    .q-erst-note { font-size: .82rem; color: var(--muted); padding: .35rem 0; background: none; margin-bottom: .5rem; white-space: pre-wrap; line-height: 1.5; border-left: 2px solid var(--line); padding-left: .65rem; }
     .q-erst-note-h { font-weight: 700; color: var(--ink); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .25rem; }
 
     /* ─── Eval Row ─── */
-    .eval-row { background: var(--brand-light); border: 1px solid #c7dbfa; border-radius: 12px; padding: .85rem 1rem; margin-top: .75rem; }
+    .eval-row { background: none; border: none; border-top: 1px solid var(--line); border-radius: 0; padding: .85rem 0 0; margin-top: .75rem; }
     .eval-label { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--brand); margin-bottom: .4rem; }
     .eval-anchors { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .5rem; margin-bottom: .65rem; font-size: .72rem; color: var(--muted); line-height: 1.45; }
-    .eval-anchor { padding: .35rem .5rem; background: rgba(255,255,255,.7); border-radius: 6px; }
+    .eval-anchor { padding: .25rem 0; background: none; }
     .eval-anchor b { display: block; color: var(--ink); font-size: .68rem; margin-bottom: 2px; }
     .rating-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: .35rem; }
     .rating-pill { padding: .55rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); cursor: pointer; text-align: center; font-weight: 700; font-size: .9rem; color: var(--muted); transition: all .15s; }
@@ -266,12 +258,12 @@
     .rating-pill.erst-shadow { border: 2px dashed #cbd5e1; color: #94a3b8; font-size: .72rem; }
 
     /* ─── Block evaluation ─── */
-    .block-eval { background: var(--brand-light); border: 1px solid #c7dbfa; border-radius: 12px; padding: 1rem 1.25rem; margin-top: 1rem; }
+    .block-eval { background: none; border: none; border-top: 1px solid var(--line); padding: 1rem 0 0; margin-top: .5rem; }
     .block-eval-h { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--brand); margin-bottom: .65rem; }
 
     /* ─── Culture Fit ─── */
     .cf-grid { display: flex; flex-direction: column; gap: .55rem; margin-bottom: 1rem; }
-    .cf-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; align-items: center; padding: .65rem 1rem; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; }
+    .cf-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; align-items: center; padding: .5rem 0; background: none; border: none; border-bottom: 1px solid var(--line); }
     .cf-opt { padding: .65rem 1rem; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); cursor: pointer; text-align: center; font-size: .88rem; font-weight: 600; color: var(--muted); transition: all .15s; }
     .cf-opt:hover { border-color: var(--brand); color: var(--brand); }
     .cf-opt.selected { background: var(--brand); color: #fff; border-color: var(--brand); }
@@ -297,7 +289,7 @@
     .gesamt-score-bar { height: 10px; background: var(--status-bg); border-radius: 999px; overflow: hidden; margin-top: .5rem; }
     .gesamt-score-fill { height: 100%; background: linear-gradient(90deg, var(--brand) 0%, var(--brand-dark) 100%); border-radius: 999px; transition: width .6s ease; }
     .dim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .65rem; margin-bottom: 1.25rem; }
-    .dim-pill { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: .8rem 1rem; display: flex; flex-direction: column; gap: .35rem; }
+    .dim-pill { background: none; border: none; border-bottom: 1px solid var(--line); border-radius: 0; padding: .65rem 0; display: flex; flex-direction: column; gap: .35rem; }
     .dim-pill-h { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
     .dim-name { font-size: .82rem; font-weight: 600; color: var(--ink); }
     .dim-value { font-size: 1.1rem; font-weight: 800; color: var(--brand); }
@@ -312,14 +304,14 @@
     .gesamt-note { width: 100%; min-height: 100px; margin-top: 1rem; padding: 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .9rem; resize: vertical; outline: none; }
     .gesamt-note:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
 
-    .abschluss-panel { border: 2px solid var(--brand); background: linear-gradient(180deg, var(--brand-light) 0%, var(--bg) 120px); }
+    .abschluss-panel { border: none; background: var(--bg); }
     .abschluss-status { display: inline-flex; align-items: center; gap: 8px; padding: .45rem .9rem; border-radius: 999px; font-size: .82rem; font-weight: 700; margin-bottom: 1rem; }
     .abschluss-status--draft { background: #fff7ed; color: #b45309; border: 1px solid #fed7aa; }
     .abschluss-status--done { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
     .abschluss-checklist { display: flex; flex-direction: column; gap: 6px; margin: 1rem 0 1.25rem; }
-    .abschluss-check-item { display: flex; align-items: flex-start; gap: 10px; padding: .65rem .85rem; border-radius: 10px; font-size: .88rem; background: var(--bg); border: 1px solid var(--line); }
-    .abschluss-check-item.done { border-color: #a7f3d0; background: #f0fdf4; color: #065f46; }
-    .abschluss-check-item.missing { border-color: #fecaca; background: #fef2f2; color: #991b1b; }
+    .abschluss-check-item { display: flex; align-items: flex-start; gap: 10px; padding: .4rem 0; font-size: .88rem; background: none; border: none; border-bottom: 1px solid var(--line); }
+    .abschluss-check-item.done { color: #065f46; }
+    .abschluss-check-item.missing { color: #991b1b; }
     .abschluss-check-item i { margin-top: 2px; flex-shrink: 0; }
     .abschluss-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .cand-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 700; padding: .25rem .55rem; border-radius: 999px; margin-bottom: .5rem; }
@@ -351,11 +343,11 @@
     /* ─── Print ─── */
     @media print {
       body { background: #fff; padding: 0; }
-      .sop-header, .iv-sidenav, .iv-guide-bar, .dash-toolbar, .save-badge, .btn-header-action, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger, .round-switch-overlay, .sec-progress-hint, .sec-timer-wrap { display: none !important; }
+      .sop-header, .iv-sidenav, .dash-toolbar, .save-badge, .btn-header-action, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger, .round-switch-overlay, .sec-timer-wrap { display: none !important; }
       .iv-layout { grid-template-columns: 1fr; }
       .iv-main { overflow: visible; height: auto; scroll-snap-type: none; }
       .iv-snap-section { min-height: auto; page-break-after: always; padding: 1rem; }
-      .panel, .q-card { box-shadow: none !important; break-inside: avoid; }
+      .panel, .q-block { box-shadow: none !important; break-inside: avoid; }
     }
 
     @media (max-width: 880px) {
@@ -567,7 +559,6 @@
     <div class="iv-layout iv-layout--guided">
       <aside class="iv-sidenav" id="iv-sidenav"></aside>
       <div class="iv-content-col">
-        <div class="iv-guide-bar" id="iv-guide-bar"></div>
         <main class="iv-main" id="iv-main"></main>
       </div>
     </div>
@@ -1003,7 +994,8 @@ function isZweitUnlocked(erstSlice = state.erst) {
 }
 
 function canStartZweitgespraech(c) {
-  return isZweitUnlocked(c?.erst || {});
+  const erstReco = String((c?.erst || {}).recommendation || '').trim();
+  return erstReco === ZWEIT_INVITE_RECO;
 }
 
 function parseSectionMinutes(timeStr) {
@@ -1013,6 +1005,7 @@ function parseSectionMinutes(timeStr) {
 }
 
 let ivSectionObserver = null;
+let ivWheelSnapHandler = null;
 let activeSectionId = null;
 const sectionTimerState = {};
 
@@ -1069,8 +1062,52 @@ function activateInterviewSection(sectionId, plannedMin) {
 
 function teardownInterviewObservers() {
   if (ivSectionObserver) { ivSectionObserver.disconnect(); ivSectionObserver = null; }
+  const main = document.getElementById('iv-main');
+  if (main && ivWheelSnapHandler) {
+    main.removeEventListener('wheel', ivWheelSnapHandler);
+    ivWheelSnapHandler = null;
+  }
   stopAllSectionTimers();
   activeSectionId = null;
+}
+
+function getSnapSections() {
+  const main = document.getElementById('iv-main');
+  return main ? [...main.querySelectorAll('.iv-snap-section[data-section-id]')] : [];
+}
+
+function snapToSectionIndex(idx) {
+  const sections = getSnapSections();
+  if (idx < 0 || idx >= sections.length) return;
+  sections[idx].scrollIntoView({ behavior: 'auto', block: 'start' });
+}
+
+function bindSectionWheelSnap() {
+  const main = document.getElementById('iv-main');
+  if (!main) return;
+  if (ivWheelSnapHandler) main.removeEventListener('wheel', ivWheelSnapHandler);
+  let cooldown = false;
+  ivWheelSnapHandler = (e) => {
+    if (cooldown) { e.preventDefault(); return; }
+    const sections = getSnapSections();
+    const idx = sections.findIndex(s => s.dataset.sectionId === activeSectionId);
+    if (idx < 0) return;
+    const sec = sections[idx];
+    const body = sec.querySelector('.sec-body');
+    if (body && body.scrollHeight > body.clientHeight + 4) {
+      const atTop = body.scrollTop <= 1;
+      const atBottom = body.scrollTop + body.clientHeight >= body.scrollHeight - 2;
+      if (e.deltaY > 0 && !atBottom) return;
+      if (e.deltaY < 0 && !atTop) return;
+    }
+    const next = e.deltaY > 0 ? idx + 1 : idx - 1;
+    if (next < 0 || next >= sections.length) return;
+    e.preventDefault();
+    cooldown = true;
+    snapToSectionIndex(next);
+    setTimeout(() => { cooldown = false; }, 420);
+  };
+  main.addEventListener('wheel', ivWheelSnapHandler, { passive: false });
 }
 
 function initInterviewScrollAndTimers() {
@@ -1093,12 +1130,14 @@ function initInterviewScrollAndTimers() {
     if (best) {
       activateInterviewSection(best.dataset.sectionId, parseInt(best.dataset.plannedMin, 10) || 5);
     }
-  }, { root: main, threshold: [0.25, 0.4, 0.55, 0.7], rootMargin: '-8% 0px -40% 0px' });
+  }, { root: main, threshold: [0.55, 0.75, 0.95], rootMargin: '0px' });
 
   sections.forEach(sec => ivSectionObserver.observe(sec));
+  bindSectionWheelSnap();
 
   const first = sections[0];
   activateInterviewSection(first.dataset.sectionId, parseInt(first.dataset.plannedMin, 10) || 5);
+  main.scrollTop = 0;
 }
 
 function updateRundeSelect() {
@@ -1115,20 +1154,6 @@ function updateRundeSelect() {
   } else {
     sel.value = cur;
   }
-}
-
-function renderGuideBar() {
-  const bar = document.getElementById('iv-guide-bar');
-  if (!bar) return;
-  const unlocked = isZweitUnlocked();
-  bar.innerHTML = `
-    <h4><i class="fa-solid fa-compass"></i> So führst du das Interview</h4>
-    <ul class="iv-guide-steps">
-      <li><strong>Scrollen</strong> – jeder Block füllt den Bildschirm; beim Wechsel startet der Timer.</li>
-      <li><strong>Links</strong> – blau markiert = aktueller Abschnitt (Inhaltsverzeichnis).</li>
-      <li><strong>Bewerten</strong> – 1–5 pro Kriterium, dann Gesamtbewertung &amp; Abschluss.</li>
-      <li><strong>Zweitgespräch</strong> – ${unlocked ? 'freigeschaltet (Einladung aus Erstgespräch).' : 'erst nach Empfehlung „Zum Zweitgespräch einladen“.'}</li>
-    </ul>`;
 }
 
 function startZweitgespraechFromCard(c, e) {
@@ -1160,10 +1185,7 @@ function dispatch(action) {
   scheduleSave();
   scheduleAbschlussRefresh();
   if (state.view === 'interview') {
-    if (action.type === 'SET_RECOMMENDATION') {
-      updateRundeSelect();
-      renderGuideBar();
-    }
+    if (action.type === 'SET_RECOMMENDATION') updateRundeSelect();
     if (action.type !== 'SET_META') scheduleRenderInterview(true);
   }
 }
@@ -1622,6 +1644,7 @@ function renderDashboard() {
     const completedDate = completedAt ? new Date(completedAt).toLocaleDateString('de-DE') : '';
     const zweitUnlocked = canStartZweitgespraech(c);
     const zweitDone = isRoundCompletedInData(c, 'zweit');
+    const showZweitBtn = zweitUnlocked;
     return `<div class="cand-card" data-id="${escapeHtml(c.session_id)}">
       <div class="cand-card-head">
         <div>
@@ -1638,7 +1661,7 @@ function renderDashboard() {
       ${reco ? `<div class="cand-reco cand-reco--${cat}">${escapeHtml(reco)}</div>` : `<div class="cand-reco cand-reco--none">Noch keine Empfehlung</div>`}
       <div class="cand-actions cand-actions-row">
         <button class="btn-ghost" data-act="open" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-pen"></i> ${completed ? 'Ansehen' : 'Bearbeiten'}</button>
-        ${zweitUnlocked ? `<button class="btn-primary btn-zweit-quick" data-act="zweit" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-forward"></i> ${zweitDone ? 'Zweitgespräch öffnen' : 'Zweitgespräch starten'}</button>` : ''}
+        ${showZweitBtn ? `<button class="btn-primary btn-zweit-quick" data-act="zweit" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-forward"></i> ${zweitDone ? 'Zweitgespräch öffnen' : 'Zweitgespräch starten'}</button>` : ''}
         <button class="btn-secondary" data-act="print" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-file-pdf"></i> Als PDF</button>
         <button class="btn-ghost" data-act="delete" data-id="${escapeHtml(c.session_id)}" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
       </div>
@@ -1676,7 +1699,6 @@ function renderInterview(partial = false) {
     document.getElementById('iv-meta-interviewer').value = state.erst.meta.interviewer || '';
     document.getElementById('iv-meta-datum').value = state.erst.meta.datum || '';
     updateRundeSelect();
-    renderGuideBar();
   }
   renderSidenav();
   if (!partial) {
@@ -1704,7 +1726,7 @@ function renderSidenav() {
       e.preventDefault();
       const t = document.getElementById(a.dataset.target);
       const main = document.getElementById('iv-main');
-      if (t && main) main.scrollTo({ top: t.offsetTop, behavior: 'smooth' });
+      if (t && main) main.scrollTo({ top: t.offsetTop, behavior: 'auto' });
       nav.querySelectorAll('a').forEach(x => x.classList.remove('active'));
       a.classList.add('active');
     });
@@ -1717,21 +1739,7 @@ function renderMain() {
   const zweit = isZweit();
   let html = '';
 
-  if (!isZweitUnlocked() && !zweit) {
-    html += `<div class="iv-zweit-locked-banner">
-      <i class="fa-solid fa-lock"></i>
-      <span>Das <strong>Zweitgespräch</strong> wird freigeschaltet, sobald im Erstgespräch die Empfehlung <strong>„Zum Zweitgespräch einladen“</strong> gesetzt ist.</span>
-    </div>`;
-  }
-
   // Zweit-Anmerkung block (from Erst, shown in Zweit)
-  if (zweit && state.erst.zweitAnmerkung) {
-    html += `<div class="iv-zweit-note">
-      <div class="iv-zweit-note-h"><i class="fa-solid fa-lightbulb"></i>Anmerkungen vom Erstinterviewer</div>
-      <div class="iv-zweit-note-body">${escapeHtml(state.erst.zweitAnmerkung)}</div>
-    </div>`;
-  }
-
   sections.forEach((s, i) => {
     html += renderSection(s, i + 1);
   });
@@ -1758,7 +1766,7 @@ function renderAbschlussPanel() {
   const done = !!slice.completed;
   const doneDate = slice.completedAt ? new Date(slice.completedAt).toLocaleString('de-DE') : '';
 
-  return `<div class="iv-snap-section iv-snap-section--panel abschluss-panel" id="sec-abschluss" data-section-id="sec-abschluss" data-planned-min="5">
+  return `<div class="iv-snap-section abschluss-panel" id="sec-abschluss" data-section-id="sec-abschluss" data-planned-min="5">
     <div class="sec-title" style="border:none;padding-bottom:0;margin-bottom:1rem">
       <span class="sec-num"><i class="fa-solid fa-flag-checkered"></i></span>
       <span class="sec-name">Interview abschließen · ${escapeHtml(check.rundeLabel)}</span>
@@ -1860,10 +1868,13 @@ function renderSection(s, num) {
     </div>`;
   }
 
+  const zweitNote = (isZweit() && s.id === 's1' && state.erst.zweitAnmerkung)
+    ? `<div class="iv-zweit-note" style="margin-bottom:1rem"><div class="iv-zweit-note-h"><i class="fa-solid fa-lightbulb"></i> Anmerkungen Erstinterviewer</div><div class="iv-zweit-note-body">${escapeHtml(state.erst.zweitAnmerkung)}</div></div>`
+    : '';
+
   return `<div class="iv-snap-section sec-block" id="${secId}" data-section-id="${secId}" data-planned-min="${planned}">
     ${titleHtml}
-    <div class="sec-body">${body}</div>
-    <div class="sec-progress-hint"><i class="fa-solid fa-chevron-down"></i> Nach unten scrollen · nächster Abschnitt</div>
+    <div class="sec-body">${zweitNote}${body}</div>
   </div>`;
 }
 
@@ -1886,7 +1897,7 @@ function renderQuestionCard(q, slice) {
   if (q.evaluations && q.evaluations.length) {
     inner += q.evaluations.map((ev, idx) => renderEvalRow(ev, q.id, idx, slice)).join('');
   }
-  return `<div class="q-card" id="q-${q.id}">${inner}</div>`;
+  return `<div class="q-block" id="q-${q.id}">${inner}</div>`;
 }
 
 function renderEvalRow(ev, qid, idx, slice) {
@@ -1969,7 +1980,7 @@ function renderGesamtEvaluation() {
     </div>`;
   }
 
-  return `<div class="iv-snap-section iv-snap-section--panel gesamt-panel" id="sec-gesamt" data-section-id="sec-gesamt" data-planned-min="10">
+  return `<div class="iv-snap-section gesamt-panel" id="sec-gesamt" data-section-id="sec-gesamt" data-planned-min="10">
     <div class="sec-title" style="border:none;padding-bottom:0;margin-bottom:1rem">
       <span class="sec-num"><i class="fa-solid fa-star"></i></span>
       <span class="sec-name">Gesamtbewertung ${zweit ? '· Zweitgespräch' : '· Erstgespräch'}</span>
@@ -1999,7 +2010,6 @@ function renderGesamtEvaluation() {
         <textarea class="gesamt-note" data-act="set-zweitanmerkung" placeholder="Was sollte der Zweitinterviewer wissen?">${escapeHtml(state.erst.zweitAnmerkung || '')}</textarea>` : ''}
     </div>
     </div>
-    <div class="sec-progress-hint"><i class="fa-solid fa-chevron-down"></i> Weiter zum Abschluss</div>
   </div>`;
 }
 
@@ -2346,7 +2356,6 @@ document.getElementById('iv-meta-runde').addEventListener('change', (e) => {
     document.getElementById('round-switch-confirm').onclick = () => {
       dispatch({ type: 'SET_META', field: 'runde', value: 'zweit' });
       document.getElementById('round-switch-overlay').classList.remove('visible');
-      renderGuideBar();
       renderInterview();
     };
     document.getElementById('round-switch-cancel').onclick = () => {
@@ -2357,7 +2366,6 @@ document.getElementById('iv-meta-runde').addEventListener('change', (e) => {
     return;
   }
   dispatch({ type: 'SET_META', field: 'runde', value: newVal });
-  renderGuideBar();
   renderInterview();
 });
 document.getElementById('zweit-locked-close').addEventListener('click', () => {
