@@ -202,7 +202,7 @@
     #view-interview.active { display: flex; flex-direction: column; height: calc(100dvh - 128px); max-height: calc(100dvh - 128px); }
     #view-interview .iv-meta-panel { flex-shrink: 0; margin-bottom: .75rem; }
     #view-interview .iv-layout { flex: 1; min-height: 0; overflow: hidden; }
-    .iv-main { min-width: 0; flex: 1; height: 100%; min-height: 0; overflow-y: auto; scroll-snap-type: y mandatory; scroll-behavior: smooth; scroll-padding-top: 0; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
+    .iv-main { min-width: 0; flex: 1; height: 100%; min-height: 0; overflow-y: auto; scroll-snap-type: y proximity; scroll-behavior: smooth; scroll-padding-top: 0; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
     .btn-zweit-quick { background: var(--brand); color: #fff; border: none; }
     .btn-zweit-quick:hover { background: var(--brand-dark); color: #fff; }
     .cand-actions-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: .35rem; }
@@ -210,8 +210,8 @@
     .iv-zweit-note-h { font-size: .85rem; font-weight: 700; color: var(--warning-text); margin-bottom: .35rem; display: flex; align-items: center; gap: 6px; }
     .iv-zweit-note-body { font-size: .9rem; color: var(--ink); white-space: pre-wrap; line-height: 1.55; }
 
-    /* ─── Sections: mind. ein Viewport, weiches Scrollen durch langen Inhalt ─── */
-    .iv-snap-section { min-height: 100%; scroll-snap-align: start; scroll-snap-stop: normal; scroll-margin-top: 0; padding: 1.75rem 2rem 2.5rem; box-sizing: border-box; background: var(--bg); }
+    /* ─── Sections: frei im Kapitel scrollen, beim Verlassen weich einrasten ─── */
+    .iv-snap-section { min-height: 100%; scroll-snap-align: start; scroll-snap-stop: always; scroll-margin-top: 0; padding: 1.75rem 2rem 2.5rem; box-sizing: border-box; background: var(--bg); }
     .sec-block { margin-bottom: 0; }
     .sec-body { display: flex; flex-direction: column; gap: 1.5rem; max-width: 900px; }
     .sec-title { display: flex; align-items: flex-start; gap: 14px; flex-wrap: nowrap; border-bottom: 1px solid var(--line); padding-bottom: 1.25rem; margin-bottom: 1.5rem; }
@@ -1071,13 +1071,23 @@ function activateInterviewSection(sectionId, plannedMin) {
   });
 }
 
+function isSectionSnapped(sec, mainRect) {
+  const r = sec.getBoundingClientRect();
+  const topAligned = Math.abs(r.top - mainRect.top) <= 52;
+  const visibleTop = Math.max(r.top, mainRect.top);
+  const visibleBottom = Math.min(r.bottom, mainRect.bottom);
+  const visible = Math.max(0, visibleBottom - visibleTop);
+  const ratio = visible / Math.max(r.height, 1);
+  return topAligned || ratio >= 0.58;
+}
+
 function syncActiveSectionFromScroll() {
   const main = document.getElementById('iv-main');
   if (!main) return;
   const sections = [...main.querySelectorAll('.iv-snap-section[data-section-id]')];
   if (!sections.length) return;
   const mainRect = main.getBoundingClientRect();
-  const anchorY = mainRect.top + Math.min(120, mainRect.height * 0.22);
+  const anchorY = mainRect.top + Math.min(100, mainRect.height * 0.18);
   let best = null;
   let bestScore = -Infinity;
   sections.forEach(sec => {
@@ -1086,18 +1096,20 @@ function syncActiveSectionFromScroll() {
     const visibleTop = Math.max(r.top, mainRect.top);
     const visibleBottom = Math.min(r.bottom, mainRect.bottom);
     const visible = Math.max(0, visibleBottom - visibleTop);
-    const score = visible - Math.abs(r.top - anchorY) * 0.35;
+    const score = visible - Math.abs(r.top - anchorY) * 0.45;
     if (score > bestScore) {
       bestScore = score;
       best = sec;
     }
   });
-  if (best) {
-    activateInterviewSection(
-      best.dataset.sectionId,
-      parseInt(best.dataset.plannedMin, 10) || 5
-    );
+  if (!best || !isSectionSnapped(best, mainRect)) {
+    if (activeSectionId) pauseSectionTimer(activeSectionId);
+    return;
   }
+  activateInterviewSection(
+    best.dataset.sectionId,
+    parseInt(best.dataset.plannedMin, 10) || 5
+  );
 }
 
 function teardownInterviewObservers() {
