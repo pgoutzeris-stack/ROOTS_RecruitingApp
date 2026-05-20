@@ -198,8 +198,7 @@
     #view-interview .iv-layout { flex: 1; min-height: 0; overflow: hidden; }
     .iv-sidenav-runde { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); }
     .iv-sidenav-runde select { width: 100%; height: 38px; margin-top: .4rem; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .88rem; background: var(--bg); color: var(--ink); cursor: pointer; }
-    .bew-create-banner { background: var(--brand-light); border: 1px solid rgba(32,110,251,.2); border-radius: var(--radius); padding: 1rem 1.15rem; margin-bottom: 1.25rem; font-size: .9rem; color: var(--ink); line-height: 1.5; }
-    .bew-name-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    .bew-name-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     @media (max-width: 720px) { .bew-name-row { grid-template-columns: 1fr; } }
     .iv-main { min-width: 0; flex: 1; height: 100%; min-height: 0; overflow-y: auto; scroll-snap-type: y proximity; scroll-behavior: smooth; scroll-padding-top: 0; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
     .btn-zweit-quick { background: var(--brand); color: #fff; border: none; }
@@ -1142,13 +1141,13 @@ function initInterviewScrollAndTimers() {
   main.scrollTop = 0;
 }
 
-function buildFullName(first, middle, last) {
-  return [first, middle, last].map(s => (s || '').trim()).filter(Boolean).join(' ');
+function buildFullName(first, last) {
+  return [first, last].map(s => (s || '').trim()).filter(Boolean).join(' ');
 }
 
 function getApplicantDisplayName(a) {
   if (!a) return '';
-  const built = buildFullName(a.first_name, a.middle_name, a.last_name);
+  const built = buildFullName(a.first_name, a.last_name);
   if (built) return built;
   const full = (a.full_name || '').trim();
   return full && full !== 'Neuer Bewerber' ? full : '';
@@ -1156,11 +1155,7 @@ function getApplicantDisplayName(a) {
 
 function applicantHasValidName(a) {
   if (!a) return false;
-  const fn = (a.first_name || '').trim();
-  const ln = (a.last_name || '').trim();
-  if (fn && ln) return true;
-  const full = getApplicantDisplayName(a);
-  return !!full && full.split(/\s+/).filter(Boolean).length >= 2;
+  return !!(a.first_name || '').trim() && !!(a.last_name || '').trim();
 }
 
 function updateRundeSelect() {
@@ -1580,6 +1575,7 @@ function newInterview(opts = {}) {
     state.zweit.meta.interviewer = p.full_name;
   }
   state.linkedApplicantId = opts.applicantId || null;
+  updateInterviewSubtitle();
   switchView('interview');
   toast(opts.toast || 'Neues Interview gestartet – alle Kapitel sind unten verfügbar.');
 }
@@ -1620,7 +1616,7 @@ async function startInterviewForApplicant(a) {
   closeInterviewPicker();
   if (!a) return;
   if (!applicantHasValidName(a)) {
-    toast('Bitte zuerst Vorname und Nachname speichern', 'error');
+    toast('Für das Interview Vorname und Nachname eintragen', 'error');
     openBewerberCreateForm({ editId: a.id, startInterviewAfterSave: true });
     return;
   }
@@ -2188,12 +2184,12 @@ async function syncApplicantFromInterview(row) {
     ? state.applicants.find(a => a.id === state.linkedApplicantId)
     : state.applicants.find(a => a.session_id === row.session_id);
   const namePayload = existing?.first_name && existing?.last_name
-    ? { first_name: existing.first_name, middle_name: existing.middle_name || '', last_name: existing.last_name, full_name: getApplicantDisplayName(existing) || row.kandidat }
+    ? { first_name: existing.first_name, last_name: existing.last_name, full_name: getApplicantDisplayName(existing) || row.kandidat }
     : (() => {
       const parts = (row.kandidat || '').trim().split(/\s+/).filter(Boolean);
       const first = parts[0] || '';
       const last = parts.length > 1 ? parts.slice(1).join(' ') : '';
-      return { first_name: first, middle_name: '', last_name: last, full_name: row.kandidat };
+      return { first_name: first, last_name: last, full_name: row.kandidat };
     })();
   const payload = {
     session_id: row.session_id,
@@ -2247,12 +2243,10 @@ function renderBewerberList() {
 
 function applicantNameFieldsHtml(a) {
   const first = a?.first_name || '';
-  const middle = a?.middle_name || '';
   const last = a?.last_name || '';
   return `<div class="bew-field full bew-name-row">
-      <div class="bew-field"><label>Vorname *</label><input name="first_name" value="${escapeHtml(first)}" required autocomplete="given-name"></div>
-      <div class="bew-field"><label>Zweiter Vorname</label><input name="middle_name" value="${escapeHtml(middle)}" autocomplete="additional-name" placeholder="optional"></div>
-      <div class="bew-field"><label>Nachname *</label><input name="last_name" value="${escapeHtml(last)}" required autocomplete="family-name"></div>
+      <div class="bew-field"><label>Vorname</label><input name="first_name" value="${escapeHtml(first)}" autocomplete="given-name"></div>
+      <div class="bew-field"><label>Nachname</label><input name="last_name" value="${escapeHtml(last)}" autocomplete="family-name"></div>
     </div>`;
 }
 
@@ -2260,13 +2254,12 @@ function applicantPayloadFromForm(fd) {
   const payload = {};
   for (const [k, v] of fd.entries()) payload[k] = v;
   const first = (payload.first_name || '').trim();
-  const middle = (payload.middle_name || '').trim();
   const last = (payload.last_name || '').trim();
-  if (!first || !last) return null;
   payload.first_name = first;
-  payload.middle_name = middle;
   payload.last_name = last;
-  payload.full_name = buildFullName(first, middle, last);
+  payload.full_name = buildFullName(first, last);
+  if (!payload.availability_start) payload.availability_start = null;
+  if (!payload.date_of_birth) payload.date_of_birth = null;
   return payload;
 }
 
@@ -2289,17 +2282,10 @@ function openBewerberCreateForm(opts = {}) {
 
 function renderBewerberCreateForm() {
   const detail = document.getElementById('bew-detail');
-  const fromIv = state.bewerberCreateMode?.startInterviewAfterSave;
   detail.innerHTML = `
-    <div class="bew-create-banner">
-      <strong>Neuen Bewerber anlegen</strong><br>
-      Mindestens <strong>Vorname</strong> und <strong>Nachname</strong> eintragen und speichern.
-      ${fromIv ? ' Erst danach startet das Interview.' : ''}
-    </div>
     <form id="bew-form" class="bew-form-grid">
       ${applicantNameFieldsHtml(null)}
       <div class="bew-field"><label>Rolle / Position</label><input name="role_title" value="Junior Marketing Consultant"></div>
-      <div class="bew-field"><label>Bewerbungsdatum</label><input name="application_date" type="date" value="${new Date().toISOString().slice(0, 10)}"></div>
     </form>
     <div style="margin-top:1.25rem;display:flex;gap:8px;flex-wrap:wrap">
       <button type="button" class="btn-primary" id="bew-save-btn"><i class="fa-solid fa-floppy-disk"></i> Bewerber speichern</button>
@@ -2316,7 +2302,6 @@ async function saveNewApplicantFromCreateForm() {
   const form = document.getElementById('bew-form');
   if (!form) return;
   const payload = applicantPayloadFromForm(new FormData(form));
-  if (!payload) { toast('Vorname und Nachname sind Pflicht', 'error'); return; }
   const mode = state.bewerberCreateMode || {};
   payload.updated_by = window.RootsUser._uid || null;
 
@@ -2327,14 +2312,15 @@ async function saveNewApplicantFromCreateForm() {
     const a = state.applicants.find(x => x.id === mode.editId);
     state.bewerberCreateMode = null;
     state.selectedApplicantId = mode.editId;
-    if (mode.startInterviewAfterSave && a) await startInterviewForApplicant(a);
-    else renderBewerberDetail(mode.editId);
+    if (mode.startInterviewAfterSave && a) {
+      if (applicantHasValidName(a)) await startInterviewForApplicant(a);
+      else { toast('Für das Interview Vorname und Nachname eintragen', 'error'); renderBewerberDetail(mode.editId); }
+    } else renderBewerberDetail(mode.editId);
     toast('Bewerber gespeichert');
     return;
   }
 
   payload.pipeline_status = 'new';
-  if (!payload.application_date) payload.application_date = new Date().toISOString().slice(0, 10);
   payload.created_by = window.RootsUser._uid || null;
   const { data, error } = await recruitingDb().from('applicants').insert(payload).select().single();
   if (error) {
@@ -2346,12 +2332,14 @@ async function saveNewApplicantFromCreateForm() {
   state.selectedApplicantId = data.id;
   const startIv = mode.startInterviewAfterSave;
   state.bewerberCreateMode = null;
-  if (startIv) await startInterviewForApplicant(data);
-  else {
+  if (startIv) {
+    if (applicantHasValidName(data)) await startInterviewForApplicant(data);
+    else { toast('Für das Interview Vorname und Nachname eintragen', 'error'); renderBewerberDetail(data.id); }
+  } else {
     renderBewerberList();
     renderBewerberDetail(data.id);
   }
-  toast(startIv ? 'Bewerber gespeichert – Interview wird gestartet' : 'Bewerber gespeichert');
+  toast('Bewerber gespeichert');
 }
 
 function renderBewerberDetail(id) {
@@ -2364,9 +2352,7 @@ function renderBewerberDetail(id) {
   const docs = a.applicant_documents || [];
   const displayName = getApplicantDisplayName(a) || 'Unbenannt';
   const needsName = !applicantHasValidName(a);
-  const pendingIv = state.bewerberCreateMode?.startInterviewAfterSave;
   detail.innerHTML = `
-    ${needsName ? `<div class="bew-create-banner"><strong>Name vervollständigen:</strong> Vorname und Nachname sind Pflicht, bevor ein Interview gestartet werden kann.</div>` : ''}
     <div class="panel-h" style="margin-bottom:1.25rem">
       <div class="panel-title"><i class="fa-solid fa-user"></i> ${escapeHtml(displayName)}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -2383,13 +2369,13 @@ function renderBewerberDetail(id) {
       <div class="bew-field"><label>Bewerbung auf Stelle</label><input name="position_applied" value="${escapeHtml(a.position_applied||'')}"></div>
       <div class="bew-field"><label>Rolle / Position</label><input name="role_title" value="${escapeHtml(a.role_title||'Junior Marketing Consultant')}"></div>
       <div class="bew-field"><label>Quelle</label><input name="application_source" value="${escapeHtml(a.application_source||'')}"></div>
-      <div class="bew-field"><label>Bewerbungsdatum</label><input name="application_date" type="date" value="${a.application_date||''}"></div>
+      <div class="bew-field"><label>Geburtsdatum</label><input name="date_of_birth" type="date" value="${a.date_of_birth||''}"></div>
+      <div class="bew-field"><label>Einstiegsdatum</label><input name="availability_start" type="date" value="${a.availability_start||''}"></div>
       <div class="bew-field"><label>Status</label>
         <select name="pipeline_status">${Object.entries(PIPELINE_LABELS).map(([k,v])=>`<option value="${k}" ${a.pipeline_status===k?'selected':''}>${v}</option>`).join('')}</select>
       </div>
       <div class="bew-field"><label>Aktuelles Gehalt</label><input name="salary_current" value="${escapeHtml(a.salary_current||'')}"></div>
       <div class="bew-field"><label>Gehaltswunsch</label><input name="salary_expected" value="${escapeHtml(a.salary_expected||'')}"></div>
-      <div class="bew-field"><label>Einstiegsdatum</label><input name="availability_start" type="date" value="${a.availability_start||''}"></div>
       <div class="bew-field"><label>Home Office</label><input name="home_office_preference" value="${escapeHtml(a.home_office_preference||'')}"></div>
       <div class="bew-field"><label>Reisetätigkeit</label><input name="travel_willingness" value="${escapeHtml(a.travel_willingness||'')}"></div>
       <div class="bew-field"><label>Arbeitsaufwand</label><input name="workload_expectation" value="${escapeHtml(a.workload_expectation||'')}"></div>
@@ -2416,7 +2402,7 @@ function renderBewerberDetail(id) {
   const openIv = document.getElementById('bew-open-interview');
   if (openIv) openIv.onclick = () => {
     if (!applicantHasValidName(a)) {
-      toast('Bitte zuerst Vorname und Nachname speichern', 'error');
+      toast('Für das Interview Vorname und Nachname eintragen', 'error');
       return;
     }
     openInterviewForApplicant(a);
@@ -2430,7 +2416,6 @@ function renderBewerberDetail(id) {
 async function saveApplicantFromForm(id) {
   const form = document.getElementById('bew-form');
   const payload = applicantPayloadFromForm(new FormData(form));
-  if (!payload) { toast('Vorname und Nachname sind Pflicht', 'error'); return; }
   payload.updated_by = window.RootsUser._uid || null;
   const { error } = await recruitingDb().from('applicants').update(payload).eq('id', id);
   if (error) {
