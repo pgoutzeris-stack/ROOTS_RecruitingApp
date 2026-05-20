@@ -238,13 +238,20 @@
     .iv-content-col { min-width: 0; display: flex; flex-direction: column; flex: 1; min-height: 0; height: 100%; }
     #view-interview.active { display: flex; flex-direction: column; height: calc(100dvh - 72px); max-height: calc(100dvh - 72px); }
     #view-interview .iv-layout { flex: 1; min-height: 0; overflow: hidden; }
-    .iv-sidenav-applicant { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); }
-    .iv-sidenav-applicant-lines { display: flex; flex-direction: column; gap: .4rem; margin-top: .5rem; }
-    .iv-sidenav-applicant-line { font-size: .78rem; color: var(--muted); line-height: 1.4; }
-    .iv-sidenav-applicant-line span { display: block; font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 1px; }
-    .iv-sidenav-applicant-empty { font-size: .8rem; color: var(--muted); margin: .5rem 0 0; line-height: 1.45; }
-    .iv-sidenav-cv-btn { width: 100%; margin-top: .65rem; justify-content: center; font-size: .8rem; padding: .45rem .75rem; }
-    .iv-sidenav-owner { padding-top: 1rem; margin-top: 1rem; border-top: 1px solid var(--line); }
+    .iv-sidenav-spacer { flex: 1; min-height: .75rem; }
+    .iv-sidenav-applicant { flex-shrink: 0; padding-top: 1rem; margin-top: .5rem; border-top: 1px solid var(--line); }
+    .iv-applicant-card { background: linear-gradient(180deg, rgba(32,110,251,.06) 0%, var(--bg) 100%); border: 1px solid var(--line); border-radius: 12px; padding: .85rem .9rem; margin-top: .5rem; }
+    .iv-applicant-name { font-size: .9rem; font-weight: 700; color: var(--ink); line-height: 1.35; margin: 0 0 .15rem; word-break: break-word; }
+    .iv-applicant-role { font-size: .72rem; color: var(--muted); margin: 0 0 .65rem; line-height: 1.35; }
+    .iv-applicant-rows { display: flex; flex-direction: column; gap: .45rem; }
+    .iv-applicant-row { display: grid; grid-template-columns: 16px 1fr; gap: 8px; align-items: start; font-size: .78rem; line-height: 1.4; color: var(--ink); }
+    .iv-applicant-row > i { color: var(--brand); font-size: .72rem; margin-top: 3px; text-align: center; }
+    .iv-applicant-row a { color: var(--brand); text-decoration: none; word-break: break-all; }
+    .iv-applicant-row a:hover { text-decoration: underline; }
+    .iv-applicant-row-label { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); display: block; margin-bottom: 1px; }
+    .iv-sidenav-applicant-empty { font-size: .78rem; color: var(--muted); margin: .5rem 0 0; line-height: 1.45; }
+    .iv-sidenav-cv-btn { width: 100%; margin-top: .75rem; justify-content: center; font-size: .78rem; padding: .5rem .75rem; gap: 6px; }
+    .iv-sidenav-owner { flex-shrink: 0; padding-top: 1rem; margin-top: 1rem; border-top: 1px solid var(--line); }
     .iv-sidenav-owner select { width: 100%; height: 38px; margin-top: .4rem; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .88rem; background: var(--bg); }
     .iv-owner-display { display: flex; align-items: center; gap: 10px; margin-top: .5rem; }
     .iv-owner-display span { font-size: .82rem; font-weight: 600; color: var(--ink); line-height: 1.3; }
@@ -1402,29 +1409,34 @@ function renderSidenavApplicantHtml() {
   if (!a) {
     return `<div class="iv-sidenav-applicant">
       <div class="iv-sidenav-h">Bewerber</div>
-      <p class="iv-sidenav-applicant-empty">Keine Stammdaten verknüpft.</p>
+      <div class="iv-applicant-card"><p class="iv-sidenav-applicant-empty">Keine Stammdaten verknüpft.</p></div>
     </div>`;
   }
   const docs = a.applicant_documents || [];
   const cv = docs.find(d => d.doc_type === 'cv' && d.file_url) || docs.find(d => d.file_url);
-  const line = (label, val) => val
-    ? `<div class="iv-sidenav-applicant-line"><span>${label}</span>${escapeHtml(val)}</div>`
-    : '';
+  const name = getApplicantDisplayName(a) || state.erst.meta.kandidat || 'Bewerber';
+  const role = a.role_title || a.position_applied || '';
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString('de-DE') : '';
-  const lines = [
-    line('Rolle', a.role_title),
-    line('E-Mail', a.email),
-    line('Telefon', a.phone),
-    line('Geburtsdatum', fmtDate(a.date_of_birth)),
-    line('Einstieg', fmtDate(a.availability_start)),
+  const row = (icon, label, contentHtml) => contentHtml
+    ? `<div class="iv-applicant-row"><i class="fa-solid ${icon}"></i><div><span class="iv-applicant-row-label">${label}</span>${contentHtml}</div></div>`
+    : '';
+  const rows = [
+    row('fa-envelope', 'E-Mail', a.email ? `<a href="mailto:${escapeHtml(a.email)}">${escapeHtml(a.email)}</a>` : ''),
+    row('fa-phone', 'Telefon', a.phone ? `<a href="tel:${escapeHtml(String(a.phone).replace(/\s/g, ''))}">${escapeHtml(a.phone)}</a>` : ''),
+    row('fa-cake-candles', 'Geburtsdatum', fmtDate(a.date_of_birth) ? escapeHtml(fmtDate(a.date_of_birth)) : ''),
+    row('fa-calendar-check', 'Einstieg', fmtDate(a.availability_start) ? escapeHtml(fmtDate(a.availability_start)) : ''),
   ].filter(Boolean).join('');
   const cvBtn = cv
     ? `<a href="${escapeHtml(cv.file_url)}" target="_blank" rel="noopener" class="btn-secondary iv-sidenav-cv-btn"><i class="fa-solid fa-file-pdf"></i> CV anzeigen</a>`
     : '';
   return `<div class="iv-sidenav-applicant">
     <div class="iv-sidenav-h">Bewerber</div>
-    <div class="iv-sidenav-applicant-lines">${lines || '<p class="iv-sidenav-applicant-empty">Noch keine Details hinterlegt.</p>'}</div>
-    ${cvBtn}
+    <div class="iv-applicant-card">
+      <p class="iv-applicant-name">${escapeHtml(name)}</p>
+      ${role ? `<p class="iv-applicant-role">${escapeHtml(role)}</p>` : ''}
+      <div class="iv-applicant-rows">${rows || '<p class="iv-sidenav-applicant-empty">Keine Kontaktdaten hinterlegt.</p>'}</div>
+      ${cvBtn}
+    </div>
   </div>`;
 }
 
@@ -1805,15 +1817,31 @@ function getAllEvaluatedQuestions() {
   return arr;
 }
 
+function resolveInterviewKandidat() {
+  const meta = state.erst.meta;
+  if ((meta.kandidat || '').trim()) return meta.kandidat.trim();
+  const linked = state.linkedApplicantId
+    ? state.applicants.find(a => a.id === state.linkedApplicantId)
+    : null;
+  if (linked) return getApplicantDisplayName(linked) || '';
+  const bySession = state.applicants.find(a => a.session_id === meta.sessionId);
+  return bySession ? getApplicantDisplayName(bySession) : '';
+}
+
 async function saveCurrent(opts = {}) {
   if (savingPromise) await savingPromise;
   const meta = state.erst.meta;
   if (!meta.sessionId) meta.sessionId = state.zweit.meta.sessionId = genSessionId();
+  const kandidat = resolveInterviewKandidat();
+  if (kandidat && !meta.kandidat) {
+    meta.kandidat = kandidat;
+    state.zweit.meta.kandidat = kandidat;
+  }
   const scores = calculateScores();
   const activeSlice = isZweit() ? state.zweit : state.erst;
   const row = {
     session_id: meta.sessionId,
-    kandidat: meta.kandidat || '',
+    kandidat,
     interviewer: meta.interviewer || '',
     datum: meta.datum || '',
     runde: meta.runde || 'erst',
@@ -1847,6 +1875,19 @@ async function saveCurrent(opts = {}) {
 async function saveCurrentImmediate(opts = {}) {
   if (saveTimer) clearTimeout(saveTimer);
   await saveCurrent(opts);
+}
+
+async function leaveInterviewToDashboard() {
+  try {
+    await saveCurrentImmediate();
+    await loadAllCandidates();
+  } catch (e) {
+    console.error('leaveInterviewToDashboard', e);
+    toast('Entwurf konnte nicht gespeichert werden', 'error');
+    switchView('dashboard');
+    return;
+  }
+  switchView('dashboard');
 }
 
 function isRoundCompletedInData(c, runde) {
@@ -2059,6 +2100,7 @@ function newInterview(opts = {}) {
   updateInterviewSubtitle();
   switchView('interview');
   toast(opts.toast || 'Neues Interview gestartet – alle Kapitel sind unten verfügbar.');
+  saveCurrentImmediate().catch((e) => console.error('initial draft save', e));
 }
 
 function closeInterviewPicker() {
@@ -2306,6 +2348,7 @@ function renderSidenav() {
     return `<a href="#${tid}" data-target="${tid}">${escapeHtml(label)}</a>`;
   }).join('')    + `<a href="#sec-gesamt" data-target="sec-gesamt" style="margin-top:.5rem;border-top:1px solid var(--line);padding-top:.65rem">Gesamtbewertung</a>`
    + `<a href="#sec-abschluss" data-target="sec-abschluss">Abschluss</a>`
+   + `<div class="iv-sidenav-spacer"></div>`
    + renderSidenavApplicantHtml()
    + renderSidenavOwnerHtml()
    + `<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:.4rem">
@@ -2318,7 +2361,7 @@ function renderSidenav() {
       openTeamPanel(state.erst.meta.sessionId, isZweit() ? 'zweit' : 'erst');
     });
   }
-  document.getElementById('iv-back-dash').addEventListener('click', () => switchView('dashboard'));
+  document.getElementById('iv-back-dash').addEventListener('click', () => leaveInterviewToDashboard());
   nav.querySelectorAll('a[data-target]').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
@@ -2615,7 +2658,7 @@ function bindMainHandlers() {
   if (fin) fin.addEventListener('click', () => finalizeInterview());
   const reopen = document.getElementById('iv-reopen-round');
   if (reopen) reopen.addEventListener('click', () => reopenInterviewRound());
-  document.getElementById('iv-back-dash-abschluss')?.addEventListener('click', () => switchView('dashboard'));
+  document.getElementById('iv-back-dash-abschluss')?.addEventListener('click', () => leaveInterviewToDashboard());
   main.querySelectorAll('[data-act]').forEach(el => {
     const act = el.dataset.act;
     if (act === 'toggle-check') {
@@ -3013,7 +3056,19 @@ function toast(msg, type = 'info') {
 }
 
 document.querySelectorAll('.app-nav-btn[data-view]').forEach(btn => {
-  btn.addEventListener('click', () => switchView(btn.dataset.view));
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.view;
+    if (state.view === 'interview' && target !== 'interview') {
+      if (target === 'dashboard') leaveInterviewToDashboard();
+      else {
+        saveCurrentImmediate()
+          .catch((e) => { console.error('exit interview save', e); toast('Entwurf konnte nicht gespeichert werden', 'error'); })
+          .finally(() => switchView(target));
+      }
+      return;
+    }
+    switchView(target);
+  });
 });
 document.getElementById('nav-new-interview').addEventListener('click', openInterviewPicker);
 document.getElementById('nav-new-applicant').addEventListener('click', () => openBewerberCreateForm());
