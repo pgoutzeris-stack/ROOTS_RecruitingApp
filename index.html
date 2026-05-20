@@ -160,7 +160,10 @@
     .btn-primary:hover:not(:disabled) { background: var(--brand-dark); transform: translateY(-2px); }
     .btn-primary:disabled { background: #cbd5e1; color: #64748b; box-shadow: none; transform: none; cursor: not-allowed; opacity: 1; }
     .btn-secondary { background: var(--bg); border: 1px solid var(--line); color: var(--ink); border-radius: 999px; padding: .68rem 1.3rem; font-family: inherit; font-size: .88rem; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; font-weight: 500; }
-    .btn-secondary:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
+    .btn-secondary:hover:not(:disabled) { background: var(--brand); color: #fff; border-color: var(--brand); }
+    .btn-secondary:disabled { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; cursor: not-allowed; opacity: 1; }
+    .btn-secondary.btn-bew-zweit:not(:disabled) { border-color: #ddd6fe; color: #6d28d9; }
+    .btn-secondary.btn-bew-zweit:hover:not(:disabled) { background: #7c3aed; border-color: #7c3aed; color: #fff; }
     .btn-danger { background: var(--bg); border: 1px solid var(--line); color: var(--danger); border-radius: 999px; padding: .55rem 1rem; font-family: inherit; font-size: .85rem; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
     .btn-danger:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
     .btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: .45rem .9rem; font-family: inherit; font-size: .8rem; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
@@ -280,9 +283,10 @@
     .bew-name-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     @media (max-width: 720px) { .bew-name-row { grid-template-columns: 1fr; } }
     .iv-main { min-width: 0; width: 100%; flex: 1; height: 100%; min-height: 0; overflow-x: hidden; overflow-y: auto; scroll-snap-type: none; scroll-behavior: smooth; scroll-padding-top: 0; scroll-padding-bottom: 1.5rem; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
-    .iv-interview-footer { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; padding: .85rem 1.25rem; border: 1px solid var(--line); border-radius: 0 0 var(--radius) var(--radius); background: var(--bg); }
-    body.mode-interview .iv-interview-footer { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8500; margin: 0; border-radius: 0; border-left: none; border-right: none; border-bottom: none; box-shadow: 0 -8px 28px rgba(15,23,42,.12); padding: .85rem max(1.25rem, env(safe-area-inset-right)) .85rem max(1.25rem, env(safe-area-inset-left)); padding-bottom: max(.85rem, env(safe-area-inset-bottom)); }
-    body.mode-interview .iv-main { padding-bottom: 5.5rem; border-radius: var(--radius); border-bottom: 1px solid var(--line); }
+    .iv-interview-footer { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; padding: .75rem 0 0; border: none; background: transparent; }
+    body.mode-interview .iv-interview-footer { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8500; margin: 0; padding: .75rem max(1.25rem, env(safe-area-inset-right)) max(.75rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left)); background: transparent; border: none; box-shadow: none; pointer-events: none; }
+    body.mode-interview .iv-interview-footer button { pointer-events: auto; }
+    body.mode-interview .iv-main { padding-bottom: 4.25rem; border-radius: var(--radius); border-bottom: 1px solid var(--line); scroll-padding-bottom: 4.5rem; }
     body.mode-interview .iv-content-col .iv-interview-footer[hidden] { display: none !important; }
     .btn-zweit-quick { background: var(--brand); color: #fff; border: none; }
     .btn-zweit-quick:hover { background: var(--brand-dark); color: #fff; }
@@ -559,12 +563,10 @@
         <input type="text" id="bew-search" class="dash-search" placeholder="Name oder E-Mail suchen…">
       </div>
       <select id="bew-filter-status" class="dash-filter">
-        <option value="all">Alle Status</option>
+        <option value="all">Alle</option>
         <option value="new">Neu</option>
-        <option value="screening">Screening</option>
         <option value="erst">Erstgespräch</option>
         <option value="zweit">Zweitgespräch</option>
-        <option value="offer">Angebot</option>
         <option value="hired">Eingestellt</option>
         <option value="rejected">Abgelehnt</option>
       </select>
@@ -615,7 +617,7 @@
       <div class="iv-content-col">
         <main class="iv-main" id="iv-main"></main>
         <div class="iv-interview-footer" id="iv-interview-footer" hidden>
-          <button type="button" class="btn-primary" id="iv-save-interview"><i class="fa-solid fa-floppy-disk"></i> Speichern</button>
+          <button type="button" class="btn-primary" id="iv-save-interview"><i class="fa-solid fa-circle-check"></i> Interview abschließen</button>
           <button type="button" class="btn-secondary" id="iv-back-dash-abschluss"><i class="fa-solid fa-clock"></i> Später fortsetzen</button>
         </div>
       </div>
@@ -1934,7 +1936,7 @@ function updateInterviewSaveButtons() {
   const canFinalize = check.complete && calculateScores().overall != null;
   btn.disabled = !canFinalize;
   btn.title = canFinalize
-    ? 'Interview abschließen und speichern'
+    ? 'Alle Pflichtfelder erfüllt – Interview abschließen'
     : `Noch ${check.missing.length} Punkt(e) offen – Entwurf wird automatisch gespeichert`;
 }
 
@@ -2964,6 +2966,26 @@ const PIPELINE_LABELS = {
   offer: 'Angebot', hired: 'Eingestellt', rejected: 'Abgelehnt', withdrawn: 'Zurückgezogen',
 };
 
+const PIPELINE_FORM_OPTIONS = {
+  new: 'Neu', erst: 'Erstgespräch', zweit: 'Zweitgespräch',
+  hired: 'Eingestellt', rejected: 'Abgelehnt', withdrawn: 'Zurückgezogen',
+};
+
+function getApplicantInterviewCandidate(a) {
+  if (!a?.session_id) return null;
+  return state.candidates.find(x => x.session_id === a.session_id) || null;
+}
+
+function applicantInterviewRounds(a) {
+  const c = getApplicantInterviewCandidate(a);
+  if (!c) return { erst: false, zweit: false, candidate: null };
+  return {
+    candidate: c,
+    erst: !!(c.erst && (c.erst.meta?.sessionId || c.kandidat)),
+    zweit: canStartZweitgespraech(c) && !!(c.zweit?.meta?.zweitCreated),
+  };
+}
+
 function abschlussToApplicant(abs) {
   if (!abs) return {};
   return {
@@ -3176,12 +3198,14 @@ function renderBewerberDetail(id) {
   }
   const docs = a.applicant_documents || [];
   const displayName = getApplicantDisplayName(a) || 'Unbenannt';
-  const needsName = !applicantHasValidName(a);
+  const rounds = applicantInterviewRounds(a);
+  const canOpenIv = applicantHasValidName(a);
   detail.innerHTML = `
     <div class="panel-h" style="margin-bottom:1.25rem">
       <div class="panel-title"><i class="fa-solid fa-user"></i> ${escapeHtml(displayName)}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn-secondary" id="bew-open-interview" ${needsName ? 'disabled style="opacity:.5"' : ''}><i class="fa-solid fa-clipboard-list"></i> Interview starten</button>
+        <button type="button" class="btn-secondary" id="bew-open-erst" ${!canOpenIv || !rounds.erst ? 'disabled' : ''} title="${rounds.erst ? 'Erstgespräch öffnen' : 'Noch kein Erstgespräch'}"><i class="fa-solid fa-user-tie"></i> Erstgespräch einsehen</button>
+        <button type="button" class="btn-secondary btn-bew-zweit" id="bew-open-zweit" ${!canOpenIv || !rounds.zweit ? 'disabled' : ''} title="${rounds.zweit ? 'Zweitgespräch öffnen' : 'Zweitgespräch noch nicht verfügbar'}"><i class="fa-solid fa-forward"></i> Zweitgespräch einsehen</button>
         <button class="btn-primary" id="bew-save-btn"><i class="fa-solid fa-floppy-disk"></i> Speichern</button>
         <button class="btn-danger" id="bew-delete-btn"><i class="fa-solid fa-trash"></i></button>
       </div>
@@ -3197,7 +3221,7 @@ function renderBewerberDetail(id) {
       <div class="bew-field"><label>Geburtsdatum</label><input name="date_of_birth" type="date" value="${a.date_of_birth||''}"></div>
       <div class="bew-field"><label>Einstiegsdatum</label><input name="availability_start" type="date" value="${a.availability_start||''}"></div>
       <div class="bew-field"><label>Status</label>
-        <select name="pipeline_status">${Object.entries(PIPELINE_LABELS).map(([k,v])=>`<option value="${k}" ${a.pipeline_status===k?'selected':''}>${v}</option>`).join('')}</select>
+        <select name="pipeline_status">${Object.entries(PIPELINE_FORM_OPTIONS).map(([k,v])=>`<option value="${k}" ${a.pipeline_status===k?'selected':''}>${v}</option>`).join('')}${!PIPELINE_FORM_OPTIONS[a.pipeline_status] && a.pipeline_status ? `<option value="${escapeHtml(a.pipeline_status)}" selected>${escapeHtml(PIPELINE_LABELS[a.pipeline_status] || a.pipeline_status)}</option>` : ''}</select>
       </div>
       <div class="bew-field"><label>Aktuelles Gehalt</label><input name="salary_current" value="${escapeHtml(a.salary_current||'')}"></div>
       <div class="bew-field"><label>Gehaltswunsch</label><input name="salary_expected" value="${escapeHtml(a.salary_expected||'')}"></div>
@@ -3224,13 +3248,21 @@ function renderBewerberDetail(id) {
 
   document.getElementById('bew-save-btn').onclick = () => saveApplicantFromForm(a.id);
   document.getElementById('bew-delete-btn').onclick = () => deleteApplicant(a.id);
-  const openIv = document.getElementById('bew-open-interview');
-  if (openIv) openIv.onclick = () => {
-    if (!applicantHasValidName(a)) {
-      toast('Für das Interview Vorname und Nachname eintragen', 'error');
-      return;
-    }
-    openInterviewForApplicant(a);
+  const openErst = document.getElementById('bew-open-erst');
+  if (openErst) openErst.onclick = () => {
+    if (!applicantHasValidName(a)) { toast('Für das Interview Vorname und Nachname eintragen', 'error'); return; }
+    const r = applicantInterviewRounds(a);
+    if (!r.erst || !r.candidate) return;
+    state.linkedApplicantId = a.id;
+    loadCandidateIntoInterview(r.candidate, { runde: 'erst' });
+  };
+  const openZweit = document.getElementById('bew-open-zweit');
+  if (openZweit) openZweit.onclick = () => {
+    if (!applicantHasValidName(a)) { toast('Für das Interview Vorname und Nachname eintragen', 'error'); return; }
+    const r = applicantInterviewRounds(a);
+    if (!r.zweit || !r.candidate) return;
+    state.linkedApplicantId = a.id;
+    loadCandidateIntoInterview(r.candidate, { runde: 'zweit' });
   };
   const uz = document.getElementById('bew-upload-zone');
   const fi = document.getElementById('bew-file-input');
