@@ -1116,7 +1116,10 @@ function memberAvatarHtml(name, avatarUrl, size = 36) {
 function ensureZweitInterviewCreated(erstSlice, zweitSlice) {
   if ((erstSlice?.recommendation || '') !== ZWEIT_INVITE_RECO) return false;
   zweitSlice.meta = zweitSlice.meta || deepClone(INITIAL_STATE).meta;
-  if (zweitSlice.meta.zweitCreated) return false;
+  if (zweitSlice.meta.zweitCreated) {
+    ensureZweitTeamMeta(erstSlice, zweitSlice);
+    return false;
+  }
   zweitSlice.meta.sessionId = erstSlice.meta?.sessionId || zweitSlice.meta.sessionId || '';
   zweitSlice.meta.kandidat = erstSlice.meta?.kandidat || '';
   zweitSlice.meta.datum = new Date().toISOString().slice(0, 10);
@@ -1214,12 +1217,34 @@ function canTransferInterviewOwner(slice) {
   return String(slice.meta.initialOwnerId || '') === uid;
 }
 
-function canOpenTeamPanel(slice) {
+function ensureZweitTeamMeta(erstSlice, zweitSlice) {
+  if (!zweitSlice?.meta) return;
+  ensureInitialOwner(zweitSlice);
+  if (!zweitSlice.meta.initialOwnerId) {
+    zweitSlice.meta.initialOwnerId = erstSlice?.meta?.initialOwnerId || erstSlice?.meta?.ownerId || zweitSlice.meta.ownerId || '';
+  }
+  if (!zweitSlice.meta.ownerId && erstSlice?.meta?.ownerId) {
+    setSliceOwner(zweitSlice, erstSlice.meta.ownerId, erstSlice.meta.ownerName || '');
+  } else if (zweitSlice.meta.ownerId && !getSliceParticipants(zweitSlice).some(p => p.role === 'owner')) {
+    syncInviteesOwner(zweitSlice);
+  }
+}
+
+function canOpenTeamPanel(slice, context = {}) {
   const uid = window.RootsUser?._uid;
   if (!uid || !slice?.meta) return false;
-  ensureInitialOwner(slice);
-  if (canTransferInterviewOwner(slice) || slice.meta.ownerId === uid) return true;
-  return getSliceParticipants(slice).some(p => p.userId === uid);
+  const erst = context.erstSlice || state.erst;
+  const isZweitCtx = context.runde === 'zweit' || slice?.meta?.runde === 'zweit';
+  if (isZweitCtx) ensureZweitTeamMeta(erst, slice);
+  else ensureInitialOwner(slice);
+  if (canTransferInterviewOwner(slice)) return true;
+  if (String(slice.meta.ownerId || '') === uid) return true;
+  if (getSliceParticipants(slice).some(p => p.userId === uid)) return true;
+  if (isZweitCtx) {
+    ensureInitialOwner(erst);
+    if (String(erst.meta?.initialOwnerId || '') === uid || String(erst.meta?.ownerId || '') === uid) return true;
+  }
+  return false;
 }
 
 async function setRoundOwner(sessionId, runde, userId, opts = {}) {
@@ -1304,7 +1329,8 @@ function openTeamPanel(sessionId, runde) {
   const c = state.candidates.find(x => x.session_id === sessionId);
   if (!c) return;
   const slice = runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
-  if (!canOpenTeamPanel(slice)) {
+  if (runde === 'zweit') ensureZweitTeamMeta(c.erst, c.zweit || {});
+  if (!canOpenTeamPanel(slice, { runde, erstSlice: c.erst })) {
     toast('Keine Berechtigung für Interviewer-Einstellungen', 'error');
     return;
   }
@@ -1471,7 +1497,8 @@ function renderLaneOwnerBtn(entry) {
   const c = entry.candidate;
   const slice = entry.runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
   const members = getLaneTeamMembers(slice, c.interviewer);
-  const editBtn = canOpenTeamPanel(slice)
+  if (entry.runde === 'zweit') ensureZweitTeamMeta(c.erst, slice);
+  const editBtn = canOpenTeamPanel(slice, { runde: entry.runde, erstSlice: c.erst })
     ? `<button type="button" class="lane-team-btn" data-act="team-panel" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="Interviewer bearbeiten"><i class="fa-solid fa-pencil"></i></button>`
     : '';
   return `<div class="lane-owner" data-stop-row="1">
@@ -1539,8 +1566,9 @@ function renderSidenavApplicantHtml() {
 
 function renderSidenavOwnerHtml() {
   const slice = isZweit() ? state.zweit : state.erst;
+  if (isZweit()) ensureZweitTeamMeta(state.erst, state.zweit);
   const members = getLaneTeamMembers(slice, state.erst.meta.interviewer);
-  const editBtn = canOpenTeamPanel(slice)
+  const editBtn = canOpenTeamPanel(slice, { runde: isZweit() ? 'zweit' : 'erst', erstSlice: state.erst })
     ? `<button type="button" class="lane-team-btn" id="iv-sidenav-team-btn" title="Interviewer bearbeiten"><i class="fa-solid fa-pencil"></i></button>`
     : '';
   return `<div class="iv-sidenav-owner">
@@ -1777,9 +1805,13 @@ function dispatch(action) {
       if (state.view === 'interview') renderSidenav();
     } else if (action.type === 'SET_RATING') {
       refreshRatingPills(action.qid, action.evalIdx, action.value);
+      refreshLiveScores();
     } else if (action.type === 'SET_CULTURE_FIT') {
       refreshCultureFitUI(action.qid, action.value);
-    } else if (action.type !== 'SET_META' && action.type !== 'TOGGLE_CHECK' && action.type !== 'TOGGLE_RTI') {
+      refreshLiveScores();
+    } else if (action.type === 'TOGGLE_CHECK' || action.type === 'TOGGLE_RTI') {
+      refreshLiveScores();
+    } else if (action.type !== 'SET_META') {
       scheduleRenderInterview(true);
     }
   }
@@ -1854,9 +1886,48 @@ const setSaveStatus = (status, msg) => {
   if (status === 'saved') setTimeout(() => { badge.style.display = 'none'; }, 1800);
 };
 
+function persistLocalDraft() {
+  try {
+    localStorage.setItem('roots-recruit-last', JSON.stringify({ erst: state.erst, zweit: state.zweit }));
+  } catch {}
+}
+
 function scheduleSave() {
   if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveCurrent, 350);
+  saveTimer = setTimeout(() => {
+    persistLocalDraft();
+    refreshLiveScores();
+  }, 120);
+}
+
+function refreshLiveScores() {
+  if (state.view !== 'interview') return;
+  const scores = calculateScores();
+  const overall = scores.overall;
+  const overallPct = overall != null ? Math.max(0, Math.min(100, (overall / 5) * 100)) : 0;
+  const big = document.querySelector('#sec-gesamt .gesamt-score-big');
+  if (big) {
+    big.innerHTML = `${overall != null ? overall.toFixed(1) : '–'}<span style="font-size:1rem;color:var(--muted);font-weight:600">/5</span>`;
+  }
+  const fill = document.querySelector('#sec-gesamt .gesamt-score-fill');
+  if (fill) fill.style.width = `${overallPct}%`;
+  const count = Object.values(scores.perDim).reduce((a, b) => a + b.count, 0);
+  const dimCount = Object.keys(scores.averages).length;
+  const metaLine = document.querySelector('#sec-gesamt .gesamt-score-meta > div');
+  if (metaLine) {
+    metaLine.textContent = `Auf Basis von ${count} Bewertungen über ${dimCount} Dimensionen`;
+  }
+  const dimKeys = Object.keys(DIMENSIONS);
+  document.querySelectorAll('#sec-gesamt .dim-pill').forEach((pill, i) => {
+    const k = dimKeys[i];
+    if (!k) return;
+    const avg = scores.averages[k];
+    const pct = avg != null ? (avg / 5) * 100 : 0;
+    const val = pill.querySelector('.dim-value');
+    const barFill = pill.querySelector('.dim-bar-fill');
+    if (val) val.textContent = avg != null ? avg.toFixed(1) : '–';
+    if (barFill) barFill.style.width = `${pct}%`;
+  });
 }
 
 function effectiveRatings() {
@@ -1936,6 +2007,17 @@ async function saveCurrent(opts = {}) {
     state.zweit.meta.kandidat = kandidat;
   }
   const scores = calculateScores();
+  if (!opts.allowIncomplete) {
+    const check = collectCompletionChecks();
+    if (!check.complete || scores.overall == null) {
+      const msg = !check.complete
+        ? `Noch ${check.missing.length} Punkt(e) offen – Speichern nicht möglich`
+        : 'Score noch nicht ermittelt – bitte alle Bewertungen ausfüllen';
+      if (opts.throwOnError) throw new Error(msg);
+      toast(msg, 'error');
+      return false;
+    }
+  }
   const activeSlice = isZweit() ? state.zweit : state.erst;
   const row = {
     session_id: meta.sessionId,
@@ -1975,17 +2057,34 @@ async function saveCurrentImmediate(opts = {}) {
   await saveCurrent(opts);
 }
 
-async function leaveInterviewToDashboard() {
-  try {
-    await saveCurrentImmediate();
-    await loadAllCandidates();
-  } catch (e) {
-    console.error('leaveInterviewToDashboard', e);
-    toast('Entwurf konnte nicht gespeichert werden', 'error');
+async function finishActiveRoundAndGoDashboard() {
+  const check = collectCompletionChecks();
+  if (!check.complete) {
+    toast(`Noch ${check.missing.length} Punkt(e) offen – nicht gespeichert`, 'error');
     switchView('dashboard');
     return;
   }
+  const scores = calculateScores();
+  if (scores.overall == null) {
+    toast('Score noch nicht ermittelt – bitte alle Bewertungen ausfüllen', 'error');
+    switchView('dashboard');
+    return;
+  }
+  try {
+    check.slice.completed = true;
+    check.slice.completedAt = new Date().toISOString();
+    await saveCurrentImmediate({ throwOnError: true });
+    toast(`${check.rundeLabel} gespeichert`);
+    await loadAllCandidates();
+  } catch (e) {
+    console.error('finishActiveRoundAndGoDashboard', e);
+    toast('Speichern fehlgeschlagen', 'error');
+  }
   switchView('dashboard');
+}
+
+async function leaveInterviewToDashboard() {
+  await finishActiveRoundAndGoDashboard();
 }
 
 function isRoundCompletedInData(c, runde) {
@@ -2041,6 +2140,8 @@ function collectCompletionChecks(runde = null) {
 
   req(!!slice.recommendation, 'Empfehlung gewählt');
   req(!!(slice.gesamtNote || '').trim(), 'Gesamteindruck / Fazit');
+  const scores = calculateScores();
+  req(scores.overall != null, 'Gewichteter Score ermittelt');
 
   return {
     complete: missing.length === 0,
@@ -2053,13 +2154,7 @@ function collectCompletionChecks(runde = null) {
 }
 
 async function saveInterviewDraft() {
-  try {
-    await saveCurrentImmediate({ throwOnError: true });
-    toast('Gespeichert');
-  } catch (e) {
-    console.error('saveInterviewDraft', e);
-    toast('Speichern fehlgeschlagen', 'error');
-  }
+  await finishActiveRoundAndGoDashboard();
 }
 
 async function finalizeInterview() {
@@ -2148,6 +2243,7 @@ function loadCandidateIntoInterview(c, opts = {}) {
   if (c.zweit) applyAction(state.zweit, { type: 'LOAD', payload: c.zweit });
   backfillSliceOwner(state.erst);
   backfillSliceOwner(state.zweit);
+  ensureZweitTeamMeta(state.erst, state.zweit);
   state.erst.meta.sessionId = c.session_id || state.erst.meta.sessionId;
   state.zweit.meta.sessionId = state.erst.meta.sessionId;
   const linked = state.applicants.find(a => a.session_id === c.session_id);
@@ -2208,7 +2304,7 @@ function newInterview(opts = {}) {
   updateInterviewSubtitle();
   switchView('interview');
   toast(opts.toast || 'Neues Interview gestartet – alle Kapitel sind unten verfügbar.');
-  saveCurrentImmediate().catch((e) => console.error('initial draft save', e));
+  persistLocalDraft();
 }
 
 function closeInterviewPicker() {
@@ -2452,8 +2548,10 @@ function getRoundScores(c, runde) {
   const prevRunde = state.erst.meta?.runde;
   state.erst = deepClone(c.erst || INITIAL_STATE);
   state.zweit = deepClone(c.zweit || INITIAL_STATE);
-  state.erst.meta = { ...state.erst.meta, runde };
+  const prevRundeMeta = state.erst.meta.runde;
+  state.erst.meta.runde = runde;
   const scores = calculateScores();
+  state.erst.meta.runde = prevRundeMeta;
   state.erst = prevErst;
   state.zweit = prevZweit;
   if (prevRunde != null) state.erst.meta.runde = prevRunde;
@@ -2467,7 +2565,10 @@ function renderInterview(partial = false) {
   renderSidenav();
   if (!partial) {
     renderMain();
-    requestAnimationFrame(() => initInterviewScrollAndTimers());
+    requestAnimationFrame(() => {
+      initInterviewScrollAndTimers();
+      refreshLiveScores();
+    });
   }
 }
 
@@ -2733,6 +2834,7 @@ function bindMainHandlers() {
         const slice = currentSlice();
         slice.notes[el.dataset.qid] = v;
         scheduleSave();
+        refreshLiveScores();
       });
     } else if (act === 'set-rating') {
       el.addEventListener('click', () => dispatch({ type: 'SET_RATING', qid: el.dataset.qid, evalIdx: +el.dataset.eval, value: +el.dataset.val }));
@@ -2745,6 +2847,7 @@ function bindMainHandlers() {
         const slice = currentSlice();
         slice.abschlussNotes[el.dataset.key] = el.value;
         scheduleSave();
+        refreshLiveScores();
       });
     } else if (act === 'set-reco') {
       el.addEventListener('click', () => dispatch({ type: 'SET_RECOMMENDATION', value: el.dataset.val }));
@@ -2752,6 +2855,7 @@ function bindMainHandlers() {
       el.addEventListener('input', () => {
         currentSlice().gesamtNote = el.value;
         scheduleSave();
+        refreshLiveScores();
       });
     } else if (act === 'set-zweitanmerkung') {
       el.addEventListener('input', () => {
@@ -3119,9 +3223,8 @@ document.querySelectorAll('.app-nav-btn[data-view]').forEach(btn => {
     if (state.view === 'interview' && target !== 'interview') {
       if (target === 'dashboard') leaveInterviewToDashboard();
       else {
-        saveCurrentImmediate()
-          .catch((e) => { console.error('exit interview save', e); toast('Entwurf konnte nicht gespeichert werden', 'error'); })
-          .finally(() => switchView(target));
+        persistLocalDraft();
+        switchView(target);
       }
       return;
     }
