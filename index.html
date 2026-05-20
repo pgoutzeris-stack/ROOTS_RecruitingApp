@@ -180,10 +180,7 @@
     .dash-group-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .7rem 1rem; background: linear-gradient(180deg, rgba(15,23,42,.03), transparent); border-bottom: 1px solid var(--line); }
     .dash-group-name { font-size: 1.02rem; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
     .dash-group-sub { font-size: .75rem; color: var(--muted); margin-top: .1rem; }
-    .dash-lane { display: grid; grid-template-columns: minmax(120px, 1fr) auto minmax(52px, auto) minmax(72px, 1fr) auto; gap: .65rem 1rem; align-items: center; padding: .65rem 1rem; cursor: pointer; transition: background .12s; width: 100%; max-width: 100%; box-sizing: border-box; }
-    .dash-group-body { overflow-x: auto; }
-    .dash-icon-btn--zweit { color: #6d28d9; border-color: #ddd6fe; background: #f5f3ff; }
-    .dash-icon-btn--zweit:hover { color: #fff; background: #7c3aed; border-color: #7c3aed; }
+    .dash-lane { display: grid; grid-template-columns: minmax(140px, 1fr) auto auto auto; gap: .65rem 1rem; align-items: center; padding: .65rem 1rem; cursor: pointer; transition: background .12s; }
     .dash-lane + .dash-lane { border-top: 1px solid var(--line); }
     .dash-lane:hover { background: var(--status-bg); }
     .dash-lane--zweit { background: linear-gradient(90deg, rgba(124,58,237,.06), transparent 48%); }
@@ -2250,23 +2247,7 @@ async function deleteCandidate(sessionId) {
   } catch (e) { toast('Fehler beim Löschen', 'error'); }
 }
 
-function startZweitgespraechFromCard(c, e) {
-  if (e) e.stopPropagation();
-  if (!canStartZweitgespraech(c)) {
-    toast('Zweitgespräch nur nach Empfehlung „Zum Zweitgespräch einladen“ im Erstgespräch', 'error');
-    return;
-  }
-  loadCandidateIntoInterview(c, { startZweit: true });
-  toast('Zweitgespräch geöffnet');
-  requestAnimationFrame(() => {
-    const main = document.getElementById('iv-main');
-    if (main) main.scrollTop = 0;
-    initInterviewScrollAndTimers();
-  });
-}
-
 function loadCandidateIntoInterview(c, opts = {}) {
-  if (opts.startZweit) opts.runde = 'zweit';
   state.erst = deepClone(INITIAL_STATE);
   state.zweit = deepClone(INITIAL_STATE);
   if (c.erst) applyAction(state.erst, { type: 'LOAD', payload: c.erst });
@@ -2478,11 +2459,6 @@ function renderDashboardLane(entry) {
   const completed = isRoundCompletedInData(c, entry.runde);
   const completedAt = slice.completedAt;
   const rundeLabel = entry.runde === 'zweit' ? 'Zweitgespräch' : 'Erstgespräch';
-  const zweitUnlocked = entry.runde === 'erst' && canStartZweitgespraech(c);
-  const zweitDone = isRoundCompletedInData(c, 'zweit');
-  const zweitBtn = zweitUnlocked
-    ? `<button type="button" class="dash-icon-btn dash-icon-btn--zweit btn-zweit-quick" data-act="zweit" data-id="${escapeHtml(c.session_id)}" data-stop-row="1" title="${zweitDone ? 'Zweitgespräch öffnen' : 'Zweitgespräch starten'}"><i class="fa-solid fa-forward"></i></button>`
-    : '';
   return `<div class="dash-lane ${entry.runde === 'zweit' ? 'dash-lane--zweit' : ''}" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}">
     <div>
       <div class="dash-lane-runde dash-lane-runde--${entry.runde}"><i class="fa-solid ${entry.runde === 'zweit' ? 'fa-forward' : 'fa-user-tie'}"></i> ${rundeLabel}</div>
@@ -2494,8 +2470,7 @@ function renderDashboardLane(entry) {
     ${renderLaneOwnerBtn(entry)}
     <div class="dash-score" title="Score">${score}<small>/5</small></div>
     <div class="dash-reco cand-reco cand-reco--${recoCat}" title="${escapeHtml(recoDisplay || 'Keine Empfehlung')}">${recoDisplay ? escapeHtml(recoDisplay) : '—'}</div>
-    <div class="dash-lane-actions" data-stop-row="1">
-      ${zweitBtn}
+    <div class="dash-lane-actions">
       <button type="button" class="dash-icon-btn" data-act="open" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="${completed ? 'Ansehen' : 'Bearbeiten'}"><i class="fa-solid fa-pen"></i></button>
       <button type="button" class="dash-icon-btn" data-act="print" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="PDF"><i class="fa-solid fa-file-pdf"></i></button>
       ${entry.runde === 'erst' ? `<button type="button" class="dash-icon-btn dash-icon-btn--danger" data-act="delete" data-id="${escapeHtml(c.session_id)}" title="Löschen"><i class="fa-solid fa-trash"></i></button>` : ''}
@@ -2565,7 +2540,6 @@ function renderDashboard() {
       const c = state.candidates.find(x => x.session_id === id);
       if (!c) return;
       if (btn.dataset.act === 'open') loadCandidateIntoInterview(c, { runde });
-      else if (btn.dataset.act === 'zweit') startZweitgespraechFromCard(c, e);
       else if (btn.dataset.act === 'delete') deleteCandidate(id);
       else if (btn.dataset.act === 'print') printInterviewById(id, runde);
       else if (btn.dataset.act === 'team-panel') openTeamPanel(id, runde);
