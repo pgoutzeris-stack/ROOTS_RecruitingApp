@@ -89,12 +89,16 @@
     .view.active { display: block; }
 
     /* ─── Hauptnavigation ─── */
-    .app-nav { display: flex; gap: 6px; max-width: 1400px; width: calc(100% - 3rem); margin: 0 auto .85rem; flex-wrap: wrap; }
+    .app-nav { display: flex; gap: 6px; max-width: 1400px; width: calc(100% - 3rem); margin: 0 auto .85rem; flex-wrap: wrap; align-items: center; }
+    .app-nav-main { display: flex; gap: 6px; flex-wrap: wrap; }
     .app-nav-btn { padding: .5rem 1.1rem; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); font-family: inherit; font-size: .88rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .15s; display: inline-flex; align-items: center; gap: 8px; }
     .app-nav-btn:hover { border-color: var(--brand); color: var(--brand); }
     .app-nav-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); box-shadow: 0 4px 12px rgba(32,110,251,.25); }
     .app-nav-actions { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
     .app-nav-actions .app-nav-btn { margin-left: 0; }
+    .app-nav-actions--interview { margin-left: 0; width: 100%; justify-content: space-between; }
+    .app-nav-actions--interview[hidden] { display: none !important; }
+    .app-nav-main[hidden] { display: none !important; }
 
     .picker-overlay { position: fixed; inset: 0; z-index: 9000; background: rgba(15,23,42,.5); display: none; align-items: center; justify-content: center; padding: 2rem; }
     .picker-overlay.visible { display: flex; }
@@ -183,8 +187,12 @@
     .dash-chip--date i { opacity: .7; }
     .dash-chip--status-done { background: #ecfdf5; color: #047857; }
     .dash-chip--status-draft { background: #fff7ed; color: #b45309; }
-    .lane-owner { display: flex; align-items: center; gap: 0; flex-shrink: 0; }
+    .lane-owner { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
     .lane-owner-avatar { line-height: 0; }
+    .lane-avatar-stack { display: flex; align-items: center; padding-right: 2px; }
+    .lane-avatar-stack-item { margin-left: -8px; border: 2px solid var(--bg); border-radius: 50%; line-height: 0; box-shadow: 0 2px 6px rgba(15,23,42,.1); }
+    .lane-avatar-stack-item:first-child { margin-left: 0; }
+    .lane-avatar-more { width: 36px; height: 36px; margin-left: -8px; border-radius: 50%; background: var(--status-bg); border: 2px solid var(--bg); font-size: .7rem; font-weight: 800; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; }
     .lane-team-btn { width: 34px; height: 34px; margin-left: -6px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); color: var(--brand); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: .82rem; box-shadow: 0 2px 8px rgba(15,23,42,.08); transition: all .15s; z-index: 1; }
     .lane-team-btn:hover { background: var(--brand); color: #fff; border-color: var(--brand); transform: scale(1.05); }
     .dash-score { display: inline-flex; align-items: baseline; gap: 3px; padding: .35rem .7rem; border-radius: 10px; background: var(--brand-light); color: var(--brand); font-weight: 800; font-size: .95rem; font-variant-numeric: tabular-nums; }
@@ -219,12 +227,14 @@
     .team-member-opt-name { font-size: .88rem; font-weight: 700; color: var(--ink); }
     .team-member-opt-role { font-size: .72rem; color: var(--muted); }
     .team-panel-foot { padding: 1rem 1.35rem 1.25rem; border-top: 1px solid var(--line); display: flex; gap: .5rem; justify-content: flex-end; }
-    .notif-stack { position: fixed; bottom: 20px; left: 20px; z-index: 9800; display: flex; flex-direction: column-reverse; gap: .5rem; max-width: min(360px, calc(100vw - 40px)); pointer-events: none; }
-    .notif-card { pointer-events: auto; background: var(--ink); color: #fff; border-radius: 14px; padding: .85rem 1rem; box-shadow: 0 12px 32px rgba(15,23,42,.28); cursor: pointer; animation: notif-in .25s ease; border: 1px solid rgba(255,255,255,.08); }
-    .notif-card:hover { transform: translateY(-2px); }
-    .notif-card-title { font-size: .82rem; font-weight: 700; margin-bottom: .2rem; }
-    .notif-card-body { font-size: .78rem; opacity: .88; line-height: 1.4; }
-    @keyframes notif-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .notif-stack { position: fixed; bottom: 20px; right: 20px; left: auto; z-index: 9800; display: flex; flex-direction: column-reverse; gap: .65rem; max-width: min(380px, calc(100vw - 40px)); pointer-events: none; }
+    .notif-card { pointer-events: auto; display: flex; gap: 12px; align-items: flex-start; background: var(--bg); color: var(--ink); border-radius: 14px; padding: .9rem 1rem; box-shadow: 0 12px 36px rgba(15,23,42,.14), 0 0 0 1px var(--line); cursor: pointer; animation: notif-in .28s ease; border-left: 3px solid var(--brand); transition: transform .15s, box-shadow .15s; }
+    .notif-card:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(32,110,251,.18), 0 0 0 1px #c7dbfa; }
+    .notif-card-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--brand-light); color: var(--brand); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: .9rem; }
+    .notif-card-content { min-width: 0; flex: 1; }
+    .notif-card-title { font-size: .84rem; font-weight: 700; margin-bottom: .2rem; color: var(--ink); }
+    .notif-card-body { font-size: .78rem; color: var(--muted); line-height: 1.45; }
+    @keyframes notif-in { from { opacity: 0; transform: translateY(12px) translateX(8px); } to { opacity: 1; transform: translateY(0) translateX(0); } }
     .dash-empty i { font-size: 3rem; color: var(--line); margin-bottom: 1rem; }
     .dash-empty h3 { font-size: 1.15rem; font-weight: 700; color: var(--ink); margin-bottom: .5rem; }
 
@@ -359,8 +369,7 @@
     .gesamt-note { width: 100%; min-height: 100px; margin-top: 1rem; padding: 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .9rem; resize: vertical; outline: none; }
     .gesamt-note:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
 
-    .iv-abschluss-bar { padding: 1.5rem 2rem 2.5rem; max-width: 900px; border-top: 1px solid var(--line); background: var(--bg); }
-    .abschluss-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .gesamt-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
     .cand-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 700; padding: .25rem .55rem; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
     .cand-badge--done { background: #ecfdf5; color: #047857; }
     .cand-badge--draft { background: #fff7ed; color: #b45309; }
@@ -506,11 +515,17 @@
 </header>
 
 <nav class="app-nav" id="app-nav">
-  <button type="button" class="app-nav-btn" data-view="bewerber"><i class="fa-solid fa-users"></i> Bewerber</button>
-  <button type="button" class="app-nav-btn active" data-view="dashboard"><i class="fa-solid fa-grip"></i> Interviews</button>
-  <div class="app-nav-actions">
+  <div class="app-nav-main" id="app-nav-main">
+    <button type="button" class="app-nav-btn" data-view="bewerber"><i class="fa-solid fa-users"></i> Bewerber</button>
+    <button type="button" class="app-nav-btn active" data-view="dashboard"><i class="fa-solid fa-grip"></i> Interviews</button>
+  </div>
+  <div class="app-nav-actions" id="app-nav-actions-default">
     <button type="button" class="app-nav-btn" id="nav-new-interview"><i class="fa-solid fa-plus"></i> Neues Interview</button>
     <button type="button" class="app-nav-btn" id="nav-new-applicant"><i class="fa-solid fa-user-plus"></i> Neuer Bewerber</button>
+  </div>
+  <div class="app-nav-actions app-nav-actions--interview" id="app-nav-actions-interview" hidden>
+    <button type="button" class="app-nav-btn" id="nav-back-dashboard"><i class="fa-solid fa-arrow-left"></i> Zurück zum Dashboard</button>
+    <button type="button" class="app-nav-btn" id="nav-fullscreen" title="Vollbild"><i class="fa-solid fa-expand"></i> Vollbild</button>
   </div>
 </nav>
 
@@ -1233,8 +1248,11 @@ function renderNotificationStack() {
   }
   stack.innerHTML = state.notifications.map(n => `
     <div class="notif-card" data-notif-id="${escapeHtml(n.id)}" data-session="${escapeHtml(n.session_id || '')}" data-runde="${escapeHtml(n.runde || 'erst')}">
-      <div class="notif-card-title">${escapeHtml(n.title)}</div>
-      <div class="notif-card-body">${escapeHtml(n.message)}</div>
+      <div class="notif-card-icon"><i class="fa-solid fa-bell"></i></div>
+      <div class="notif-card-content">
+        <div class="notif-card-title">${escapeHtml(n.title)}</div>
+        <div class="notif-card-body">${escapeHtml(n.message)}</div>
+      </div>
     </div>`).join('');
   stack.querySelectorAll('.notif-card').forEach(card => {
     card.addEventListener('click', async () => {
@@ -1366,14 +1384,46 @@ async function saveTeamPanel() {
   }
 }
 
+function getLaneTeamMembers(slice, fallbackInterviewer) {
+  const list = [];
+  const seen = new Set();
+  for (const p of getSliceParticipants(slice)) {
+    if (!p.userId || seen.has(p.userId)) continue;
+    seen.add(p.userId);
+    const m = getTeamMember(p.userId);
+    list.push({
+      userId: p.userId,
+      name: m?.full_name || p.name || '—',
+      avatar: m?.avatar_url || null,
+    });
+  }
+  if (!list.length) {
+    const owner = resolveOwnerDisplay(slice, fallbackInterviewer);
+    if (owner.id || owner.name) {
+      list.push({ userId: owner.id, name: owner.name, avatar: owner.avatar });
+    }
+  }
+  return list;
+}
+
+function renderLaneTeamAvatars(members, size = 36) {
+  const max = 4;
+  const shown = members.slice(0, max);
+  const extra = members.length - shown.length;
+  let html = shown.map((m, i) =>
+    `<span class="lane-avatar-stack-item" style="z-index:${10 - i}" title="${escapeHtml(m.name)}">${memberAvatarHtml(m.name, m.avatar, size)}</span>`
+  ).join('');
+  if (extra > 0) html += `<span class="lane-avatar-more" title="${extra} weitere">+${extra}</span>`;
+  return html;
+}
+
 function renderLaneOwnerBtn(entry) {
   const c = entry.candidate;
   const slice = entry.runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
-  const owner = resolveOwnerDisplay(slice, c.interviewer);
-  const avatar = memberAvatarHtml(owner.name, owner.avatar, 40);
+  const members = getLaneTeamMembers(slice, c.interviewer);
   return `<div class="lane-owner" data-stop-row="1">
-    <span class="lane-owner-avatar">${avatar}</span>
-    <button type="button" class="lane-team-btn" data-act="team-panel" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="Interviewer"><i class="fa-solid fa-user-tie"></i></button>
+    <div class="lane-avatar-stack">${renderLaneTeamAvatars(members, 36)}</div>
+    <button type="button" class="lane-team-btn" data-act="team-panel" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="Interviewer bearbeiten"><i class="fa-solid fa-pencil"></i></button>
   </div>`;
 }
 
@@ -1434,12 +1484,12 @@ function renderSidenavApplicantHtml() {
 
 function renderSidenavOwnerHtml() {
   const slice = isZweit() ? state.zweit : state.erst;
-  const owner = resolveOwnerDisplay(slice, state.erst.meta.interviewer);
-  const avatar = memberAvatarHtml(owner.name, owner.avatar, 36);
+  const members = getLaneTeamMembers(slice, state.erst.meta.interviewer);
   return `<div class="iv-sidenav-owner">
     <div class="iv-sidenav-h">Interviewer</div>
-    <div class="iv-owner-display">${avatar}
-      <button type="button" class="lane-team-btn" id="iv-sidenav-team-btn" title="Interviewer"><i class="fa-solid fa-user-tie"></i></button>
+    <div class="iv-owner-display">
+      <div class="lane-avatar-stack">${renderLaneTeamAvatars(members, 32)}</div>
+      <button type="button" class="lane-team-btn" id="iv-sidenav-team-btn" title="Interviewer bearbeiten"><i class="fa-solid fa-pencil"></i></button>
     </div>
   </div>`;
 }
@@ -2158,14 +2208,39 @@ async function startInterviewForApplicant(a) {
   });
 }
 
+function updateAppNavForView(v) {
+  const isInterview = v === 'interview';
+  const main = document.getElementById('app-nav-main');
+  const def = document.getElementById('app-nav-actions-default');
+  const iv = document.getElementById('app-nav-actions-interview');
+  if (main) main.hidden = isInterview;
+  if (def) def.hidden = isInterview;
+  if (iv) iv.hidden = !isInterview;
+  document.querySelectorAll('.app-nav-btn[data-view]').forEach(btn => {
+    btn.classList.toggle('active', !isInterview && btn.dataset.view === v);
+  });
+}
+
+function toggleInterviewFullscreen() {
+  const btn = document.getElementById('nav-fullscreen');
+  const icon = btn?.querySelector('i');
+  if (!document.fullscreenElement) {
+    (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen)?.call(document.documentElement);
+    if (icon) icon.className = 'fa-solid fa-compress';
+    btn?.setAttribute('title', 'Vollbild beenden');
+  } else {
+    (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+    if (icon) icon.className = 'fa-solid fa-expand';
+    btn?.setAttribute('title', 'Vollbild');
+  }
+}
+
 function switchView(v) {
   state.view = v;
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
   const viewEl = document.getElementById('view-' + v);
   if (viewEl) viewEl.classList.add('active');
-  document.querySelectorAll('.app-nav-btn[data-view]').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.view === v);
-  });
+  updateAppNavForView(v);
   const subtitles = { bewerber: 'Bewerbermanagement', dashboard: 'Interview Dashboard', interview: 'Interview' };
   document.getElementById('header-subtitle').textContent = subtitles[v] || 'ROOTS Recruiting';
   if (v !== 'interview') teardownInterviewObservers();
@@ -2347,10 +2422,7 @@ function renderSidenav() {
   }).join('')    + `<a href="#sec-gesamt" data-target="sec-gesamt" style="margin-top:.5rem;border-top:1px solid var(--line);padding-top:.65rem">Gesamtbewertung</a>`
    + `<div class="iv-sidenav-spacer"></div>`
    + renderSidenavApplicantHtml()
-   + renderSidenavOwnerHtml()
-   + `<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:.4rem">
-        <button class="btn-ghost" id="iv-back-dash" style="justify-content:center"><i class="fa-solid fa-arrow-left"></i> Zurück zu Interviews</button>
-      </div>`;
+   + renderSidenavOwnerHtml();
   const teamBtn = document.getElementById('iv-sidenav-team-btn');
   if (teamBtn) {
     teamBtn.addEventListener('click', (e) => {
@@ -2358,7 +2430,6 @@ function renderSidenav() {
       openTeamPanel(state.erst.meta.sessionId, isZweit() ? 'zweit' : 'erst');
     });
   }
-  document.getElementById('iv-back-dash').addEventListener('click', () => leaveInterviewToDashboard());
   nav.querySelectorAll('a[data-target]').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
@@ -2380,19 +2451,9 @@ function renderMain() {
 
   // Gesamt evaluation
   html += renderGesamtEvaluation();
-  html += renderAbschlussPanel();
 
   main.innerHTML = html;
   bindMainHandlers();
-}
-
-function renderAbschlussPanel() {
-  return `<div class="iv-abschluss-bar" id="sec-abschluss">
-    <div class="abschluss-actions">
-      <button type="button" class="btn-primary" id="iv-save-interview"><i class="fa-solid fa-floppy-disk"></i> Speichern</button>
-      <button type="button" class="btn-secondary" id="iv-back-dash-abschluss"><i class="fa-solid fa-clock"></i> Später fortsetzen</button>
-    </div>
-  </div>`;
 }
 
 function renderSection(s, num) {
@@ -2586,6 +2647,10 @@ function renderGesamtEvaluation() {
       <textarea class="gesamt-note" data-act="set-gesamt-note" placeholder="Zusammenfassende Bewertung, Stärken, Risiken, offene Punkte…">${escapeHtml(slice.gesamtNote)}</textarea>
       ${!zweit ? `<label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:1rem;margin-bottom:.35rem">Anmerkungen für Zweitinterviewer:in (optional)</label>
         <textarea class="gesamt-note" data-act="set-zweitanmerkung" placeholder="Was sollte der Zweitinterviewer wissen?">${escapeHtml(state.erst.zweitAnmerkung || '')}</textarea>` : ''}
+    </div>
+    <div class="gesamt-actions">
+      <button type="button" class="btn-primary" id="iv-save-interview"><i class="fa-solid fa-floppy-disk"></i> Speichern</button>
+      <button type="button" class="btn-secondary" id="iv-back-dash-abschluss"><i class="fa-solid fa-clock"></i> Später fortsetzen</button>
     </div>
     </div>
   </div>`;
@@ -3005,6 +3070,20 @@ document.querySelectorAll('.app-nav-btn[data-view]').forEach(btn => {
 });
 document.getElementById('nav-new-interview').addEventListener('click', openInterviewPicker);
 document.getElementById('nav-new-applicant').addEventListener('click', () => openBewerberCreateForm());
+document.getElementById('nav-back-dashboard').addEventListener('click', () => leaveInterviewToDashboard());
+document.getElementById('nav-fullscreen').addEventListener('click', toggleInterviewFullscreen);
+document.addEventListener('fullscreenchange', () => {
+  const btn = document.getElementById('nav-fullscreen');
+  const icon = btn?.querySelector('i');
+  if (!btn || !icon) return;
+  if (document.fullscreenElement) {
+    icon.className = 'fa-solid fa-compress';
+    btn.setAttribute('title', 'Vollbild beenden');
+  } else {
+    icon.className = 'fa-solid fa-expand';
+    btn.setAttribute('title', 'Vollbild');
+  }
+});
 document.getElementById('bew-new-btn').addEventListener('click', () => openBewerberCreateForm());
 document.getElementById('picker-cancel').addEventListener('click', closeInterviewPicker);
 document.getElementById('picker-new-applicant').addEventListener('click', () => openBewerberCreateForm({ startInterviewAfterSave: true }));
