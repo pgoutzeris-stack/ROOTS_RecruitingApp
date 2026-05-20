@@ -29,6 +29,9 @@
       --radius-pill:  999px;
       --shadow:       0 6px 20px rgba(15, 23, 42, .08);
       --app-bg:       #f4f7fb;
+      --app-max-w:    1400px;
+      --app-side-pad: 1.5rem;
+      --app-shell-w:  min(var(--app-max-w), calc(100% - 2 * var(--app-side-pad)));
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,7 +40,7 @@
     body.mode-interview { overflow: hidden; height: 100%; display: flex; flex-direction: column; overscroll-behavior: none; }
     body.mode-interview .sop-header,
     body.mode-interview .app-nav { flex-shrink: 0; }
-    body.mode-interview .app-container { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; width: 100%; max-width: none; margin: 0; padding: 0 1.25rem 0; box-sizing: border-box; }
+    body.mode-interview .app-container { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; width: var(--app-shell-w); max-width: var(--app-max-w); margin: 0 auto; padding: 0; box-sizing: border-box; }
     body { padding: 12px 0 100px; }
 
     /* ─── Login Overlay ─── */
@@ -73,7 +76,7 @@
       padding:.8rem 1.5rem; min-height:64px;
       background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
       box-shadow:var(--shadow); gap:1.5rem;
-      max-width:1400px; width:calc(100% - 3rem); margin:0 auto 1rem; position:relative; z-index:50;
+      width:var(--app-shell-w); max-width:var(--app-max-w); margin:0 auto 1rem; position:relative; z-index:50; box-sizing:border-box;
     }
     .header-left { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
     .header-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
@@ -89,12 +92,12 @@
     .btn-header-action.btn-primary-header:hover{background:var(--brand-dark);border-color:var(--brand-dark);color:#fff}
 
     /* ─── App container ─── */
-    .app-container { max-width: 1400px; width: calc(100% - 3rem); margin: 0 auto; }
-    .view { display: none; }
+    .app-container { width: var(--app-shell-w); max-width: var(--app-max-w); margin: 0 auto; box-sizing: border-box; }
+    .view { display: none; width: 100%; }
     .view.active { display: block; }
 
     /* ─── Hauptnavigation ─── */
-    .app-nav { display: flex; gap: 6px; max-width: 1400px; width: calc(100% - 3rem); margin: 0 auto .85rem; flex-wrap: wrap; align-items: center; }
+    .app-nav { display: flex; gap: 6px; width: var(--app-shell-w); max-width: var(--app-max-w); margin: 0 auto .85rem; flex-wrap: wrap; align-items: center; box-sizing: border-box; }
     .app-nav-main { display: flex; gap: 6px; flex-wrap: wrap; }
     .app-nav-btn { padding: .5rem 1.1rem; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); font-family: inherit; font-size: .88rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .15s; display: inline-flex; align-items: center; gap: 8px; }
     .app-nav-btn:hover { border-color: var(--brand); color: var(--brand); }
@@ -284,7 +287,7 @@
     @media (max-width: 720px) { .bew-name-row { grid-template-columns: 1fr; } }
     .iv-main { min-width: 0; width: 100%; flex: 1; height: 100%; min-height: 0; overflow-x: hidden; overflow-y: auto; scroll-snap-type: none; scroll-behavior: smooth; scroll-padding-top: 0; scroll-padding-bottom: 1.5rem; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
     .iv-interview-footer { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; padding: .75rem 0 0; border: none; background: transparent; }
-    body.mode-interview .iv-interview-footer { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8500; margin: 0; padding: .75rem max(1.25rem, env(safe-area-inset-right)) max(.75rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left)); background: transparent; border: none; box-shadow: none; pointer-events: none; }
+    body.mode-interview .iv-interview-footer { position: fixed; left: 50%; transform: translateX(-50%); width: var(--app-shell-w); max-width: var(--app-max-w); bottom: 0; z-index: 8500; margin: 0; padding: .75rem 0 max(.75rem, env(safe-area-inset-bottom)); background: transparent; border: none; box-shadow: none; pointer-events: none; box-sizing: border-box; }
     body.mode-interview .iv-interview-footer button { pointer-events: auto; }
     body.mode-interview .iv-main { padding-bottom: 4.25rem; border-radius: var(--radius); border-bottom: 1px solid var(--line); scroll-padding-bottom: 4.5rem; }
     body.mode-interview .iv-content-col .iv-interview-footer[hidden] { display: none !important; }
@@ -570,7 +573,10 @@
         <option value="hired">Eingestellt</option>
         <option value="rejected">Abgelehnt</option>
       </select>
-      <button class="btn-primary" id="bew-new-btn"><i class="fa-solid fa-user-plus"></i> Neuer Bewerber</button>
+      <select id="bew-sort" class="dash-filter">
+        <option value="date_desc">Neueste zuerst</option>
+        <option value="date_asc">Älteste zuerst</option>
+      </select>
     </div>
     <div class="bew-layout">
       <div class="bew-list-panel">
@@ -1048,6 +1054,7 @@ let state = {
   bewerberCreateMode: null,
   bewFilterText: '',
   bewFilterStatus: 'all',
+  bewSortBy: 'date_desc',
   filterText: '',
   filterRunde: 'all',
   sortBy: 'date_desc',
@@ -2148,6 +2155,7 @@ async function saveInterviewComplete() {
     await saveCurrentImmediate({ throwOnError: true });
     toast(`${check.rundeLabel} abgeschlossen und gespeichert`);
     await loadAllCandidates();
+    exitInterviewFullscreenIfActive();
     switchView('dashboard');
   } catch (e) {
     console.error('saveInterviewComplete', e);
@@ -2166,6 +2174,7 @@ async function leaveInterviewToDashboard() {
     console.error('leaveInterviewToDashboard', e);
     toast('Entwurf konnte nicht gespeichert werden', 'error');
   }
+  exitInterviewFullscreenIfActive();
   switchView('dashboard');
 }
 
@@ -2462,6 +2471,26 @@ function updateAppNavForView(v) {
   });
 }
 
+function syncFullscreenNavButton() {
+  const btn = document.getElementById('nav-fullscreen');
+  const icon = btn?.querySelector('i');
+  if (!btn || !icon) return;
+  if (document.fullscreenElement) {
+    icon.className = 'fa-solid fa-compress';
+    btn.setAttribute('title', 'Vollbild beenden');
+  } else {
+    icon.className = 'fa-solid fa-expand';
+    btn.setAttribute('title', 'Vollbild');
+  }
+}
+
+function exitInterviewFullscreenIfActive() {
+  if (document.fullscreenElement) {
+    (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+  }
+  syncFullscreenNavButton();
+}
+
 function toggleInterviewFullscreen() {
   const btn = document.getElementById('nav-fullscreen');
   const icon = btn?.querySelector('i');
@@ -2470,14 +2499,14 @@ function toggleInterviewFullscreen() {
     if (icon) icon.className = 'fa-solid fa-compress';
     btn?.setAttribute('title', 'Vollbild beenden');
   } else {
-    (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
-    if (icon) icon.className = 'fa-solid fa-expand';
-    btn?.setAttribute('title', 'Vollbild');
+    exitInterviewFullscreenIfActive();
   }
 }
 
 function switchView(v) {
+  const prevView = state.view;
   state.view = v;
+  if (prevView === 'interview' && v !== 'interview') exitInterviewFullscreenIfActive();
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
   const viewEl = document.getElementById('view-' + v);
   if (viewEl) viewEl.classList.add('active');
@@ -3066,6 +3095,11 @@ function renderBewerberList() {
     items = items.filter(a => getApplicantDisplayName(a).toLowerCase().includes(f) || (a.email||'').toLowerCase().includes(f));
   }
   if (state.bewFilterStatus !== 'all') items = items.filter(a => a.pipeline_status === state.bewFilterStatus);
+  if (state.bewSortBy === 'date_asc') {
+    items.sort((a, b) => new Date(a.updated_at || a.created_at || 0) - new Date(b.updated_at || b.created_at || 0));
+  } else {
+    items.sort((a, b) => new Date(b.updated_at || b.created_at || 0) - new Date(a.updated_at || a.created_at || 0));
+  }
   document.getElementById('bew-count').textContent = `${items.length} Bewerber`;
   if (!items.length) {
     list.innerHTML = '<p style="padding:1.5rem;color:var(--muted);font-size:.9rem;text-align:center">Noch keine Bewerber angelegt.</p>';
@@ -3363,19 +3397,8 @@ document.getElementById('nav-new-interview').addEventListener('click', openInter
 document.getElementById('nav-new-applicant').addEventListener('click', () => openBewerberCreateForm());
 document.getElementById('nav-back-dashboard').addEventListener('click', () => leaveInterviewToDashboard());
 document.getElementById('nav-fullscreen').addEventListener('click', toggleInterviewFullscreen);
-document.addEventListener('fullscreenchange', () => {
-  const btn = document.getElementById('nav-fullscreen');
-  const icon = btn?.querySelector('i');
-  if (!btn || !icon) return;
-  if (document.fullscreenElement) {
-    icon.className = 'fa-solid fa-compress';
-    btn.setAttribute('title', 'Vollbild beenden');
-  } else {
-    icon.className = 'fa-solid fa-expand';
-    btn.setAttribute('title', 'Vollbild');
-  }
-});
-document.getElementById('bew-new-btn').addEventListener('click', () => openBewerberCreateForm());
+document.addEventListener('fullscreenchange', syncFullscreenNavButton);
+document.getElementById('bew-sort').addEventListener('change', (e) => { state.bewSortBy = e.target.value; renderBewerberList(); });
 document.getElementById('picker-cancel').addEventListener('click', closeInterviewPicker);
 document.getElementById('picker-new-applicant').addEventListener('click', () => openBewerberCreateForm({ startInterviewAfterSave: true }));
 document.getElementById('interview-picker-overlay').addEventListener('click', (e) => {
