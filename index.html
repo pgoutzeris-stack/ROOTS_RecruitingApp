@@ -192,26 +192,48 @@
     .iv-meta-field input:focus, .iv-meta-field select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
     .iv-meta-field select { appearance: none; padding-right: 32px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; cursor: pointer; }
 
-    .iv-layout { display: grid; grid-template-columns: 220px 1fr; gap: 1.5rem; align-items: start; }
-    .iv-sidenav { position: sticky; top: 1rem; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
+    .iv-layout { display: grid; grid-template-columns: 240px 1fr; gap: 1.25rem; align-items: stretch; min-height: calc(100vh - 200px); }
+    .iv-sidenav { position: sticky; top: 1rem; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; align-self: start; }
     .iv-sidenav-h { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: var(--muted); margin-bottom: .65rem; padding: 0 .25rem; }
-    .iv-sidenav a { display: flex; align-items: center; gap: 8px; padding: .55rem .75rem; border-radius: 8px; text-decoration: none; color: var(--ink); font-size: .85rem; font-weight: 500; transition: all .15s; border-left: 3px solid transparent; }
+    .iv-sidenav a { display: flex; align-items: center; gap: 8px; padding: .6rem .8rem; border-radius: 10px; text-decoration: none; color: var(--ink); font-size: .84rem; font-weight: 500; transition: all .15s; border-left: 3px solid transparent; }
     .iv-sidenav a:hover { background: var(--status-bg); }
-    .iv-sidenav a.active { background: var(--brand-light); color: var(--brand); border-left-color: var(--brand); }
+    .iv-sidenav a.active { background: var(--brand); color: #fff; border-left-color: var(--brand-dark); box-shadow: 0 4px 14px rgba(32,110,251,.28); }
+    .iv-sidenav a.active .iv-sidenav-num { color: #fff; opacity: 1; }
     .iv-sidenav-num { font-weight: 700; font-size: .8rem; min-width: 18px; text-align: center; opacity: .8; }
-    .iv-main { min-width: 0; }
+    .iv-content-col { min-width: 0; display: flex; flex-direction: column; min-height: calc(100vh - 200px); }
+    .iv-guide-bar { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: .85rem; box-shadow: var(--shadow); flex-shrink: 0; }
+    .iv-guide-bar h4 { font-size: .95rem; font-weight: 700; margin-bottom: .5rem; display: flex; align-items: center; gap: 8px; }
+    .iv-guide-bar h4 i { color: var(--brand); }
+    .iv-guide-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .65rem 1.25rem; font-size: .82rem; color: var(--muted); line-height: 1.45; }
+    .iv-guide-steps li { list-style: none; padding-left: 1.35rem; position: relative; }
+    .iv-guide-steps li::before { content: ''; position: absolute; left: 0; top: .45rem; width: 7px; height: 7px; border-radius: 50%; background: var(--brand); }
+    .iv-main { min-width: 0; flex: 1; overflow-y: auto; scroll-snap-type: y mandatory; scroll-behavior: smooth; border-radius: var(--radius); border: 1px solid var(--line); background: var(--app-bg); }
+    .iv-zweit-locked-banner { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: .75rem 1rem; font-size: .88rem; color: #9a3412; margin-bottom: .85rem; display: flex; align-items: center; gap: 10px; }
+    .iv-zweit-locked-banner i { flex-shrink: 0; }
+    .btn-zweit-quick { background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%); color: #fff; border: none; box-shadow: 0 4px 14px rgba(91,33,182,.35); }
+    .btn-zweit-quick:hover { background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); color: #fff; transform: translateY(-2px); }
+    .cand-actions-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: .35rem; }
     .iv-zweit-note { background: var(--warning-bg); border: 1px solid #fbbf24; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
     .iv-zweit-note-h { font-size: .85rem; font-weight: 700; color: var(--warning-text); margin-bottom: .35rem; display: flex; align-items: center; gap: 6px; }
     .iv-zweit-note-body { font-size: .9rem; color: var(--ink); white-space: pre-wrap; line-height: 1.55; }
 
-    /* ─── Sections ─── */
-    .sec-block { margin-bottom: 2rem; scroll-margin-top: 1rem; }
-    .sec-title { display: flex; align-items: baseline; gap: 14px; border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 1.25rem; }
-    .sec-num { font-size: 28px; font-weight: 800; color: var(--brand); letter-spacing: -1px; line-height: 1; }
-    .sec-name { font-size: 1.25rem; font-weight: 700; color: var(--ink); }
-    .sec-time { margin-left: auto; padding: .3rem .75rem; border-radius: 999px; background: var(--status-bg); border: 1px solid var(--line); font-size: .78rem; font-weight: 600; color: var(--muted); }
-    .sec-hint { background: var(--brand-light); border: 1px solid #c7dbfa; border-radius: 10px; padding: .75rem 1rem; font-size: .85rem; color: var(--brand-dark); margin-bottom: 1rem; display: flex; gap: .5rem; line-height: 1.55; }
+    /* ─── Sections (Vollbild-Scroll) ─── */
+    .iv-snap-section { min-height: calc(100vh - 240px); scroll-snap-align: start; scroll-snap-stop: always; padding: 2rem 2.25rem 2.5rem; margin-bottom: 0; box-sizing: border-box; display: flex; flex-direction: column; }
+    .iv-snap-section--panel { background: var(--bg); border-bottom: 1px solid var(--line); }
+    .sec-block { margin-bottom: 0; }
+    .sec-body { flex: 1; display: flex; flex-direction: column; gap: 1.25rem; max-width: 920px; }
+    .sec-title { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 1.25rem; margin-bottom: 1.5rem; flex-shrink: 0; }
+    .sec-num { font-size: 2rem; font-weight: 800; color: var(--brand); letter-spacing: -1px; line-height: 1; }
+    .sec-name { font-size: 1.35rem; font-weight: 700; color: var(--ink); flex: 1; min-width: 160px; }
+    .sec-timer-wrap { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; padding: .45rem .9rem; border-radius: 999px; background: var(--status-bg); border: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+    .sec-timer { font-size: 1.05rem; font-weight: 800; color: var(--brand); min-width: 4.5ch; }
+    .sec-timer-wrap.timer-over .sec-timer { color: #b45309; }
+    .sec-timer-wrap.timer-over { background: #fff7ed; border-color: #fed7aa; }
+    .sec-timer-label { font-size: .78rem; font-weight: 600; color: var(--muted); }
+    .sec-time { padding: .3rem .75rem; border-radius: 999px; background: var(--brand-light); border: 1px solid #c7dbfa; font-size: .78rem; font-weight: 600; color: var(--brand-dark); }
+    .sec-hint { background: var(--brand-light); border: 1px solid #c7dbfa; border-radius: 12px; padding: 1rem 1.15rem; font-size: .88rem; color: var(--brand-dark); display: flex; gap: .5rem; line-height: 1.6; }
     .sec-hint b { color: var(--brand-dark); }
+    .sec-progress-hint { font-size: .8rem; color: var(--muted); margin-top: auto; padding-top: 1.5rem; text-align: center; }
 
     /* ─── Script Block ─── */
     .script-block { background: var(--status-bg); border: 1px solid var(--line); border-left: 4px solid var(--brand); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; white-space: pre-wrap; line-height: 1.65; font-size: .92rem; color: var(--ink); }
@@ -220,7 +242,7 @@
     .case-block { background: #f3f4f6; border: 1px solid #cbd5e1; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; white-space: pre-wrap; line-height: 1.65; font-size: .92rem; color: var(--ink); }
 
     /* ─── Question Card ─── */
-    .q-card { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow); margin-bottom: 1rem; }
+    .q-card { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.5rem 1.65rem; box-shadow: var(--shadow); margin-bottom: 0; }
     .q-text { font-size: 1rem; font-weight: 600; line-height: 1.5; color: var(--ink); margin-bottom: .5rem; }
     .q-followup { font-size: .82rem; color: var(--muted); margin-bottom: .85rem; padding: .5rem .75rem; background: var(--status-bg); border-left: 3px solid var(--line); border-radius: 4px; line-height: 1.5; }
     .q-checks { display: flex; flex-direction: column; gap: .4rem; margin-bottom: .9rem; padding: .75rem .9rem; background: var(--status-bg); border-radius: 10px; }
@@ -329,8 +351,10 @@
     /* ─── Print ─── */
     @media print {
       body { background: #fff; padding: 0; }
-      .sop-header, .iv-sidenav, .dash-toolbar, .save-badge, .btn-header-action, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger, .round-switch-overlay { display: none !important; }
+      .sop-header, .iv-sidenav, .iv-guide-bar, .dash-toolbar, .save-badge, .btn-header-action, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger, .round-switch-overlay, .sec-progress-hint, .sec-timer-wrap { display: none !important; }
       .iv-layout { grid-template-columns: 1fr; }
+      .iv-main { overflow: visible; height: auto; scroll-snap-type: none; }
+      .iv-snap-section { min-height: auto; page-break-after: always; padding: 1rem; }
       .panel, .q-card { box-shadow: none !important; break-inside: avoid; }
     }
 
@@ -539,10 +563,13 @@
       </div>
     </div>
 
-    <!-- Sidenav + main -->
-    <div class="iv-layout">
+    <!-- Sidenav + scroll guide -->
+    <div class="iv-layout iv-layout--guided">
       <aside class="iv-sidenav" id="iv-sidenav"></aside>
-      <main class="iv-main" id="iv-main"></main>
+      <div class="iv-content-col">
+        <div class="iv-guide-bar" id="iv-guide-bar"></div>
+        <main class="iv-main" id="iv-main"></main>
+      </div>
     </div>
   </div>
 
@@ -571,6 +598,15 @@
     <div class="round-switch-actions">
       <button class="btn-secondary" id="round-switch-cancel">Abbrechen</button>
       <button class="btn-primary" id="round-switch-confirm">Ja, wechseln</button>
+    </div>
+  </div>
+</div>
+<div class="round-switch-overlay" id="zweit-locked-overlay">
+  <div class="round-switch-card">
+    <h3>Zweitgespräch noch nicht freigeschaltet</h3>
+    <p>Das Zweitgespräch ist erst verfügbar, wenn im <strong>Erstgespräch</strong> die Empfehlung <strong>„Zum Zweitgespräch einladen“</strong> gewählt wurde (Gesamtbewertung → Abschluss).</p>
+    <div class="round-switch-actions">
+      <button class="btn-primary" id="zweit-locked-close">Verstanden</button>
     </div>
   </div>
 </div>
@@ -960,6 +996,156 @@ function isZweit() { return state.erst.meta.runde === 'zweit'; }
 function currentSlice() { return isZweit() ? state.zweit : state.erst; }
 function getSections() { return isZweit() ? SECTIONS_ZWEIT : SECTIONS_ERST; }
 
+const ZWEIT_INVITE_RECO = 'Zum Zweitgespräch einladen';
+
+function isZweitUnlocked(erstSlice = state.erst) {
+  return (erstSlice?.recommendation || '') === ZWEIT_INVITE_RECO;
+}
+
+function canStartZweitgespraech(c) {
+  return isZweitUnlocked(c?.erst || {});
+}
+
+function parseSectionMinutes(timeStr) {
+  if (!timeStr) return 5;
+  const m = String(timeStr).match(/(\d+)/);
+  return m ? parseInt(m[1], 10) : 5;
+}
+
+let ivSectionObserver = null;
+let activeSectionId = null;
+const sectionTimerState = {};
+
+function formatTimer(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function stopSectionTimer(sectionId) {
+  if (!sectionId || !sectionTimerState[sectionId]) return;
+  const st = sectionTimerState[sectionId];
+  if (st.interval) { clearInterval(st.interval); st.interval = null; }
+}
+
+function stopAllSectionTimers() {
+  Object.keys(sectionTimerState).forEach(stopSectionTimer);
+}
+
+function updateTimerDisplay(sectionId, elapsedSec, plannedMin) {
+  const el = document.getElementById('timer-' + sectionId);
+  const wrap = el?.closest('.sec-timer-wrap');
+  if (!el) return;
+  el.textContent = formatTimer(elapsedSec);
+  if (wrap) wrap.classList.toggle('timer-over', elapsedSec > plannedMin * 60);
+  const navTimer = document.getElementById('nav-timer-' + sectionId);
+  if (navTimer) navTimer.textContent = formatTimer(elapsedSec);
+}
+
+function startSectionTimer(sectionId, plannedMin) {
+  if (!sectionId) return;
+  if (!sectionTimerState[sectionId]) sectionTimerState[sectionId] = { elapsed: 0, interval: null, plannedMin };
+  const st = sectionTimerState[sectionId];
+  st.plannedMin = plannedMin;
+  if (st.interval) return;
+  st.startedAt = Date.now() - (st.elapsed || 0) * 1000;
+  st.interval = setInterval(() => {
+    st.elapsed = Math.floor((Date.now() - st.startedAt) / 1000);
+    updateTimerDisplay(sectionId, st.elapsed, plannedMin);
+  }, 1000);
+  updateTimerDisplay(sectionId, st.elapsed || 0, plannedMin);
+}
+
+function activateInterviewSection(sectionId, plannedMin) {
+  if (!sectionId || activeSectionId === sectionId) return;
+  stopSectionTimer(activeSectionId);
+  activeSectionId = sectionId;
+  startSectionTimer(sectionId, plannedMin);
+  const nav = document.getElementById('iv-sidenav');
+  nav?.querySelectorAll('a[data-target]').forEach(a => {
+    a.classList.toggle('active', a.dataset.target === sectionId);
+  });
+}
+
+function teardownInterviewObservers() {
+  if (ivSectionObserver) { ivSectionObserver.disconnect(); ivSectionObserver = null; }
+  stopAllSectionTimers();
+  activeSectionId = null;
+}
+
+function initInterviewScrollAndTimers() {
+  teardownInterviewObservers();
+  const main = document.getElementById('iv-main');
+  if (!main || state.view !== 'interview') return;
+
+  const sections = main.querySelectorAll('.iv-snap-section[data-section-id]');
+  if (!sections.length) return;
+
+  ivSectionObserver = new IntersectionObserver((entries) => {
+    let best = null;
+    let bestRatio = 0;
+    entries.forEach(e => {
+      if (e.isIntersecting && e.intersectionRatio >= bestRatio) {
+        bestRatio = e.intersectionRatio;
+        best = e.target;
+      }
+    });
+    if (best) {
+      activateInterviewSection(best.dataset.sectionId, parseInt(best.dataset.plannedMin, 10) || 5);
+    }
+  }, { root: main, threshold: [0.25, 0.4, 0.55, 0.7], rootMargin: '-8% 0px -40% 0px' });
+
+  sections.forEach(sec => ivSectionObserver.observe(sec));
+
+  const first = sections[0];
+  activateInterviewSection(first.dataset.sectionId, parseInt(first.dataset.plannedMin, 10) || 5);
+}
+
+function updateRundeSelect() {
+  const sel = document.getElementById('iv-meta-runde');
+  if (!sel) return;
+  const unlocked = isZweitUnlocked();
+  const cur = state.erst.meta.runde || 'erst';
+  sel.innerHTML = `<option value="erst">Erstgespräch</option>
+    <option value="zweit"${unlocked ? '' : ' disabled'}>Zweitgespräch${unlocked ? '' : ' (gesperrt)'}</option>`;
+  if (!unlocked && cur === 'zweit') {
+    state.erst.meta.runde = 'erst';
+    state.zweit.meta.runde = 'erst';
+    sel.value = 'erst';
+  } else {
+    sel.value = cur;
+  }
+}
+
+function renderGuideBar() {
+  const bar = document.getElementById('iv-guide-bar');
+  if (!bar) return;
+  const unlocked = isZweitUnlocked();
+  bar.innerHTML = `
+    <h4><i class="fa-solid fa-compass"></i> So führst du das Interview</h4>
+    <ul class="iv-guide-steps">
+      <li><strong>Scrollen</strong> – jeder Block füllt den Bildschirm; beim Wechsel startet der Timer.</li>
+      <li><strong>Links</strong> – blau markiert = aktueller Abschnitt (Inhaltsverzeichnis).</li>
+      <li><strong>Bewerten</strong> – 1–5 pro Kriterium, dann Gesamtbewertung &amp; Abschluss.</li>
+      <li><strong>Zweitgespräch</strong> – ${unlocked ? 'freigeschaltet (Einladung aus Erstgespräch).' : 'erst nach Empfehlung „Zum Zweitgespräch einladen“.'}</li>
+    </ul>`;
+}
+
+function startZweitgespraechFromCard(c, e) {
+  if (e) e.stopPropagation();
+  if (!canStartZweitgespraech(c)) {
+    toast('Zweitgespräch nur nach Empfehlung „Zum Zweitgespräch einladen“ im Erstgespräch', 'error');
+    return;
+  }
+  loadCandidateIntoInterview(c, { startZweit: true });
+  toast('Zweitgespräch gestartet');
+  requestAnimationFrame(() => {
+    const main = document.getElementById('iv-main');
+    if (main) main.scrollTop = 0;
+    initInterviewScrollAndTimers();
+  });
+}
+
 function dispatch(action) {
   const slice = (action.scope === 'erst' || (action.type === 'SET_ZWEIT_ANMERKUNG'))
     ? state.erst
@@ -973,8 +1159,12 @@ function dispatch(action) {
   }
   scheduleSave();
   scheduleAbschlussRefresh();
-  if (state.view === 'interview' && action.type !== 'SET_META') {
-    scheduleRenderInterview(true);
+  if (state.view === 'interview') {
+    if (action.type === 'SET_RECOMMENDATION') {
+      updateRundeSelect();
+      renderGuideBar();
+    }
+    if (action.type !== 'SET_META') scheduleRenderInterview(true);
   }
 }
 
@@ -1268,9 +1458,26 @@ function loadCandidateIntoInterview(c, opts = {}) {
   state.zweit = deepClone(INITIAL_STATE);
   if (c.erst) applyAction(state.erst, { type: 'LOAD', payload: c.erst });
   if (c.zweit) applyAction(state.zweit, { type: 'LOAD', payload: c.zweit });
+  state.erst.meta.sessionId = c.session_id || state.erst.meta.sessionId;
+  state.zweit.meta.sessionId = state.erst.meta.sessionId;
+  state.erst.meta.kandidat = c.kandidat || state.erst.meta.kandidat;
+  state.zweit.meta.kandidat = state.erst.meta.kandidat;
+  state.erst.meta.interviewer = c.interviewer || state.erst.meta.interviewer;
+  state.zweit.meta.interviewer = state.erst.meta.interviewer;
+  state.erst.meta.datum = c.datum || state.erst.meta.datum;
+  state.zweit.meta.datum = state.erst.meta.datum;
   if (opts.startZweit) {
-    state.erst.meta.runde = 'zweit';
-    state.zweit.meta.runde = 'zweit';
+    if (!isZweitUnlocked()) {
+      toast('Zweitgespräch ist noch nicht freigeschaltet', 'error');
+      state.erst.meta.runde = 'erst';
+      state.zweit.meta.runde = 'erst';
+    } else {
+      state.erst.meta.runde = 'zweit';
+      state.zweit.meta.runde = 'zweit';
+    }
+  } else {
+    state.erst.meta.runde = c.runde || state.erst.meta.runde || 'erst';
+    state.zweit.meta.runde = state.erst.meta.runde;
   }
   switchView('interview');
 }
@@ -1358,6 +1565,7 @@ function switchView(v) {
   });
   const subtitles = { bewerber: 'Bewerbermanagement', dashboard: 'Interview-Übersicht', interview: 'Interview' };
   document.getElementById('header-subtitle').textContent = subtitles[v] || 'ROOTS Recruiting';
+  if (v !== 'interview') teardownInterviewObservers();
   if (v === 'dashboard') renderDashboard();
   else if (v === 'interview') renderInterview();
   else if (v === 'bewerber') renderBewerberList();
@@ -1412,6 +1620,8 @@ function renderDashboard() {
     const completed = isRoundCompletedInData(c, rundeKey);
     const completedAt = (rundeKey === 'zweit' ? c.zweit : c.erst)?.completedAt;
     const completedDate = completedAt ? new Date(completedAt).toLocaleDateString('de-DE') : '';
+    const zweitUnlocked = canStartZweitgespraech(c);
+    const zweitDone = isRoundCompletedInData(c, 'zweit');
     return `<div class="cand-card" data-id="${escapeHtml(c.session_id)}">
       <div class="cand-card-head">
         <div>
@@ -1426,8 +1636,9 @@ function renderDashboard() {
         <div class="cand-score-pill" title="Gewichteter Gesamtscore">${score}<span style="font-size:.7rem;opacity:.7">/5</span></div>
       </div>
       ${reco ? `<div class="cand-reco cand-reco--${cat}">${escapeHtml(reco)}</div>` : `<div class="cand-reco cand-reco--none">Noch keine Empfehlung</div>`}
-      <div class="cand-actions">
+      <div class="cand-actions cand-actions-row">
         <button class="btn-ghost" data-act="open" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-pen"></i> ${completed ? 'Ansehen' : 'Bearbeiten'}</button>
+        ${zweitUnlocked ? `<button class="btn-primary btn-zweit-quick" data-act="zweit" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-forward"></i> ${zweitDone ? 'Zweitgespräch öffnen' : 'Zweitgespräch starten'}</button>` : ''}
         <button class="btn-secondary" data-act="print" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-file-pdf"></i> Als PDF</button>
         <button class="btn-ghost" data-act="delete" data-id="${escapeHtml(c.session_id)}" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
       </div>
@@ -1442,6 +1653,7 @@ function renderDashboard() {
       const c = state.candidates.find(x => x.session_id === id);
       if (!c) return;
       if (btn.dataset.act === 'open') loadCandidateIntoInterview(c);
+      else if (btn.dataset.act === 'zweit') startZweitgespraechFromCard(c, e);
       else if (btn.dataset.act === 'delete') deleteCandidate(id);
       else if (btn.dataset.act === 'print') printInterviewById(id);
     });
@@ -1460,34 +1672,39 @@ function renderDashboard() {
    ────────────────────────────────────────────── */
 function renderInterview(partial = false) {
   if (!partial) {
-    // Set meta inputs from state
     document.getElementById('iv-meta-kandidat').value = state.erst.meta.kandidat || '';
     document.getElementById('iv-meta-interviewer').value = state.erst.meta.interviewer || '';
     document.getElementById('iv-meta-datum').value = state.erst.meta.datum || '';
-    document.getElementById('iv-meta-runde').value = state.erst.meta.runde || 'erst';
+    updateRundeSelect();
+    renderGuideBar();
   }
   renderSidenav();
-  renderMain();
+  if (!partial) {
+    renderMain();
+    requestAnimationFrame(() => initInterviewScrollAndTimers());
+  }
 }
 
 function renderSidenav() {
   const nav = document.getElementById('iv-sidenav');
   const sections = getSections();
   const zweit = isZweit();
-  nav.innerHTML = '<div class="iv-sidenav-h">Ablauf</div>' + sections.map((s, i) => {
+  nav.innerHTML = '<div class="iv-sidenav-h">Inhaltsverzeichnis</div>' + sections.map((s, i) => {
     const num = i + 1;
-    return `<a href="#sec-${s.id}" data-target="sec-${s.id}"><span class="iv-sidenav-num">${num}</span>${escapeHtml(s.main || s.sub || '–')}</a>`;
-  }).join('') + `<a href="#sec-gesamt" data-target="sec-gesamt" style="margin-top:.5rem;border-top:1px solid var(--line);padding-top:.6rem"><span class="iv-sidenav-num"><i class="fa-solid fa-star"></i></span>Gesamtbewertung</a>`
-   + `<a href="#sec-abschluss" data-target="sec-abschluss"><span class="iv-sidenav-num"><i class="fa-solid fa-flag-checkered"></i></span>Abschluss</a>`
+    const tid = 'sec-' + s.id;
+    return `<a href="#${tid}" data-target="${tid}"><span class="iv-sidenav-num">${num}</span><span style="flex:1">${escapeHtml(s.main || s.sub || '–')}</span><span class="iv-sidenav-timer" id="nav-timer-${tid}" style="font-size:.7rem;opacity:.75;font-variant-numeric:tabular-nums">00:00</span></a>`;
+  }).join('') + `<a href="#sec-gesamt" data-target="sec-gesamt" style="margin-top:.5rem;border-top:1px solid var(--line);padding-top:.6rem"><span class="iv-sidenav-num"><i class="fa-solid fa-star"></i></span><span style="flex:1">Gesamtbewertung</span><span class="iv-sidenav-timer" id="nav-timer-sec-gesamt" style="font-size:.7rem;opacity:.75">00:00</span></a>`
+   + `<a href="#sec-abschluss" data-target="sec-abschluss"><span class="iv-sidenav-num"><i class="fa-solid fa-flag-checkered"></i></span><span style="flex:1">Abschluss</span><span class="iv-sidenav-timer" id="nav-timer-sec-abschluss" style="font-size:.7rem;opacity:.75">00:00</span></a>`
    + `<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:.4rem">
         <button class="btn-ghost" id="iv-back-dash" style="justify-content:center"><i class="fa-solid fa-arrow-left"></i> Zurück zu Interviews</button>
       </div>`;
   document.getElementById('iv-back-dash').addEventListener('click', () => switchView('dashboard'));
-  nav.querySelectorAll('a').forEach(a => {
+  nav.querySelectorAll('a[data-target]').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
       const t = document.getElementById(a.dataset.target);
-      if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const main = document.getElementById('iv-main');
+      if (t && main) main.scrollTo({ top: t.offsetTop, behavior: 'smooth' });
       nav.querySelectorAll('a').forEach(x => x.classList.remove('active'));
       a.classList.add('active');
     });
@@ -1499,6 +1716,13 @@ function renderMain() {
   const sections = getSections();
   const zweit = isZweit();
   let html = '';
+
+  if (!isZweitUnlocked() && !zweit) {
+    html += `<div class="iv-zweit-locked-banner">
+      <i class="fa-solid fa-lock"></i>
+      <span>Das <strong>Zweitgespräch</strong> wird freigeschaltet, sobald im Erstgespräch die Empfehlung <strong>„Zum Zweitgespräch einladen“</strong> gesetzt ist.</span>
+    </div>`;
+  }
 
   // Zweit-Anmerkung block (from Erst, shown in Zweit)
   if (zweit && state.erst.zweitAnmerkung) {
@@ -1534,10 +1758,13 @@ function renderAbschlussPanel() {
   const done = !!slice.completed;
   const doneDate = slice.completedAt ? new Date(slice.completedAt).toLocaleString('de-DE') : '';
 
-  return `<div class="panel abschluss-panel" id="sec-abschluss">
-    <div class="panel-h">
-      <div class="panel-title"><i class="fa-solid fa-flag-checkered"></i> Interview abschließen · ${escapeHtml(check.rundeLabel)}</div>
+  return `<div class="iv-snap-section iv-snap-section--panel abschluss-panel" id="sec-abschluss" data-section-id="sec-abschluss" data-planned-min="5">
+    <div class="sec-title" style="border:none;padding-bottom:0;margin-bottom:1rem">
+      <span class="sec-num"><i class="fa-solid fa-flag-checkered"></i></span>
+      <span class="sec-name">Interview abschließen · ${escapeHtml(check.rundeLabel)}</span>
+      <span class="sec-timer-wrap"><span class="sec-timer" id="timer-sec-abschluss">00:00</span><span class="sec-timer-label">läuft</span></span>
     </div>
+    <div class="sec-body">
     <p style="font-size:.9rem;color:var(--muted);margin-bottom:.75rem;line-height:1.5">
       Wenn alle Pflichtfelder ausgefüllt sind, schließe das Interview hier ab. Erst dann gilt die Bewertung als vollständig gespeichert und erscheint in der Interview-Übersicht als <strong>Abgeschlossen</strong>.
       PDF-Export findest du in der <strong>Interview-Übersicht</strong> (Button „Als PDF“).
@@ -1553,6 +1780,7 @@ function renderAbschlussPanel() {
            <button type="button" class="btn-primary" id="iv-back-dash-abschluss"><i class="fa-solid fa-grip"></i> Zur Interview-Übersicht</button>`
         : `<button type="button" class="btn-primary" id="iv-finalize" ${check.complete ? '' : 'disabled style="opacity:.55;cursor:not-allowed"'}><i class="fa-solid fa-cloud-arrow-up"></i> Interview abschließen &amp; speichern</button>
            <button type="button" class="btn-secondary" id="iv-back-dash-abschluss"><i class="fa-solid fa-grip"></i> Später fortsetzen</button>`}
+    </div>
     </div>
   </div>`;
 }
@@ -1583,7 +1811,14 @@ function scheduleAbschlussRefresh() {
 function renderSection(s, num) {
   const slice = currentSlice();
   let body = '';
-  const titleHtml = s.main ? `<div class="sec-title"><span class="sec-num">${num}.</span><span class="sec-name">${escapeHtml(s.main)}</span>${s.time ? `<span class="sec-time"><i class="fa-regular fa-clock"></i> ${escapeHtml(s.time)}</span>` : ''}</div>` : '';
+  const planned = parseSectionMinutes(s.time);
+  const secId = 'sec-' + s.id;
+  const titleHtml = s.main ? `<div class="sec-title">
+    <span class="sec-num">${num}.</span>
+    <span class="sec-name">${escapeHtml(s.main)}${s.sub ? ` <span style="font-size:.85rem;font-weight:500;color:var(--muted)">· ${escapeHtml(s.sub)}</span>` : ''}</span>
+    ${s.time ? `<span class="sec-time"><i class="fa-regular fa-clock"></i> Soll ${escapeHtml(s.time)}</span>` : ''}
+    <span class="sec-timer-wrap" id="wrap-timer-${secId}"><span class="sec-timer" id="timer-${secId}">00:00</span><span class="sec-timer-label">läuft</span></span>
+  </div>` : '';
 
   if (s.hint) {
     body += `<div class="sec-hint"><b>Tipp:</b><span>${escapeHtml(s.hint)}</span></div>`;
@@ -1625,7 +1860,11 @@ function renderSection(s, num) {
     </div>`;
   }
 
-  return `<div class="sec-block" id="sec-${s.id}">${titleHtml}${body}</div>`;
+  return `<div class="iv-snap-section sec-block" id="${secId}" data-section-id="${secId}" data-planned-min="${planned}">
+    ${titleHtml}
+    <div class="sec-body">${body}</div>
+    <div class="sec-progress-hint"><i class="fa-solid fa-chevron-down"></i> Nach unten scrollen · nächster Abschnitt</div>
+  </div>`;
 }
 
 function renderQuestionCard(q, slice) {
@@ -1730,10 +1969,13 @@ function renderGesamtEvaluation() {
     </div>`;
   }
 
-  return `<div class="panel gesamt-panel" id="sec-gesamt">
-    <div class="panel-h">
-      <div class="panel-title"><i class="fa-solid fa-star"></i> Gesamtbewertung ${zweit ? '· Zweitgespräch' : '· Erstgespräch'}</div>
+  return `<div class="iv-snap-section iv-snap-section--panel gesamt-panel" id="sec-gesamt" data-section-id="sec-gesamt" data-planned-min="10">
+    <div class="sec-title" style="border:none;padding-bottom:0;margin-bottom:1rem">
+      <span class="sec-num"><i class="fa-solid fa-star"></i></span>
+      <span class="sec-name">Gesamtbewertung ${zweit ? '· Zweitgespräch' : '· Erstgespräch'}</span>
+      <span class="sec-timer-wrap"><span class="sec-timer" id="timer-sec-gesamt">00:00</span><span class="sec-timer-label">läuft</span></span>
     </div>
+    <div class="sec-body">
 
     <div class="gesamt-overall">
       <div>
@@ -1756,6 +1998,8 @@ function renderGesamtEvaluation() {
       ${!zweit ? `<label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:1rem;margin-bottom:.35rem">Anmerkungen für Zweitinterviewer:in (optional)</label>
         <textarea class="gesamt-note" data-act="set-zweitanmerkung" placeholder="Was sollte der Zweitinterviewer wissen?">${escapeHtml(state.erst.zweitAnmerkung || '')}</textarea>` : ''}
     </div>
+    </div>
+    <div class="sec-progress-hint"><i class="fa-solid fa-chevron-down"></i> Weiter zum Abschluss</div>
   </div>`;
 }
 
@@ -2091,20 +2335,33 @@ document.getElementById('iv-meta-interviewer').addEventListener('input', (e) => 
 document.getElementById('iv-meta-datum').addEventListener('input', (e) => setMetaField('datum', e.target.value));
 document.getElementById('iv-meta-runde').addEventListener('change', (e) => {
   const newVal = e.target.value;
-  if (newVal === 'zweit' && state.erst.recommendation !== 'Zum Zweitgespräch einladen') {
-    // Show confirm dialog
+  const prev = state.erst.meta.runde || 'erst';
+  if (newVal === 'zweit' && !isZweitUnlocked()) {
+    e.target.value = prev;
+    document.getElementById('zweit-locked-overlay').classList.add('visible');
+    return;
+  }
+  if (newVal === 'zweit' && isZweitUnlocked()) {
     document.getElementById('round-switch-overlay').classList.add('visible');
     document.getElementById('round-switch-confirm').onclick = () => {
       dispatch({ type: 'SET_META', field: 'runde', value: 'zweit' });
       document.getElementById('round-switch-overlay').classList.remove('visible');
+      renderGuideBar();
+      renderInterview();
     };
     document.getElementById('round-switch-cancel').onclick = () => {
-      e.target.value = state.erst.meta.runde;
+      e.target.value = prev;
       document.getElementById('round-switch-overlay').classList.remove('visible');
     };
-  } else {
-    dispatch({ type: 'SET_META', field: 'runde', value: newVal });
+    e.target.value = prev;
+    return;
   }
+  dispatch({ type: 'SET_META', field: 'runde', value: newVal });
+  renderGuideBar();
+  renderInterview();
+});
+document.getElementById('zweit-locked-close').addEventListener('click', () => {
+  document.getElementById('zweit-locked-overlay').classList.remove('visible');
 });
 
 // Dashboard filters
