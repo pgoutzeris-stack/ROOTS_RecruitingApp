@@ -166,21 +166,22 @@
     .dash-search { width: 100%; height: 42px; padding: 0 14px 0 38px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); font-family: inherit; font-size: .9rem; color: var(--ink); outline: none; transition: border-color .2s, box-shadow .2s; }
     .dash-search:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
     .dash-filter { padding: 0 1rem; height: 42px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); font-family: inherit; font-size: .88rem; color: var(--ink); cursor: pointer; outline: none; }
-    .dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
-    .cand-card { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.1rem 1.25rem; box-shadow: var(--shadow); transition: transform .2s, box-shadow .2s; display: flex; flex-direction: column; gap: .6rem; position: relative; }
-    .cand-card:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(15,23,42,.12); }
-    .cand-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
-    .cand-name { font-size: 1.05rem; font-weight: 700; color: var(--ink); }
-    .cand-meta { font-size: .8rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: .35rem .85rem; }
+    .dash-rows { display: flex; flex-direction: column; gap: .5rem; }
+    .cand-row { display: grid; grid-template-columns: minmax(220px, 1fr) auto minmax(160px, 220px) auto; gap: .75rem 1.25rem; align-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: .8rem 1.1rem; box-shadow: var(--shadow); transition: background .15s, border-color .15s, box-shadow .15s; cursor: pointer; }
+    .cand-row:hover { background: var(--status-bg); border-color: #cbd5e1; box-shadow: 0 8px 24px rgba(15,23,42,.08); }
+    .cand-row-main { display: flex; align-items: center; gap: .75rem; min-width: 0; }
+    .cand-row-info { min-width: 0; }
+    .cand-name { font-size: 1rem; font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .cand-meta { font-size: .78rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: .25rem .75rem; margin-top: .15rem; }
     .cand-meta-item { display: inline-flex; align-items: center; gap: 4px; }
-    .cand-score-pill { display: inline-flex; align-items: center; gap: 6px; padding: .25rem .65rem; border-radius: 999px; background: var(--brand-light); color: var(--brand); font-weight: 700; font-size: .85rem; flex-shrink: 0; }
-    .cand-reco { font-size: .78rem; font-weight: 600; padding: .25rem .6rem; border-radius: 999px; align-self: flex-start; }
+    .cand-score-pill { display: inline-flex; align-items: center; gap: 6px; padding: .3rem .7rem; border-radius: 999px; background: var(--brand-light); color: var(--brand); font-weight: 700; font-size: .88rem; flex-shrink: 0; white-space: nowrap; }
+    .cand-reco { font-size: .76rem; font-weight: 600; padding: .28rem .65rem; border-radius: 999px; white-space: nowrap; text-align: center; }
+    .cand-row-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .cand-row-actions .btn-ghost, .cand-row-actions .btn-primary, .cand-row-actions .btn-secondary { padding: .4rem .75rem; font-size: .78rem; }
     .cand-reco--yes { background: #d0f4ee; color: #0f6b57; }
     .cand-reco--maybe { background: #fef3c7; color: #b45309; }
     .cand-reco--no { background: #fee2e2; color: #b91c1c; }
     .cand-reco--none { background: var(--status-bg); color: var(--muted); }
-    .cand-actions { display: flex; gap: 6px; margin-top: .25rem; }
-    .cand-actions .btn-ghost { flex: 1; justify-content: center; }
     .dash-empty { text-align: center; padding: 4rem 2rem; color: var(--muted); }
     .dash-empty i { font-size: 3rem; color: var(--line); margin-bottom: 1rem; }
     .dash-empty h3 { font-size: 1.15rem; font-weight: 700; color: var(--ink); margin-bottom: .5rem; }
@@ -192,13 +193,13 @@
     .iv-meta-field input:focus, .iv-meta-field select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
     .iv-meta-field select { appearance: none; padding-right: 32px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; cursor: pointer; }
 
-    .iv-layout { display: grid; grid-template-columns: minmax(260px, 300px) 1fr; gap: 1.25rem; align-items: stretch; min-height: calc(100vh - 200px); }
-    .iv-sidenav { position: sticky; top: 1rem; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem 1.1rem; max-height: calc(100vh - 2rem); overflow-y: auto; align-self: start; }
+    .iv-layout { display: grid; grid-template-columns: minmax(260px, 300px) 1fr; gap: 1.25rem; align-items: stretch; min-height: 0; height: 100%; }
+    .iv-sidenav { height: 100%; min-height: 0; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem 1.1rem; overflow-y: auto; display: flex; flex-direction: column; box-sizing: border-box; }
     .iv-sidenav-h { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: var(--muted); margin-bottom: .75rem; padding: 0 .15rem; }
     .iv-sidenav a { display: block; padding: .65rem .85rem; border-radius: 10px; text-decoration: none; color: var(--ink); font-size: .86rem; font-weight: 500; line-height: 1.4; transition: all .15s; border-left: 3px solid transparent; word-wrap: break-word; overflow-wrap: anywhere; hyphens: auto; }
     .iv-sidenav a:hover { background: var(--status-bg); }
     .iv-sidenav a.active { background: var(--brand); color: #fff; border-left-color: var(--brand-dark); box-shadow: 0 4px 14px rgba(32,110,251,.28); }
-    .iv-content-col { min-width: 0; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    .iv-content-col { min-width: 0; display: flex; flex-direction: column; flex: 1; min-height: 0; height: 100%; }
     #view-interview.active { display: flex; flex-direction: column; height: calc(100dvh - 128px); max-height: calc(100dvh - 128px); }
     #view-interview .iv-meta-panel { flex-shrink: 0; margin-bottom: .75rem; }
     #view-interview .iv-layout { flex: 1; min-height: 0; overflow: hidden; }
@@ -313,7 +314,7 @@
     .abschluss-check-item.missing { color: #991b1b; }
     .abschluss-check-item i { margin-top: 2px; flex-shrink: 0; }
     .abschluss-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-    .cand-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 700; padding: .25rem .55rem; border-radius: 999px; margin-bottom: .5rem; }
+    .cand-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 700; padding: .25rem .55rem; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
     .cand-badge--done { background: #ecfdf5; color: #047857; }
     .cand-badge--draft { background: #fff7ed; color: #b45309; }
 
@@ -350,8 +351,10 @@
     }
 
     @media (max-width: 880px) {
-      .iv-layout { grid-template-columns: 1fr; }
-      .iv-sidenav { position: relative; top: 0; max-height: none; padding: .85rem; }
+      .cand-row { grid-template-columns: 1fr; gap: .5rem; }
+      .cand-row-actions { flex-wrap: wrap; }
+      .iv-layout { grid-template-columns: 1fr; height: auto; }
+      .iv-sidenav { height: auto; max-height: 280px; padding: .85rem; }
       .sec-title { flex-wrap: wrap; }
       .iv-meta-row { grid-template-columns: 1fr 1fr; }
       .reco-buttons { grid-template-columns: 1fr; }
@@ -505,8 +508,8 @@
   <!-- DASHBOARD VIEW -->
   <div class="view active" id="view-dashboard">
     <div class="dash-greeting">
-      <h1>Recruiting Dashboard</h1>
-      <p>Übersicht aller geführten Interviews. Klicke auf eine Karte, um sie zu öffnen oder zu bearbeiten.</p>
+      <h1>Interview Dashboard</h1>
+      <p>Übersicht aller geführten Interviews. Klicke auf eine Zeile, um sie zu öffnen oder zu bearbeiten.</p>
     </div>
     <div class="dash-toolbar">
       <div class="dash-search-wrap">
@@ -1008,7 +1011,23 @@ let ivSectionObserver = null;
 let ivScrollSyncTimer = null;
 let ivScrollHandler = null;
 let activeSectionId = null;
+let ivNavScrollUntil = 0;
 const sectionTimerState = {};
+
+function scrollIvMainToSection(sectionId) {
+  const main = document.getElementById('iv-main');
+  const section = document.getElementById(sectionId);
+  if (!main || !section) return;
+  ivNavScrollUntil = Date.now() + 700;
+  const top = section.getBoundingClientRect().top - main.getBoundingClientRect().top + main.scrollTop;
+  main.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  const sid = section.dataset.sectionId || sectionId;
+  activateInterviewSection(sid, parseInt(section.dataset.plannedMin, 10) || 5);
+  const nav = document.getElementById('iv-sidenav');
+  nav?.querySelectorAll('a[data-target]').forEach(a => {
+    a.classList.toggle('active', a.dataset.target === sectionId);
+  });
+}
 
 function formatTimer(sec) {
   const m = Math.floor(sec / 60);
@@ -1082,6 +1101,7 @@ function isSectionSnapped(sec, mainRect) {
 }
 
 function syncActiveSectionFromScroll() {
+  if (Date.now() < ivNavScrollUntil) return;
   const main = document.getElementById('iv-main');
   if (!main) return;
   const sections = [...main.querySelectorAll('.iv-snap-section[data-section-id]')];
@@ -1197,9 +1217,42 @@ function dispatch(action) {
   scheduleSave();
   scheduleAbschlussRefresh();
   if (state.view === 'interview') {
-    if (action.type === 'SET_RECOMMENDATION') updateRundeSelect();
-    if (action.type !== 'SET_META') scheduleRenderInterview(true);
+    if (action.type === 'SET_RECOMMENDATION') {
+      updateRundeSelect();
+      refreshRecoButtons(action.value);
+    } else if (action.type === 'SET_RATING') {
+      refreshRatingPills(action.qid, action.evalIdx, action.value);
+    } else if (action.type === 'SET_CULTURE_FIT') {
+      refreshCultureFitUI(action.qid, action.value);
+    } else if (action.type !== 'SET_META' && action.type !== 'TOGGLE_CHECK' && action.type !== 'TOGGLE_RTI') {
+      scheduleRenderInterview(true);
+    }
   }
+}
+
+function refreshRatingPills(qid, evalIdx, value) {
+  const main = document.getElementById('iv-main');
+  if (!main) return;
+  const isZ = isZweit();
+  const erstRating = isZ ? (state.erst.ratings[qid] || {})[evalIdx] : null;
+  main.querySelectorAll(`button[data-act="set-rating"][data-qid="${CSS.escape(qid)}"][data-eval="${evalIdx}"]`).forEach(btn => {
+    const v = +btn.dataset.val;
+    const active = v === value;
+    btn.classList.toggle('active', active);
+    btn.classList.toggle('erst-shadow', !active && erstRating === v);
+  });
+}
+
+function refreshCultureFitUI(qid, value) {
+  document.querySelectorAll(`[data-act="set-cf"][data-qid="${CSS.escape(qid)}"]`).forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.val === value);
+  });
+}
+
+function refreshRecoButtons(value) {
+  document.querySelectorAll('[data-act="set-reco"]').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.val === value);
+  });
 }
 
 function setMetaField(field, value) {
@@ -1597,7 +1650,7 @@ function switchView(v) {
   document.querySelectorAll('.app-nav-btn[data-view]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.view === v);
   });
-  const subtitles = { bewerber: 'Bewerbermanagement', dashboard: 'Interview-Übersicht', interview: 'Interview' };
+  const subtitles = { bewerber: 'Bewerbermanagement', dashboard: 'Interview Dashboard', interview: 'Interview' };
   document.getElementById('header-subtitle').textContent = subtitles[v] || 'ROOTS Recruiting';
   if (v !== 'interview') teardownInterviewObservers();
   if (v === 'dashboard') renderDashboard();
@@ -1644,7 +1697,7 @@ function renderDashboard() {
     return;
   }
 
-  list.innerHTML = '<div class="dash-grid">' + items.map(c => {
+  list.innerHTML = '<div class="dash-rows">' + items.map(c => {
     const reco = c.recommendation || '';
     const cat = recoCategory(reco);
     const score = c.weighted_overall != null ? c.weighted_overall.toFixed(1) : '–';
@@ -1657,10 +1710,10 @@ function renderDashboard() {
     const zweitUnlocked = canStartZweitgespraech(c);
     const zweitDone = isRoundCompletedInData(c, 'zweit');
     const showZweitBtn = zweitUnlocked;
-    return `<div class="cand-card" data-id="${escapeHtml(c.session_id)}">
-      <div class="cand-card-head">
-        <div>
-          <span class="cand-badge ${completed ? 'cand-badge--done' : 'cand-badge--draft'}"><i class="fa-solid ${completed ? 'fa-circle-check' : 'fa-pen'}"></i>${completed ? 'Abgeschlossen' : 'Entwurf'}${completedDate ? ' · ' + completedDate : ''}</span>
+    return `<div class="cand-row" data-id="${escapeHtml(c.session_id)}">
+      <div class="cand-row-main">
+        <span class="cand-badge ${completed ? 'cand-badge--done' : 'cand-badge--draft'}"><i class="fa-solid ${completed ? 'fa-circle-check' : 'fa-pen'}"></i>${completed ? 'Abgeschlossen' : 'Entwurf'}${completedDate ? ' · ' + completedDate : ''}</span>
+        <div class="cand-row-info">
           <div class="cand-name">${escapeHtml(c.kandidat || 'Unbenannt')}</div>
           <div class="cand-meta">
             <span class="cand-meta-item"><i class="fa-regular fa-calendar"></i>${escapeHtml(dateStr || '—')}</span>
@@ -1668,13 +1721,13 @@ function renderDashboard() {
             <span class="cand-meta-item"><i class="fa-solid fa-layer-group"></i>${runde}</span>
           </div>
         </div>
-        <div class="cand-score-pill" title="Gewichteter Gesamtscore">${score}<span style="font-size:.7rem;opacity:.7">/5</span></div>
       </div>
+      <div class="cand-score-pill" title="Gewichteter Gesamtscore">${score}<span style="font-size:.7rem;opacity:.7">/5</span></div>
       ${reco ? `<div class="cand-reco cand-reco--${cat}">${escapeHtml(reco)}</div>` : `<div class="cand-reco cand-reco--none">Noch keine Empfehlung</div>`}
-      <div class="cand-actions cand-actions-row">
+      <div class="cand-row-actions">
         <button class="btn-ghost" data-act="open" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-pen"></i> ${completed ? 'Ansehen' : 'Bearbeiten'}</button>
-        ${showZweitBtn ? `<button class="btn-primary btn-zweit-quick" data-act="zweit" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-forward"></i> ${zweitDone ? 'Zweitgespräch öffnen' : 'Zweitgespräch starten'}</button>` : ''}
-        <button class="btn-secondary" data-act="print" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-file-pdf"></i> Als PDF</button>
+        ${showZweitBtn ? `<button class="btn-primary btn-zweit-quick" data-act="zweit" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-forward"></i> ${zweitDone ? 'Zweit' : 'Zweit starten'}</button>` : ''}
+        <button class="btn-secondary" data-act="print" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-file-pdf"></i> PDF</button>
         <button class="btn-ghost" data-act="delete" data-id="${escapeHtml(c.session_id)}" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>`;
@@ -1693,7 +1746,7 @@ function renderDashboard() {
       else if (btn.dataset.act === 'print') printInterviewById(id);
     });
   });
-  list.querySelectorAll('.cand-card').forEach(card => {
+  list.querySelectorAll('.cand-row').forEach(card => {
     card.addEventListener('click', () => {
       const id = card.getAttribute('data-id');
       const c = state.candidates.find(x => x.session_id === id);
@@ -1736,11 +1789,7 @@ function renderSidenav() {
   nav.querySelectorAll('a[data-target]').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
-      const t = document.getElementById(a.dataset.target);
-      const main = document.getElementById('iv-main');
-      if (t && main) main.scrollTo({ top: t.offsetTop, behavior: 'smooth' });
-      nav.querySelectorAll('a').forEach(x => x.classList.remove('active'));
-      a.classList.add('active');
+      scrollIvMainToSection(a.dataset.target);
     });
   });
 }
