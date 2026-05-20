@@ -3,6 +3,8 @@
 
 -- interviews: Interview-Sessions (Erst + Zweit als JSONB)
 -- applicants: Bewerber-Stammdaten (first_name, last_name, full_name, date_of_birth, availability_start)
+-- notifications: In-App Meldungen (Recruiting, unten links)
+-- bulletin_posts: Schwarzes-Brett-Einträge fürs Intranet (pro User)
 -- applicant_documents: CVs und weitere Dokumente (Storage: recruiting-documents)
 
 -- Zugriff im Frontend:

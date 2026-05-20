@@ -166,29 +166,65 @@
     .dash-search { width: 100%; height: 42px; padding: 0 14px 0 38px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); font-family: inherit; font-size: .9rem; color: var(--ink); outline: none; transition: border-color .2s, box-shadow .2s; }
     .dash-search:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
     .dash-filter { padding: 0 1rem; height: 42px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); font-family: inherit; font-size: .88rem; color: var(--ink); cursor: pointer; outline: none; }
-    .dash-rows { display: flex; flex-direction: column; gap: .5rem; }
-    .cand-row { display: grid; grid-template-columns: minmax(200px, 1fr) auto auto minmax(150px, 200px) auto; gap: .75rem 1rem; align-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: .8rem 1.1rem; box-shadow: var(--shadow); transition: background .15s, border-color .15s, box-shadow .15s; cursor: pointer; }
-    .cand-owner { display: flex; align-items: center; gap: 8px; flex-shrink: 0; min-width: 0; }
-    .cand-owner-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .cand-owner-name { font-size: .76rem; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
-    .cand-owner-role { font-size: .68rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
-    .cand-owner-select { height: 32px; max-width: 150px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .76rem; background: var(--bg); color: var(--ink); cursor: pointer; }
-    .cand-row--zweit { border-left: 3px solid #7c3aed; }
-    .cand-row:hover { background: var(--status-bg); border-color: #cbd5e1; box-shadow: 0 8px 24px rgba(15,23,42,.08); }
-    .cand-row-main { display: flex; align-items: center; gap: .75rem; min-width: 0; }
-    .cand-row-info { min-width: 0; }
-    .cand-name { font-size: 1rem; font-weight: 700; color: var(--ink); line-height: 1.3; }
-    .cand-meta { font-size: .78rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: .25rem .75rem; margin-top: .15rem; }
-    .cand-meta-item { display: inline-flex; align-items: center; gap: 4px; }
-    .cand-score-pill { display: inline-flex; align-items: center; gap: 6px; padding: .3rem .7rem; border-radius: 999px; background: var(--brand-light); color: var(--brand); font-weight: 700; font-size: .88rem; flex-shrink: 0; white-space: nowrap; }
-    .cand-reco { font-size: .76rem; font-weight: 600; padding: .28rem .65rem; border-radius: 999px; white-space: nowrap; text-align: center; }
-    .cand-row-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-    .cand-row-actions .btn-ghost, .cand-row-actions .btn-primary, .cand-row-actions .btn-secondary { padding: .4rem .75rem; font-size: .78rem; }
+    .dash-rows { display: flex; flex-direction: column; gap: .65rem; }
+    .dash-group { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    .dash-group-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .7rem 1rem; background: linear-gradient(180deg, rgba(15,23,42,.03), transparent); border-bottom: 1px solid var(--line); }
+    .dash-group-name { font-size: 1.02rem; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
+    .dash-group-sub { font-size: .75rem; color: var(--muted); margin-top: .1rem; }
+    .dash-lane { display: grid; grid-template-columns: minmax(140px, 1fr) auto auto auto; gap: .65rem 1rem; align-items: center; padding: .65rem 1rem; cursor: pointer; transition: background .12s; }
+    .dash-lane + .dash-lane { border-top: 1px solid var(--line); }
+    .dash-lane:hover { background: var(--status-bg); }
+    .dash-lane--zweit { background: linear-gradient(90deg, rgba(124,58,237,.06), transparent 48%); }
+    .dash-lane-runde { display: inline-flex; align-items: center; gap: 6px; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: .2rem; }
+    .dash-lane-runde--erst { color: var(--brand-dark); }
+    .dash-lane-runde--zweit { color: #6d28d9; }
+    .dash-lane-chips { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; }
+    .dash-chip { display: inline-flex; align-items: center; gap: 5px; font-size: .74rem; padding: .22rem .55rem; border-radius: 999px; background: var(--status-bg); color: var(--muted); font-weight: 600; }
+    .dash-chip--date i { opacity: .7; }
+    .dash-chip--status-done { background: #ecfdf5; color: #047857; }
+    .dash-chip--status-draft { background: #fff7ed; color: #b45309; }
+    .lane-owner { display: flex; align-items: center; gap: 0; flex-shrink: 0; }
+    .lane-owner-avatar { line-height: 0; }
+    .lane-team-btn { width: 34px; height: 34px; margin-left: -6px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); color: var(--brand); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: .82rem; box-shadow: 0 2px 8px rgba(15,23,42,.08); transition: all .15s; z-index: 1; }
+    .lane-team-btn:hover { background: var(--brand); color: #fff; border-color: var(--brand); transform: scale(1.05); }
+    .dash-score { display: inline-flex; align-items: baseline; gap: 3px; padding: .35rem .7rem; border-radius: 10px; background: var(--brand-light); color: var(--brand); font-weight: 800; font-size: .95rem; font-variant-numeric: tabular-nums; }
+    .dash-score small { font-size: .68rem; font-weight: 600; opacity: .65; }
+    .dash-reco { font-size: .74rem; font-weight: 600; padding: .3rem .6rem; border-radius: 999px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dash-lane-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .dash-icon-btn { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all .12s; }
+    .dash-icon-btn:hover { color: var(--brand); border-color: #cbd5e1; background: var(--status-bg); }
+    .dash-icon-btn--danger:hover { color: var(--danger); border-color: #fecaca; background: #fef2f2; }
     .cand-reco--yes { background: #d0f4ee; color: #0f6b57; }
     .cand-reco--maybe { background: #fef3c7; color: #b45309; }
     .cand-reco--no { background: #fee2e2; color: #b91c1c; }
     .cand-reco--none { background: var(--status-bg); color: var(--muted); }
+    .cand-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 700; padding: .25rem .55rem; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
+    .cand-badge--done { background: #ecfdf5; color: #047857; }
+    .cand-badge--draft { background: #fff7ed; color: #b45309; }
     .dash-empty { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+    .team-panel-overlay { position: fixed; inset: 0; z-index: 9500; background: rgba(15,23,42,.45); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 1.25rem; }
+    .team-panel-overlay.visible { display: flex; }
+    .team-panel-card { background: var(--bg); border-radius: 18px; width: 100%; max-width: 480px; max-height: min(88vh, 720px); display: flex; flex-direction: column; box-shadow: 0 24px 64px rgba(15,23,42,.22); overflow: hidden; }
+    .team-panel-head { padding: 1.25rem 1.35rem 1rem; border-bottom: 1px solid var(--line); }
+    .team-panel-head h3 { font-size: 1.1rem; font-weight: 800; margin: 0 0 .35rem; color: var(--ink); }
+    .team-panel-head p { margin: 0; font-size: .86rem; color: var(--muted); line-height: 1.45; }
+    .team-panel-body { padding: 1rem 1.35rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; }
+    .team-panel-section h4 { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; font-weight: 700; color: var(--muted); margin: 0 0 .6rem; }
+    .team-member-grid { display: flex; flex-direction: column; gap: .45rem; }
+    .team-member-opt { display: flex; align-items: center; gap: .75rem; padding: .55rem .7rem; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; transition: all .12s; background: var(--bg); }
+    .team-member-opt:hover { border-color: #cbd5e1; background: var(--status-bg); }
+    .team-member-opt.selected { border-color: var(--brand); background: var(--brand-light); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
+    .team-member-opt input { accent-color: var(--brand); flex-shrink: 0; }
+    .team-member-opt-info { min-width: 0; flex: 1; }
+    .team-member-opt-name { font-size: .88rem; font-weight: 700; color: var(--ink); }
+    .team-member-opt-role { font-size: .72rem; color: var(--muted); }
+    .team-panel-foot { padding: 1rem 1.35rem 1.25rem; border-top: 1px solid var(--line); display: flex; gap: .5rem; justify-content: flex-end; }
+    .notif-stack { position: fixed; bottom: 20px; left: 20px; z-index: 9800; display: flex; flex-direction: column-reverse; gap: .5rem; max-width: min(360px, calc(100vw - 40px)); pointer-events: none; }
+    .notif-card { pointer-events: auto; background: var(--ink); color: #fff; border-radius: 14px; padding: .85rem 1rem; box-shadow: 0 12px 32px rgba(15,23,42,.28); cursor: pointer; animation: notif-in .25s ease; border: 1px solid rgba(255,255,255,.08); }
+    .notif-card:hover { transform: translateY(-2px); }
+    .notif-card-title { font-size: .82rem; font-weight: 700; margin-bottom: .2rem; }
+    .notif-card-body { font-size: .78rem; opacity: .88; line-height: 1.4; }
+    @keyframes notif-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     .dash-empty i { font-size: 3rem; color: var(--line); margin-bottom: 1rem; }
     .dash-empty h3 { font-size: 1.15rem; font-weight: 700; color: var(--ink); margin-bottom: .5rem; }
 
@@ -358,9 +394,8 @@
     }
 
     @media (max-width: 880px) {
-      .cand-row { grid-template-columns: 1fr; gap: .5rem; }
-      .cand-owner { justify-content: flex-start; }
-      .cand-row-actions { flex-wrap: wrap; }
+      .dash-lane { grid-template-columns: 1fr; gap: .5rem; }
+      .dash-lane-actions { flex-wrap: wrap; }
       .iv-layout { grid-template-columns: 1fr; height: auto; }
       .iv-sidenav { height: auto; max-height: 280px; padding: .85rem; }
       .sec-title { flex-wrap: wrap; }
@@ -587,6 +622,23 @@
   </div>
 </div>
 
+<!-- ─── Team Panel ─── -->
+<div class="team-panel-overlay" id="team-panel-overlay">
+  <div class="team-panel-card" role="dialog" aria-labelledby="team-panel-title">
+    <div class="team-panel-head">
+      <h3 id="team-panel-title">Team &amp; Owner</h3>
+      <p id="team-panel-subtitle"></p>
+    </div>
+    <div class="team-panel-body" id="team-panel-body"></div>
+    <div class="team-panel-foot">
+      <button type="button" class="btn-secondary" id="team-panel-cancel">Abbrechen</button>
+      <button type="button" class="btn-primary" id="team-panel-save"><i class="fa-solid fa-check"></i> Speichern &amp; benachrichtigen</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif-stack" id="notif-stack"></div>
+
 <!-- ─── Toast ─── -->
 <div class="toast" id="toast"></div>
 
@@ -673,7 +725,12 @@ document.getElementById('roots-logout-btn').addEventListener('click', () => sb.a
 
 function onAuthReady() {
   window.RootsUser._loadAndMount(sb);
-  loadTeamMembers();
+  loadTeamMembers().then(() => {
+    loadNotifications();
+    if (!window._recruitNotifPoll) {
+      window._recruitNotifPoll = setInterval(loadNotifications, 45000);
+    }
+  });
   loadAllCandidates();
   loadAllApplicants();
 }
@@ -931,7 +988,7 @@ const RECO_OPTIONS_ZWEIT = ['Einstellen', 'Vielleicht – weitere Diskussion', '
    ────────────────────────────────────────────── */
 const INITIAL_STATE = {
   checks: {}, notes: {}, observations: {}, ratings: {},
-  meta: { kandidat: '', interviewer: '', datum: '', runde: 'erst', sessionId: '', ownerId: '', ownerName: '', zweitCreated: false },
+  meta: { kandidat: '', interviewer: '', datum: '', runde: 'erst', sessionId: '', ownerId: '', ownerName: '', zweitCreated: false, invitees: [] },
   gesamtNote: '', recommendation: '',
   abschlussNotes: {}, rtiDone: false, caseChecks: {}, zweitAnmerkung: '',
   cultureFitAnswers: {},
@@ -955,6 +1012,8 @@ let state = {
   filterRunde: 'all',
   sortBy: 'date_desc',
   teamMembers: [],
+  teamPanel: null,
+  notifications: [],
 };
 
 let renderInterviewTimer = null;
@@ -988,6 +1047,24 @@ function setSliceOwner(slice, userId, userName) {
   slice.meta.ownerId = userId || '';
   slice.meta.ownerName = userName || '';
   if (userName) slice.meta.interviewer = userName;
+  syncInviteesOwner(slice);
+}
+
+function syncInviteesOwner(slice) {
+  const others = (Array.isArray(slice.meta.invitees) ? slice.meta.invitees : []).filter(i => i.role !== 'owner');
+  slice.meta.invitees = others;
+  if (slice.meta.ownerId) {
+    const m = getTeamMember(slice.meta.ownerId);
+    slice.meta.invitees.unshift({
+      userId: slice.meta.ownerId,
+      role: 'owner',
+      name: slice.meta.ownerName || m?.full_name || '',
+    });
+  }
+}
+
+function getSliceParticipants(slice) {
+  return Array.isArray(slice.meta?.invitees) ? slice.meta.invitees : [];
 }
 
 function getTeamMember(userId) {
@@ -1067,24 +1144,232 @@ async function persistCandidateSlices(c) {
   }, { onConflict: 'session_id' });
 }
 
-async function setRoundOwner(sessionId, runde, userId) {
+async function notifyUsers(userIds, payload) {
+  const inviter = window.RootsUser._p?.full_name || 'Team';
+  const uniq = [...new Set(userIds.filter(id => id && id !== window.RootsUser._uid))];
+  if (!uniq.length) return;
+  const rows = uniq.map(uid => ({
+    user_id: uid,
+    type: payload.type || 'interview_invite',
+    title: payload.title,
+    message: payload.message,
+    session_id: payload.sessionId || null,
+    runde: payload.runde || null,
+    meta: { inviter, kandidat: payload.kandidat || '', ...(payload.meta || {}) },
+  }));
+  const board = uniq.map(uid => ({
+    user_id: uid,
+    author_id: window.RootsUser._uid || null,
+    title: payload.title,
+    body: payload.message,
+    session_id: payload.sessionId || null,
+    meta: { source: 'recruiting', runde: payload.runde, kandidat: payload.kandidat, type: payload.type },
+  }));
+  try {
+    await recruitingDb().from('notifications').insert(rows);
+    await recruitingDb().from('bulletin_posts').insert(board);
+  } catch (e) {
+    console.error('notifyUsers', e);
+  }
+}
+
+async function setRoundOwner(sessionId, runde, userId, opts = {}) {
   const c = state.candidates.find(x => x.session_id === sessionId);
   if (!c) return;
   const member = getTeamMember(userId);
   const slice = runde === 'zweit' ? (c.zweit = c.zweit || deepClone(INITIAL_STATE)) : (c.erst = c.erst || deepClone(INITIAL_STATE));
+  const prevOwner = slice.meta?.ownerId;
   setSliceOwner(slice, userId, member?.full_name || '');
   try {
     await persistCandidateSlices(c);
-    toast(runde === 'zweit' ? 'Owner des Zweitgesprächs aktualisiert' : 'Owner aktualisiert');
-    if (state.view === 'dashboard') renderDashboard();
-    if (state.view === 'interview' && state.erst.meta.sessionId === sessionId) {
-      if (runde === 'zweit' && isZweit()) renderSidenav();
-      else if (runde === 'erst' && !isZweit()) renderSidenav();
+    if (opts.notify !== false && userId && userId !== prevOwner) {
+      await notifyUsers([userId], {
+        type: 'interview_owner',
+        title: `Interview: ${c.kandidat || 'Bewerber'}`,
+        message: `Du bist jetzt Owner des ${runde === 'zweit' ? 'Zweit' : 'Erst'}gesprächs mit ${c.kandidat || 'Bewerber'}.`,
+        sessionId,
+        runde,
+        kandidat: c.kandidat,
+      });
     }
+    if (state.view === 'dashboard') renderDashboard();
+    if (state.view === 'interview' && state.erst.meta.sessionId === sessionId) renderSidenav();
+    if (!opts.silent) toast('Team aktualisiert');
   } catch (e) {
     console.error('setRoundOwner', e);
-    toast('Owner konnte nicht gespeichert werden', 'error');
+    toast('Speichern fehlgeschlagen', 'error');
   }
+}
+
+async function loadNotifications() {
+  const uid = window.RootsUser?._uid;
+  if (!uid) return;
+  try {
+    const { data, error } = await recruitingDb().from('notifications')
+      .select('*')
+      .eq('user_id', uid)
+      .is('read_at', null)
+      .order('created_at', { ascending: false })
+      .limit(8);
+    if (error) throw error;
+    state.notifications = data || [];
+    renderNotificationStack();
+  } catch (e) {
+    console.error('loadNotifications', e);
+  }
+}
+
+function renderNotificationStack() {
+  const stack = document.getElementById('notif-stack');
+  if (!stack) return;
+  if (!state.notifications.length) {
+    stack.innerHTML = '';
+    return;
+  }
+  stack.innerHTML = state.notifications.map(n => `
+    <div class="notif-card" data-notif-id="${escapeHtml(n.id)}" data-session="${escapeHtml(n.session_id || '')}" data-runde="${escapeHtml(n.runde || 'erst')}">
+      <div class="notif-card-title">${escapeHtml(n.title)}</div>
+      <div class="notif-card-body">${escapeHtml(n.message)}</div>
+    </div>`).join('');
+  stack.querySelectorAll('.notif-card').forEach(card => {
+    card.addEventListener('click', async () => {
+      const id = card.dataset.notifId;
+      await recruitingDb().from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
+      state.notifications = state.notifications.filter(x => x.id !== id);
+      renderNotificationStack();
+      const c = state.candidates.find(x => x.session_id === card.dataset.session);
+      if (c) loadCandidateIntoInterview(c, { runde: card.dataset.runde || 'erst' });
+    });
+  });
+}
+
+function openTeamPanel(sessionId, runde) {
+  const c = state.candidates.find(x => x.session_id === sessionId);
+  if (!c) return;
+  const slice = runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
+  const ownerId = slice.meta?.ownerId || '';
+  const participants = getSliceParticipants(slice).filter(i => i.role === 'participant').map(i => i.userId);
+  state.teamPanel = { sessionId, runde, ownerId, participantIds: new Set(participants) };
+  document.getElementById('team-panel-subtitle').textContent =
+    `${c.kandidat || 'Bewerber'} · ${runde === 'zweit' ? 'Zweitgespräch' : 'Erstgespräch'}`;
+  renderTeamPanelBody();
+  document.getElementById('team-panel-overlay').classList.add('visible');
+}
+
+function closeTeamPanel() {
+  document.getElementById('team-panel-overlay').classList.remove('visible');
+  state.teamPanel = null;
+}
+
+function renderTeamPanelBody() {
+  const body = document.getElementById('team-panel-body');
+  const tp = state.teamPanel;
+  if (!body || !tp) return;
+  const memberRow = (m, mode) => {
+    const selected = mode === 'owner' ? m.id === tp.ownerId : tp.participantIds.has(m.id);
+    const inputType = mode === 'owner' ? 'radio' : 'checkbox';
+    const inputName = mode === 'owner' ? 'tp-owner' : 'tp-participant';
+    return `<label class="team-member-opt ${selected ? 'selected' : ''}" data-uid="${escapeHtml(m.id)}">
+      <input type="${inputType}" name="${inputName}" value="${escapeHtml(m.id)}" ${selected ? 'checked' : ''}>
+      ${memberAvatarHtml(m.full_name, m.avatar_url, 36)}
+      <span class="team-member-opt-info">
+        <span class="team-member-opt-name">${escapeHtml(m.full_name || 'Unbenannt')}</span>
+        <span class="team-member-opt-role">${escapeHtml(m.position || m.email || '')}</span>
+      </span>
+    </label>`;
+  };
+  const members = state.teamMembers.filter(m => m.id !== window.RootsUser._uid);
+  body.innerHTML = `
+    <div class="team-panel-section">
+      <h4>Owner übergeben</h4>
+      <div class="team-member-grid" id="tp-owner-list">${state.teamMembers.map(m => memberRow(m, 'owner')).join('')}</div>
+    </div>
+    <div class="team-panel-section">
+      <h4>Zum Termin einladen</h4>
+      <div class="team-member-grid" id="tp-invite-list">${members.length ? members.map(m => memberRow(m, 'participant')).join('') : '<p style="color:var(--muted);font-size:.85rem">Keine weiteren Teammitglieder.</p>'}</div>
+    </div>`;
+  body.querySelectorAll('#tp-owner-list .team-member-opt').forEach(label => {
+    label.addEventListener('click', () => {
+      tp.ownerId = label.dataset.uid;
+      body.querySelectorAll('#tp-owner-list .team-member-opt').forEach(el => {
+        el.classList.toggle('selected', el.dataset.uid === tp.ownerId);
+        el.querySelector('input').checked = el.dataset.uid === tp.ownerId;
+      });
+    });
+  });
+  body.querySelectorAll('#tp-invite-list .team-member-opt').forEach(label => {
+    label.addEventListener('click', (e) => {
+      e.preventDefault();
+      const uid = label.dataset.uid;
+      const cb = label.querySelector('input');
+      if (tp.participantIds.has(uid)) {
+        tp.participantIds.delete(uid);
+        cb.checked = false;
+        label.classList.remove('selected');
+      } else {
+        tp.participantIds.add(uid);
+        cb.checked = true;
+        label.classList.add('selected');
+      }
+    });
+  });
+}
+
+async function saveTeamPanel() {
+  const tp = state.teamPanel;
+  if (!tp?.sessionId) return;
+  const c = state.candidates.find(x => x.session_id === tp.sessionId);
+  if (!c) return;
+  const slice = tp.runde === 'zweit' ? (c.zweit = c.zweit || deepClone(INITIAL_STATE)) : (c.erst = c.erst || deepClone(INITIAL_STATE));
+  const prevParticipants = new Set(getSliceParticipants(slice).filter(i => i.role === 'participant').map(i => i.userId));
+  const prevOwner = slice.meta?.ownerId;
+
+  if (tp.ownerId) await setRoundOwner(tp.sessionId, tp.runde, tp.ownerId, { notify: tp.ownerId !== prevOwner, silent: true });
+
+  const participants = [...tp.participantIds]
+    .filter(uid => uid !== slice.meta?.ownerId)
+    .map(uid => {
+      const m = getTeamMember(uid);
+      return { userId: uid, role: 'participant', name: m?.full_name || '' };
+    });
+  slice.meta.invitees = [
+    ...getSliceParticipants(slice).filter(i => i.role === 'owner'),
+    ...participants,
+  ];
+
+  const newInvites = [...tp.participantIds].filter(uid => !prevParticipants.has(uid));
+  try {
+    await persistCandidateSlices(c);
+    if (newInvites.length) {
+      await notifyUsers(newInvites, {
+        type: 'interview_invite',
+        title: `Einladung: ${c.kandidat || 'Interview'}`,
+        message: `Du wurdest zum ${tp.runde === 'zweit' ? 'Zweit' : 'Erst'}gespräch mit ${c.kandidat || 'Bewerber'} eingeladen.`,
+        sessionId: tp.sessionId,
+        runde: tp.runde,
+        kandidat: c.kandidat,
+      });
+    }
+    closeTeamPanel();
+    toast('Team gespeichert' + (newInvites.length ? ' · Benachrichtigungen gesendet' : ''));
+    if (state.view === 'dashboard') renderDashboard();
+    if (state.view === 'interview') renderSidenav();
+    await loadNotifications();
+  } catch (e) {
+    console.error('saveTeamPanel', e);
+    toast('Speichern fehlgeschlagen', 'error');
+  }
+}
+
+function renderLaneOwnerBtn(entry) {
+  const c = entry.candidate;
+  const slice = entry.runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
+  const owner = resolveOwnerDisplay(slice, c.interviewer);
+  const avatar = memberAvatarHtml(owner.name, owner.avatar, 40);
+  return `<div class="lane-owner" data-stop-row="1">
+    <span class="lane-owner-avatar">${avatar}</span>
+    <button type="button" class="lane-team-btn" data-act="team-panel" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="Team &amp; Owner"><i class="fa-solid fa-users"></i></button>
+  </div>`;
 }
 
 function backfillSliceOwner(slice) {
@@ -1101,47 +1386,12 @@ function renderSidenavOwnerHtml() {
   const runde = isZweit() ? 'zweit' : 'erst';
   const slice = isZweit() ? state.zweit : state.erst;
   const owner = resolveOwnerDisplay(slice, state.erst.meta.interviewer);
-  const avatar = memberAvatarHtml(owner.name, owner.avatar, 32);
-  if (runde === 'zweit') {
-    const opts = state.teamMembers.map(m =>
-      `<option value="${escapeHtml(m.id)}" ${m.id === owner.id ? 'selected' : ''}>${escapeHtml(m.full_name || 'Unbenannt')}</option>`
-    ).join('');
-    return `<div class="iv-sidenav-owner">
-      <div class="iv-sidenav-h">Owner · Team einladen</div>
-      <select id="iv-sidenav-owner">${opts}</select>
-      <div class="iv-owner-display">${avatar}<span>${escapeHtml(owner.name)}</span></div>
-    </div>`;
-  }
+  const avatar = memberAvatarHtml(owner.name, owner.avatar, 36);
+  const sid = state.erst.meta.sessionId;
   return `<div class="iv-sidenav-owner">
-    <div class="iv-sidenav-h">Owner Erstgespräch</div>
-    <div class="iv-owner-display">${avatar}<span>${escapeHtml(owner.name)}</span></div>
-  </div>`;
-}
-
-function renderOwnerCell(entry) {
-  const c = entry.candidate;
-  const slice = entry.runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
-  const owner = resolveOwnerDisplay(slice, c.interviewer);
-  const avatar = memberAvatarHtml(owner.name, owner.avatar, 38);
-  if (entry.runde === 'zweit') {
-    const opts = state.teamMembers.map(m =>
-      `<option value="${escapeHtml(m.id)}" ${m.id === owner.id ? 'selected' : ''}>${escapeHtml(m.full_name || m.email || 'Unbenannt')}</option>`
-    ).join('');
-    return `<div class="cand-owner" data-stop-row="1">
-      <span class="cand-owner-avatar">${avatar}</span>
-      <div class="cand-owner-meta">
-        <select class="cand-owner-select" data-act="set-owner" data-id="${escapeHtml(c.session_id)}" data-runde="zweit" title="Owner übergeben">
-          ${opts || `<option value="${escapeHtml(owner.id)}">${escapeHtml(owner.name)}</option>`}
-        </select>
-        <span class="cand-owner-role">Zweit · Owner</span>
-      </div>
-    </div>`;
-  }
-  return `<div class="cand-owner" title="Owner Erstgespräch">
-    <span class="cand-owner-avatar">${avatar}</span>
-    <div class="cand-owner-meta">
-      <span class="cand-owner-name">${escapeHtml(owner.name)}</span>
-      <span class="cand-owner-role">Erst · Owner</span>
+    <div class="iv-sidenav-h">Team</div>
+    <div class="iv-owner-display">${avatar}
+      <button type="button" class="lane-team-btn" id="iv-sidenav-team-btn" title="Team &amp; Owner"><i class="fa-solid fa-users"></i></button>
     </div>
   </div>`;
 }
@@ -1756,6 +2006,9 @@ function newInterview(opts = {}) {
   if (p && uid) {
     setSliceOwner(state.erst, uid, p.full_name || '');
     setSliceOwner(state.zweit, uid, p.full_name || '');
+  } else {
+    syncInviteesOwner(state.erst);
+    syncInviteesOwner(state.zweit);
   }
   state.linkedApplicantId = opts.applicantId || null;
   updateInterviewSubtitle();
@@ -1851,6 +2104,52 @@ function recoCategory(reco) {
   return 'maybe';
 }
 
+function groupDashboardEntries(items) {
+  const groups = new Map();
+  for (const entry of items) {
+    const sid = entry.candidate.session_id;
+    if (!groups.has(sid)) groups.set(sid, { candidate: entry.candidate, lanes: [] });
+    groups.get(sid).lanes.push(entry);
+  }
+  for (const g of groups.values()) {
+    g.lanes.sort((a, b) => (a.runde === 'erst' ? -1 : 1));
+  }
+  return [...groups.values()];
+}
+
+function renderDashboardLane(entry) {
+  const c = entry.candidate;
+  const slice = entry.runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
+  const reco = slice.recommendation || '';
+  const recoDisplay = entry.runde === 'erst'
+    ? (reco || (canStartZweitgespraech(c) ? ZWEIT_INVITE_RECO : ''))
+    : reco;
+  const recoCat = recoCategory(recoDisplay);
+  const scores = getRoundScores(c, entry.runde);
+  const score = scores.overall != null ? scores.overall.toFixed(1) : '–';
+  const dateStr = slice.meta?.datum || c.datum || (c.updated_at ? c.updated_at.slice(0, 10) : '');
+  const completed = isRoundCompletedInData(c, entry.runde);
+  const completedAt = slice.completedAt;
+  const rundeLabel = entry.runde === 'zweit' ? 'Zweitgespräch' : 'Erstgespräch';
+  return `<div class="dash-lane ${entry.runde === 'zweit' ? 'dash-lane--zweit' : ''}" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}">
+    <div>
+      <div class="dash-lane-runde dash-lane-runde--${entry.runde}"><i class="fa-solid ${entry.runde === 'zweit' ? 'fa-forward' : 'fa-user-tie'}"></i> ${rundeLabel}</div>
+      <div class="dash-lane-chips">
+        <span class="dash-chip dash-chip--${completed ? 'status-done' : 'status-draft'}"><i class="fa-solid ${completed ? 'fa-circle-check' : 'fa-pen'}"></i>${completed ? 'Abgeschlossen' : 'Entwurf'}</span>
+        <span class="dash-chip dash-chip--date"><i class="fa-regular fa-calendar"></i>${escapeHtml(dateStr || '—')}</span>
+      </div>
+    </div>
+    ${renderLaneOwnerBtn(entry)}
+    <div class="dash-score" title="Score">${score}<small>/5</small></div>
+    <div class="dash-reco cand-reco cand-reco--${recoCat}" title="${escapeHtml(recoDisplay || 'Keine Empfehlung')}">${recoDisplay ? escapeHtml(recoDisplay) : '—'}</div>
+    <div class="dash-lane-actions">
+      <button type="button" class="dash-icon-btn" data-act="open" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="${completed ? 'Ansehen' : 'Bearbeiten'}"><i class="fa-solid fa-pen"></i></button>
+      <button type="button" class="dash-icon-btn" data-act="print" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="PDF"><i class="fa-solid fa-file-pdf"></i></button>
+      ${entry.runde === 'erst' ? `<button type="button" class="dash-icon-btn dash-icon-btn--danger" data-act="delete" data-id="${escapeHtml(c.session_id)}" title="Löschen"><i class="fa-solid fa-trash"></i></button>` : ''}
+    </div>
+  </div>`;
+}
+
 function renderDashboard() {
   const list = document.getElementById('dash-list');
   let items = buildDashboardEntries(state.candidates.slice());
@@ -1890,41 +2189,18 @@ function renderDashboard() {
     return;
   }
 
-  list.innerHTML = '<div class="dash-rows">' + items.map(entry => {
-    const c = entry.candidate;
-    const slice = entry.runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
-    const reco = slice.recommendation || (entry.runde === 'erst' ? '' : '');
-    const cat = recoCategory(reco || (entry.runde === 'erst' && canStartZweitgespraech(c) ? ZWEIT_INVITE_RECO : ''));
-    const scores = getRoundScores(c, entry.runde);
-    const score = scores.overall != null ? scores.overall.toFixed(1) : '–';
-    const dateStr = slice.meta?.datum || c.datum || (c.updated_at ? c.updated_at.slice(0, 10) : '');
-    const rundeLabel = entry.runde === 'zweit' ? 'Zweitgespräch' : 'Erstgespräch';
-    const completed = isRoundCompletedInData(c, entry.runde);
-    const completedAt = slice.completedAt;
-    const completedDate = completedAt ? new Date(completedAt).toLocaleDateString('de-DE') : '';
-    const recoDisplay = entry.runde === 'erst'
-      ? (reco || (canStartZweitgespraech(c) ? ZWEIT_INVITE_RECO : ''))
-      : reco;
-    const recoCat = recoCategory(recoDisplay);
-    return `<div class="cand-row ${entry.runde === 'zweit' ? 'cand-row--zweit' : ''}" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}">
-      <div class="cand-row-main">
-        <span class="cand-badge ${completed ? 'cand-badge--done' : 'cand-badge--draft'}"><i class="fa-solid ${completed ? 'fa-circle-check' : 'fa-pen'}"></i>${completed ? 'Abgeschlossen' : 'Entwurf'}${completedDate ? ' · ' + completedDate : ''}</span>
-        <div class="cand-row-info">
-          <div class="cand-name">${escapeHtml(c.kandidat || 'Unbenannt')}</div>
-          <div class="cand-meta">
-            <span class="cand-meta-item"><i class="fa-regular fa-calendar"></i>${escapeHtml(dateStr || '—')}</span>
-            <span class="cand-meta-item"><i class="fa-solid fa-layer-group"></i>${rundeLabel}</span>
-          </div>
+  const groups = groupDashboardEntries(items);
+  list.innerHTML = '<div class="dash-rows">' + groups.map(g => {
+    const c = g.candidate;
+    const laneCount = g.lanes.length;
+    return `<div class="dash-group">
+      <div class="dash-group-head">
+        <div>
+          <div class="dash-group-name">${escapeHtml(c.kandidat || 'Unbenannt')}</div>
+          <div class="dash-group-sub">${laneCount > 1 ? `${laneCount} Gespräche` : '1 Gespräch'}</div>
         </div>
       </div>
-      ${renderOwnerCell(entry)}
-      <div class="cand-score-pill" title="Gewichteter Gesamtscore">${score}<span style="font-size:.7rem;opacity:.7">/5</span></div>
-      ${recoDisplay ? `<div class="cand-reco cand-reco--${recoCat}">${escapeHtml(recoDisplay)}</div>` : `<div class="cand-reco cand-reco--none">Noch keine Empfehlung</div>`}
-      <div class="cand-row-actions">
-        <button class="btn-ghost" data-act="open" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}"><i class="fa-solid fa-pen"></i> ${completed ? 'Ansehen' : 'Bearbeiten'}</button>
-        <button class="btn-secondary" data-act="print" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}"><i class="fa-solid fa-file-pdf"></i> PDF</button>
-        ${entry.runde === 'erst' ? `<button class="btn-ghost" data-act="delete" data-id="${escapeHtml(c.session_id)}" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>` : ''}
-      </div>
+      <div class="dash-group-body">${g.lanes.map(renderDashboardLane).join('')}</div>
     </div>`;
   }).join('') + '</div>';
 
@@ -1938,20 +2214,14 @@ function renderDashboard() {
       if (btn.dataset.act === 'open') loadCandidateIntoInterview(c, { runde });
       else if (btn.dataset.act === 'delete') deleteCandidate(id);
       else if (btn.dataset.act === 'print') printInterviewById(id, runde);
+      else if (btn.dataset.act === 'team-panel') openTeamPanel(id, runde);
     });
   });
-  list.querySelectorAll('[data-act="set-owner"]').forEach(sel => {
-    sel.addEventListener('click', e => e.stopPropagation());
-    sel.addEventListener('change', (e) => {
-      e.stopPropagation();
-      setRoundOwner(sel.dataset.id, sel.dataset.runde, sel.value);
-    });
-  });
-  list.querySelectorAll('.cand-row').forEach(card => {
-    card.addEventListener('click', (e) => {
-      if (e.target.closest('[data-stop-row="1"]')) return;
-      const id = card.getAttribute('data-id');
-      const runde = card.getAttribute('data-runde') || 'erst';
+  list.querySelectorAll('.dash-lane').forEach(lane => {
+    lane.addEventListener('click', (e) => {
+      if (e.target.closest('[data-stop-row="1"]') || e.target.closest('.dash-lane-actions')) return;
+      const id = lane.getAttribute('data-id');
+      const runde = lane.getAttribute('data-runde') || 'erst';
       const c = state.candidates.find(x => x.session_id === id);
       if (c) loadCandidateIntoInterview(c, { runde });
     });
@@ -2007,11 +2277,11 @@ function renderSidenav() {
       </div>`;
   updateRundeSelect();
   bindRundeSelectHandler(document.getElementById('iv-sidenav-runde'));
-  const ownerSel = document.getElementById('iv-sidenav-owner');
-  if (ownerSel) {
-    ownerSel.addEventListener('change', () => {
-      const runde = isZweit() ? 'zweit' : 'erst';
-      setRoundOwner(state.erst.meta.sessionId, runde, ownerSel.value);
+  const teamBtn = document.getElementById('iv-sidenav-team-btn');
+  if (teamBtn) {
+    teamBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openTeamPanel(state.erst.meta.sessionId, isZweit() ? 'zweit' : 'erst');
     });
   }
   document.getElementById('iv-back-dash').addEventListener('click', () => switchView('dashboard'));
@@ -2721,6 +2991,12 @@ document.getElementById('interview-picker-overlay').addEventListener('click', (e
 });
 document.getElementById('bew-search').addEventListener('input', (e) => { state.bewFilterText = e.target.value; renderBewerberList(); });
 document.getElementById('bew-filter-status').addEventListener('change', (e) => { state.bewFilterStatus = e.target.value; renderBewerberList(); });
+
+document.getElementById('team-panel-cancel').addEventListener('click', closeTeamPanel);
+document.getElementById('team-panel-save').addEventListener('click', saveTeamPanel);
+document.getElementById('team-panel-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'team-panel-overlay') closeTeamPanel();
+});
 
 function bindRundeSelectHandler(sel) {
   if (!sel || sel._bound) return;
