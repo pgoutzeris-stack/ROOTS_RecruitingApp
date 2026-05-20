@@ -2,7 +2,7 @@
 -- Bereits angewendet via Migration: recruiting_applicants_and_documents
 
 -- interviews: Interview-Sessions (Erst + Zweit als JSONB)
--- applicants: Bewerber-Stammdaten
+-- applicants: Bewerber-Stammdaten (first_name, middle_name, last_name, full_name)
 -- applicant_documents: CVs und weitere Dokumente (Storage: recruiting-documents)
 
 -- Zugriff im Frontend:

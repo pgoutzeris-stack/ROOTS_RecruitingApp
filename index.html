@@ -187,12 +187,6 @@
     .dash-empty h3 { font-size: 1.15rem; font-weight: 700; color: var(--ink); margin-bottom: .5rem; }
 
     /* ─── Interview layout ─── */
-    .iv-meta-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1.3fr; gap: 1rem; align-items: end; }
-    .iv-meta-field label { display: block; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: .35rem; }
-    .iv-meta-field input, .iv-meta-field select { width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .9rem; color: var(--ink); background: var(--bg); outline: none; transition: border-color .2s, box-shadow .2s; }
-    .iv-meta-field input:focus, .iv-meta-field select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
-    .iv-meta-field select { appearance: none; padding-right: 32px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; cursor: pointer; }
-
     .iv-layout { display: grid; grid-template-columns: minmax(260px, 300px) 1fr; gap: 1.25rem; align-items: stretch; min-height: 0; height: 100%; }
     .iv-sidenav { height: 100%; min-height: 0; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem 1.1rem; overflow-y: auto; display: flex; flex-direction: column; box-sizing: border-box; }
     .iv-sidenav-h { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: var(--muted); margin-bottom: .75rem; padding: 0 .15rem; }
@@ -200,9 +194,13 @@
     .iv-sidenav a:hover { background: var(--status-bg); }
     .iv-sidenav a.active { background: var(--brand); color: #fff; border-left-color: var(--brand-dark); box-shadow: 0 4px 14px rgba(32,110,251,.28); }
     .iv-content-col { min-width: 0; display: flex; flex-direction: column; flex: 1; min-height: 0; height: 100%; }
-    #view-interview.active { display: flex; flex-direction: column; height: calc(100dvh - 128px); max-height: calc(100dvh - 128px); }
-    #view-interview .iv-meta-panel { flex-shrink: 0; margin-bottom: .75rem; }
+    #view-interview.active { display: flex; flex-direction: column; height: calc(100dvh - 72px); max-height: calc(100dvh - 72px); }
     #view-interview .iv-layout { flex: 1; min-height: 0; overflow: hidden; }
+    .iv-sidenav-runde { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--line); }
+    .iv-sidenav-runde select { width: 100%; height: 38px; margin-top: .4rem; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .88rem; background: var(--bg); color: var(--ink); cursor: pointer; }
+    .bew-create-banner { background: var(--brand-light); border: 1px solid rgba(32,110,251,.2); border-radius: var(--radius); padding: 1rem 1.15rem; margin-bottom: 1.25rem; font-size: .9rem; color: var(--ink); line-height: 1.5; }
+    .bew-name-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    @media (max-width: 720px) { .bew-name-row { grid-template-columns: 1fr; } }
     .iv-main { min-width: 0; flex: 1; height: 100%; min-height: 0; overflow-y: auto; scroll-snap-type: y proximity; scroll-behavior: smooth; scroll-padding-top: 0; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
     .btn-zweit-quick { background: var(--brand); color: #fff; border: none; }
     .btn-zweit-quick:hover { background: var(--brand-dark); color: #fff; }
@@ -356,7 +354,6 @@
       .iv-layout { grid-template-columns: 1fr; height: auto; }
       .iv-sidenav { height: auto; max-height: 280px; padding: .85rem; }
       .sec-title { flex-wrap: wrap; }
-      .iv-meta-row { grid-template-columns: 1fr 1fr; }
       .reco-buttons { grid-template-columns: 1fr; }
       .eval-anchors { grid-template-columns: 1fr; }
     }
@@ -533,31 +530,6 @@
 
   <!-- INTERVIEW VIEW -->
   <div class="view" id="view-interview">
-    <!-- Meta row -->
-    <div class="panel" id="iv-meta-panel">
-      <div class="iv-meta-row">
-        <div class="iv-meta-field">
-          <label>Kandidat:in</label>
-          <input type="text" id="iv-meta-kandidat" placeholder="Vor- und Nachname">
-        </div>
-        <div class="iv-meta-field">
-          <label>Interviewer:in</label>
-          <input type="text" id="iv-meta-interviewer" placeholder="Dein Name">
-        </div>
-        <div class="iv-meta-field">
-          <label>Datum</label>
-          <input type="date" id="iv-meta-datum">
-        </div>
-        <div class="iv-meta-field">
-          <label>Runde</label>
-          <select id="iv-meta-runde">
-            <option value="erst">Erstgespräch</option>
-            <option value="zweit">Zweitgespräch</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
     <!-- Sidenav + scroll guide -->
     <div class="iv-layout iv-layout--guided">
       <aside class="iv-sidenav" id="iv-sidenav"></aside>
@@ -706,9 +678,6 @@ window.RootsUser = window.RootsUser || {
   _avatarSpan(url,name,size){const ini=this._initials(name),s=`width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:${Math.floor(size*.38)}px;flex-shrink:0;`;if(url)return`<span style="${s}background:var(--brand-light,#eff6ff)"><img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.parentElement.innerHTML='<span style=color:var(--brand,#206efb)>${ini}</span>'"></span>`;return`<span style="${s}background:var(--brand-light,#eff6ff);color:var(--brand,#206efb)">${ini}</span>`},
   async _loadAndMount(sb){this._sb=sb;const{data:{session}}=await sb.auth.getSession();if(!session)return;this._uid=session.user.id;const{data}=await sb.schema('users').from('profiles').select('id,email,full_name,position,avatar_url,linkedin_url,app_role').eq('id',this._uid).single();this._p=data||{id:this._uid,email:session.user.email,app_role:'reader'};this._mount();},
   _mount(){const p=this._p;const avEl=document.getElementById('roots-header-avatar');const nmEl=document.getElementById('roots-header-name');if(avEl){avEl.innerHTML=this._avatarSpan(p.avatar_url,p.full_name,34);avEl.style.cursor='pointer';avEl.onclick=()=>this.openSettings();}if(nmEl){nmEl.textContent=p.full_name||p.email||'';nmEl.style.cursor='pointer';nmEl.onclick=()=>this.openSettings();}
-    // Prefill interviewer with current user name
-    const ivEl = document.getElementById('iv-meta-interviewer');
-    if (ivEl && !ivEl.value && p.full_name) ivEl.value = p.full_name;
   },
   _cs:null,
   _cropDraw(){const cv=document.getElementById('rus-crop-canvas');if(!cv)return;const ctx=cv.getContext('2d');ctx.clearRect(0,0,120,120);if(this._cs?.img){const{img,x,y,scale}=this._cs,cr=Math.max(120/img.naturalWidth,120/img.naturalHeight),dw=img.naturalWidth*cr*scale,dh=img.naturalHeight*cr*scale,dx=(120-dw)/2+x,dy=(120-dh)/2+y;ctx.save();ctx.beginPath();ctx.arc(60,60,60,0,Math.PI*2);ctx.clip();ctx.drawImage(img,dx,dy,dw,dh);ctx.restore();}else{ctx.beginPath();ctx.arc(60,60,60,0,Math.PI*2);ctx.fillStyle='#eff6ff';ctx.fill();ctx.fillStyle='#206efb';ctx.font='bold 30px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(this._initials(this._p&&this._p.full_name),60,60);}},
@@ -968,6 +937,7 @@ let state = {
   applicants: [],
   selectedApplicantId: null,
   linkedApplicantId: null,
+  bewerberCreateMode: null,
   bewFilterText: '',
   bewFilterStatus: 'all',
   filterText: '',
@@ -1172,8 +1142,29 @@ function initInterviewScrollAndTimers() {
   main.scrollTop = 0;
 }
 
+function buildFullName(first, middle, last) {
+  return [first, middle, last].map(s => (s || '').trim()).filter(Boolean).join(' ');
+}
+
+function getApplicantDisplayName(a) {
+  if (!a) return '';
+  const built = buildFullName(a.first_name, a.middle_name, a.last_name);
+  if (built) return built;
+  const full = (a.full_name || '').trim();
+  return full && full !== 'Neuer Bewerber' ? full : '';
+}
+
+function applicantHasValidName(a) {
+  if (!a) return false;
+  const fn = (a.first_name || '').trim();
+  const ln = (a.last_name || '').trim();
+  if (fn && ln) return true;
+  const full = getApplicantDisplayName(a);
+  return !!full && full.split(/\s+/).filter(Boolean).length >= 2;
+}
+
 function updateRundeSelect() {
-  const sel = document.getElementById('iv-meta-runde');
+  const sel = document.getElementById('iv-sidenav-runde');
   if (!sel) return;
   const unlocked = isZweitUnlocked();
   const cur = state.erst.meta.runde || 'erst';
@@ -1429,9 +1420,7 @@ function collectCompletionChecks(runde = null) {
 
   const req = (ok, label) => (ok ? done.push(label) : missing.push(label));
 
-  req(!!state.erst.meta.kandidat?.trim(), 'Kandidat:in');
-  req(!!state.erst.meta.interviewer?.trim(), 'Interviewer:in');
-  req(!!state.erst.meta.datum, 'Datum');
+  req(!!state.erst.meta.kandidat?.trim(), 'Bewerber verknüpft');
 
   for (const s of sections) {
     if (s.type === 'rti') req(slice.rtiDone, 'RTI bestätigt');
@@ -1547,7 +1536,10 @@ function loadCandidateIntoInterview(c, opts = {}) {
   if (c.zweit) applyAction(state.zweit, { type: 'LOAD', payload: c.zweit });
   state.erst.meta.sessionId = c.session_id || state.erst.meta.sessionId;
   state.zweit.meta.sessionId = state.erst.meta.sessionId;
-  state.erst.meta.kandidat = c.kandidat || state.erst.meta.kandidat;
+  const linked = state.applicants.find(a => a.session_id === c.session_id);
+  if (linked) state.linkedApplicantId = linked.id;
+  const linkedName = linked ? getApplicantDisplayName(linked) : '';
+  state.erst.meta.kandidat = linkedName || c.kandidat || state.erst.meta.kandidat;
   state.zweit.meta.kandidat = state.erst.meta.kandidat;
   state.erst.meta.interviewer = c.interviewer || state.erst.meta.interviewer;
   state.zweit.meta.interviewer = state.erst.meta.interviewer;
@@ -1566,6 +1558,7 @@ function loadCandidateIntoInterview(c, opts = {}) {
     state.erst.meta.runde = c.runde || state.erst.meta.runde || 'erst';
     state.zweit.meta.runde = state.erst.meta.runde;
   }
+  updateInterviewSubtitle();
   switchView('interview');
 }
 
@@ -1597,16 +1590,17 @@ function closeInterviewPicker() {
 
 function openInterviewPicker() {
   const list = document.getElementById('picker-applicant-list');
-  const items = state.applicants.slice().sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
+  const items = state.applicants.slice().sort((a, b) => getApplicantDisplayName(a).localeCompare(getApplicantDisplayName(b)));
   if (!items.length) {
     list.innerHTML = '<div class="picker-empty">Noch keine Bewerber angelegt. Lege zuerst einen neuen Bewerber an.</div>';
   } else {
     list.innerHTML = items.map(a => {
       const st = PIPELINE_LABELS[a.pipeline_status] || a.pipeline_status || 'Neu';
       const sub = [a.position_applied || a.role_title, a.email].filter(Boolean).join(' · ') || 'Keine weiteren Angaben';
+      const name = getApplicantDisplayName(a) || 'Unbenannt (Name fehlt)';
       return `<button type="button" class="picker-item" data-id="${escapeHtml(a.id)}">
         <span>
-          <div class="picker-item-name">${escapeHtml(a.full_name || 'Unbenannt')}</div>
+          <div class="picker-item-name">${escapeHtml(name)}</div>
           <div class="picker-item-meta">${escapeHtml(sub)}</div>
         </span>
         <span class="bew-status bew-status--${a.pipeline_status || 'new'}">${escapeHtml(st)}</span>
@@ -1625,6 +1619,11 @@ function openInterviewPicker() {
 async function startInterviewForApplicant(a) {
   closeInterviewPicker();
   if (!a) return;
+  if (!applicantHasValidName(a)) {
+    toast('Bitte zuerst Vorname und Nachname speichern', 'error');
+    openBewerberCreateForm({ editId: a.id, startInterviewAfterSave: true });
+    return;
+  }
   state.selectedApplicantId = a.id;
   state.linkedApplicantId = a.id;
   if (a.session_id) {
@@ -1636,9 +1635,9 @@ async function startInterviewForApplicant(a) {
   }
   newInterview({
     sessionId: a.session_id || undefined,
-    kandidat: a.full_name || '',
+    kandidat: getApplicantDisplayName(a),
     applicantId: a.id,
-    toast: `Interview für ${a.full_name || 'Bewerber'} gestartet`,
+    toast: `Interview für ${getApplicantDisplayName(a) || 'Bewerber'} gestartet`,
   });
 }
 
@@ -1655,7 +1654,11 @@ function switchView(v) {
   if (v !== 'interview') teardownInterviewObservers();
   if (v === 'dashboard') renderDashboard();
   else if (v === 'interview') renderInterview();
-  else if (v === 'bewerber') renderBewerberList();
+  else if (v === 'bewerber') {
+    renderBewerberList();
+    if (state.bewerberCreateMode && !state.bewerberCreateMode.editId) renderBewerberCreateForm();
+    else if (state.selectedApplicantId) renderBewerberDetail(state.selectedApplicantId);
+  }
   window.scrollTo(0, 0);
 }
 
@@ -1759,12 +1762,7 @@ function renderDashboard() {
    Render: Interview
    ────────────────────────────────────────────── */
 function renderInterview(partial = false) {
-  if (!partial) {
-    document.getElementById('iv-meta-kandidat').value = state.erst.meta.kandidat || '';
-    document.getElementById('iv-meta-interviewer').value = state.erst.meta.interviewer || '';
-    document.getElementById('iv-meta-datum').value = state.erst.meta.datum || '';
-    updateRundeSelect();
-  }
+  if (!partial) updateRundeSelect();
   renderSidenav();
   if (!partial) {
     renderMain();
@@ -1780,11 +1778,20 @@ function renderSidenav() {
     const tid = 'sec-' + s.id;
     const label = s.sub ? `${s.main} · ${s.sub}` : (s.main || '–');
     return `<a href="#${tid}" data-target="${tid}">${escapeHtml(label)}</a>`;
-  }).join('') + `<a href="#sec-gesamt" data-target="sec-gesamt" style="margin-top:.5rem;border-top:1px solid var(--line);padding-top:.65rem">Gesamtbewertung</a>`
+  }).join('')    + `<a href="#sec-gesamt" data-target="sec-gesamt" style="margin-top:.5rem;border-top:1px solid var(--line);padding-top:.65rem">Gesamtbewertung</a>`
    + `<a href="#sec-abschluss" data-target="sec-abschluss">Abschluss</a>`
+   + `<div class="iv-sidenav-runde">
+        <div class="iv-sidenav-h">Runde</div>
+        <select id="iv-sidenav-runde">
+          <option value="erst">Erstgespräch</option>
+          <option value="zweit">Zweitgespräch</option>
+        </select>
+      </div>`
    + `<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:.4rem">
         <button class="btn-ghost" id="iv-back-dash" style="justify-content:center"><i class="fa-solid fa-arrow-left"></i> Zurück zu Interviews</button>
       </div>`;
+  updateRundeSelect();
+  bindRundeSelectHandler(document.getElementById('iv-sidenav-runde'));
   document.getElementById('iv-back-dash').addEventListener('click', () => switchView('dashboard'));
   nav.querySelectorAll('a[data-target]').forEach(a => {
     a.addEventListener('click', (e) => {
@@ -2167,16 +2174,30 @@ async function loadAllApplicants() {
     console.error('Applicants load error', e);
     state.applicants = [];
   }
-  if (state.view === 'bewerber') renderBewerberList();
+  if (state.view === 'bewerber') {
+    renderBewerberList();
+    if (state.bewerberCreateMode && !state.bewerberCreateMode.editId) renderBewerberCreateForm();
+  }
 }
 
 async function syncApplicantFromInterview(row) {
   if (!row.session_id || !row.kandidat) return;
   const slice = row.runde === 'zweit' ? (row.zweit || {}) : (row.erst || {});
   const abs = abschlussToApplicant(slice.abschlussNotes || {});
+  const existing = state.linkedApplicantId
+    ? state.applicants.find(a => a.id === state.linkedApplicantId)
+    : state.applicants.find(a => a.session_id === row.session_id);
+  const namePayload = existing?.first_name && existing?.last_name
+    ? { first_name: existing.first_name, middle_name: existing.middle_name || '', last_name: existing.last_name, full_name: getApplicantDisplayName(existing) || row.kandidat }
+    : (() => {
+      const parts = (row.kandidat || '').trim().split(/\s+/).filter(Boolean);
+      const first = parts[0] || '';
+      const last = parts.length > 1 ? parts.slice(1).join(' ') : '';
+      return { first_name: first, middle_name: '', last_name: last, full_name: row.kandidat };
+    })();
   const payload = {
     session_id: row.session_id,
-    full_name: row.kandidat,
+    ...namePayload,
     interview_runde: row.runde || 'erst',
     recommendation_last: row.recommendation || slice.recommendation || null,
     weighted_score: row.weighted_overall,
@@ -2184,9 +2205,6 @@ async function syncApplicantFromInterview(row) {
     updated_by: window.RootsUser._uid || null,
     ...abs,
   };
-  const existing = state.linkedApplicantId
-    ? state.applicants.find(a => a.id === state.linkedApplicantId)
-    : state.applicants.find(a => a.session_id === row.session_id);
   if (existing) {
     await recruitingDb().from('applicants').update(payload).eq('id', existing.id);
   } else {
@@ -2202,7 +2220,7 @@ function renderBewerberList() {
   let items = state.applicants.slice();
   if (state.bewFilterText) {
     const f = state.bewFilterText.toLowerCase();
-    items = items.filter(a => (a.full_name||'').toLowerCase().includes(f) || (a.email||'').toLowerCase().includes(f));
+    items = items.filter(a => getApplicantDisplayName(a).toLowerCase().includes(f) || (a.email||'').toLowerCase().includes(f));
   }
   if (state.bewFilterStatus !== 'all') items = items.filter(a => a.pipeline_status === state.bewFilterStatus);
   document.getElementById('bew-count').textContent = `${items.length} Bewerber`;
@@ -2213,7 +2231,7 @@ function renderBewerberList() {
   list.innerHTML = items.map(a => {
     const st = a.pipeline_status || 'new';
     return `<div class="bew-item ${a.id === state.selectedApplicantId ? 'active' : ''}" data-id="${a.id}">
-      <div class="bew-item-name">${escapeHtml(a.full_name || 'Unbenannt')}</div>
+      <div class="bew-item-name">${escapeHtml(getApplicantDisplayName(a) || 'Unbenannt')}</div>
       <div class="bew-item-meta">${escapeHtml(a.position_applied || a.role_title || '–')}</div>
       <span class="bew-status bew-status--${st}">${PIPELINE_LABELS[st] || st}</span>
     </div>`;
@@ -2227,6 +2245,115 @@ function renderBewerberList() {
   });
 }
 
+function applicantNameFieldsHtml(a) {
+  const first = a?.first_name || '';
+  const middle = a?.middle_name || '';
+  const last = a?.last_name || '';
+  return `<div class="bew-field full bew-name-row">
+      <div class="bew-field"><label>Vorname *</label><input name="first_name" value="${escapeHtml(first)}" required autocomplete="given-name"></div>
+      <div class="bew-field"><label>Zweiter Vorname</label><input name="middle_name" value="${escapeHtml(middle)}" autocomplete="additional-name" placeholder="optional"></div>
+      <div class="bew-field"><label>Nachname *</label><input name="last_name" value="${escapeHtml(last)}" required autocomplete="family-name"></div>
+    </div>`;
+}
+
+function applicantPayloadFromForm(fd) {
+  const payload = {};
+  for (const [k, v] of fd.entries()) payload[k] = v;
+  const first = (payload.first_name || '').trim();
+  const middle = (payload.middle_name || '').trim();
+  const last = (payload.last_name || '').trim();
+  if (!first || !last) return null;
+  payload.first_name = first;
+  payload.middle_name = middle;
+  payload.last_name = last;
+  payload.full_name = buildFullName(first, middle, last);
+  return payload;
+}
+
+function openBewerberCreateForm(opts = {}) {
+  closeInterviewPicker();
+  state.bewerberCreateMode = {
+    startInterviewAfterSave: !!opts.startInterviewAfterSave,
+    editId: opts.editId || null,
+  };
+  switchView('bewerber');
+  renderBewerberList();
+  if (opts.editId) {
+    state.selectedApplicantId = opts.editId;
+    renderBewerberDetail(opts.editId);
+  } else {
+    state.selectedApplicantId = null;
+    renderBewerberCreateForm();
+  }
+}
+
+function renderBewerberCreateForm() {
+  const detail = document.getElementById('bew-detail');
+  const fromIv = state.bewerberCreateMode?.startInterviewAfterSave;
+  detail.innerHTML = `
+    <div class="bew-create-banner">
+      <strong>Neuen Bewerber anlegen</strong><br>
+      Mindestens <strong>Vorname</strong> und <strong>Nachname</strong> eintragen und speichern.
+      ${fromIv ? ' Erst danach startet das Interview.' : ''}
+    </div>
+    <form id="bew-form" class="bew-form-grid">
+      ${applicantNameFieldsHtml(null)}
+      <div class="bew-field"><label>Rolle / Position</label><input name="role_title" value="Junior Marketing Consultant"></div>
+      <div class="bew-field"><label>Bewerbungsdatum</label><input name="application_date" type="date" value="${new Date().toISOString().slice(0, 10)}"></div>
+    </form>
+    <div style="margin-top:1.25rem;display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" class="btn-primary" id="bew-save-btn"><i class="fa-solid fa-floppy-disk"></i> Bewerber speichern</button>
+      <button type="button" class="btn-ghost" id="bew-create-cancel">Abbrechen</button>
+    </div>`;
+  document.getElementById('bew-save-btn').onclick = () => saveNewApplicantFromCreateForm();
+  document.getElementById('bew-create-cancel').onclick = () => {
+    state.bewerberCreateMode = null;
+    detail.innerHTML = '<p style="color:var(--muted);text-align:center;padding:3rem 1rem">Wähle einen Bewerber aus der Liste oder lege einen neuen an.</p>';
+  };
+}
+
+async function saveNewApplicantFromCreateForm() {
+  const form = document.getElementById('bew-form');
+  if (!form) return;
+  const payload = applicantPayloadFromForm(new FormData(form));
+  if (!payload) { toast('Vorname und Nachname sind Pflicht', 'error'); return; }
+  const mode = state.bewerberCreateMode || {};
+  payload.updated_by = window.RootsUser._uid || null;
+
+  if (mode.editId) {
+    const { error } = await recruitingDb().from('applicants').update(payload).eq('id', mode.editId);
+    if (error) { toast('Speichern fehlgeschlagen: ' + (error.message || ''), 'error'); return; }
+    await loadAllApplicants();
+    const a = state.applicants.find(x => x.id === mode.editId);
+    state.bewerberCreateMode = null;
+    state.selectedApplicantId = mode.editId;
+    if (mode.startInterviewAfterSave && a) await startInterviewForApplicant(a);
+    else renderBewerberDetail(mode.editId);
+    toast('Bewerber gespeichert');
+    return;
+  }
+
+  payload.pipeline_status = 'new';
+  if (!payload.application_date) payload.application_date = new Date().toISOString().slice(0, 10);
+  payload.created_by = window.RootsUser._uid || null;
+  const { data, error } = await recruitingDb().from('applicants').insert(payload).select().single();
+  if (error) {
+    console.error('saveNewApplicantFromCreateForm', error);
+    toast('Anlegen fehlgeschlagen: ' + (error.message || ''), 'error');
+    return;
+  }
+  await loadAllApplicants();
+  state.selectedApplicantId = data.id;
+  const startIv = mode.startInterviewAfterSave;
+  state.bewerberCreateMode = null;
+  if (startIv) await startInterviewForApplicant(data);
+  else {
+    renderBewerberList();
+    renderBewerberDetail(data.id);
+  }
+  toast(startIv ? 'Bewerber gespeichert – Interview wird gestartet' : 'Bewerber gespeichert');
+}
+
 function renderBewerberDetail(id) {
   const detail = document.getElementById('bew-detail');
   const a = state.applicants.find(x => x.id === id);
@@ -2235,17 +2362,21 @@ function renderBewerberDetail(id) {
     return;
   }
   const docs = a.applicant_documents || [];
+  const displayName = getApplicantDisplayName(a) || 'Unbenannt';
+  const needsName = !applicantHasValidName(a);
+  const pendingIv = state.bewerberCreateMode?.startInterviewAfterSave;
   detail.innerHTML = `
+    ${needsName ? `<div class="bew-create-banner"><strong>Name vervollständigen:</strong> Vorname und Nachname sind Pflicht, bevor ein Interview gestartet werden kann.</div>` : ''}
     <div class="panel-h" style="margin-bottom:1.25rem">
-      <div class="panel-title"><i class="fa-solid fa-user"></i> ${escapeHtml(a.full_name)}</div>
+      <div class="panel-title"><i class="fa-solid fa-user"></i> ${escapeHtml(displayName)}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        ${a.session_id ? `<button class="btn-secondary" id="bew-open-interview"><i class="fa-solid fa-clipboard-list"></i> Interview öffnen</button>` : ''}
+        <button class="btn-secondary" id="bew-open-interview" ${needsName ? 'disabled style="opacity:.5"' : ''}><i class="fa-solid fa-clipboard-list"></i> Interview starten</button>
         <button class="btn-primary" id="bew-save-btn"><i class="fa-solid fa-floppy-disk"></i> Speichern</button>
         <button class="btn-danger" id="bew-delete-btn"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>
     <form id="bew-form" class="bew-form-grid">
-      <div class="bew-field"><label>Vollständiger Name *</label><input name="full_name" value="${escapeHtml(a.full_name||'')}" required></div>
+      ${applicantNameFieldsHtml(a)}
       <div class="bew-field"><label>E-Mail</label><input name="email" type="email" value="${escapeHtml(a.email||'')}"></div>
       <div class="bew-field"><label>Telefon</label><input name="phone" value="${escapeHtml(a.phone||'')}"></div>
       <div class="bew-field"><label>LinkedIn</label><input name="linkedin_url" value="${escapeHtml(a.linkedin_url||'')}"></div>
@@ -2283,7 +2414,13 @@ function renderBewerberDetail(id) {
   document.getElementById('bew-save-btn').onclick = () => saveApplicantFromForm(a.id);
   document.getElementById('bew-delete-btn').onclick = () => deleteApplicant(a.id);
   const openIv = document.getElementById('bew-open-interview');
-  if (openIv) openIv.onclick = () => openInterviewForApplicant(a);
+  if (openIv) openIv.onclick = () => {
+    if (!applicantHasValidName(a)) {
+      toast('Bitte zuerst Vorname und Nachname speichern', 'error');
+      return;
+    }
+    openInterviewForApplicant(a);
+  };
   const uz = document.getElementById('bew-upload-zone');
   const fi = document.getElementById('bew-file-input');
   uz.onclick = () => fi.click();
@@ -2292,11 +2429,9 @@ function renderBewerberDetail(id) {
 
 async function saveApplicantFromForm(id) {
   const form = document.getElementById('bew-form');
-  const fd = new FormData(form);
-  const payload = {};
-  for (const [k, v] of fd.entries()) payload[k] = v;
+  const payload = applicantPayloadFromForm(new FormData(form));
+  if (!payload) { toast('Vorname und Nachname sind Pflicht', 'error'); return; }
   payload.updated_by = window.RootsUser._uid || null;
-  if (!payload.full_name?.trim()) { toast('Name ist Pflicht', 'error'); return; }
   const { error } = await recruitingDb().from('applicants').update(payload).eq('id', id);
   if (error) {
     console.error('saveApplicantFromForm', error);
@@ -2306,32 +2441,11 @@ async function saveApplicantFromForm(id) {
   toast('Bewerber gespeichert');
   await loadAllApplicants();
   state.selectedApplicantId = id;
-  renderBewerberDetail(id);
-}
-
-async function createNewApplicant(opts = {}) {
-  const payload = {
-    full_name: opts.full_name || 'Neuer Bewerber',
-    role_title: 'Junior Marketing Consultant',
-    pipeline_status: 'new',
-    application_date: new Date().toISOString().slice(0, 10),
-    created_by: window.RootsUser._uid || null,
-  };
-  const { data, error } = await recruitingDb().from('applicants').insert(payload).select().single();
-  if (error) {
-    console.error('createNewApplicant', error);
-    toast('Anlegen fehlgeschlagen: ' + (error.message || 'Unbekannter Fehler'), 'error');
-    return null;
-  }
-  await loadAllApplicants();
-  state.selectedApplicantId = data.id;
-  if (opts.switchView !== false) {
-    switchView('bewerber');
-    renderBewerberList();
-    renderBewerberDetail(data.id);
-  }
-  toast(opts.toast || 'Neuer Bewerber angelegt');
-  return data;
+  const pendingIv = state.bewerberCreateMode?.startInterviewAfterSave;
+  state.bewerberCreateMode = null;
+  const a = state.applicants.find(x => x.id === id);
+  if (pendingIv && a && applicantHasValidName(a)) await startInterviewForApplicant(a);
+  else renderBewerberDetail(id);
 }
 
 async function deleteApplicant(id) {
@@ -2387,47 +2501,45 @@ document.querySelectorAll('.app-nav-btn[data-view]').forEach(btn => {
   btn.addEventListener('click', () => switchView(btn.dataset.view));
 });
 document.getElementById('nav-new-interview').addEventListener('click', openInterviewPicker);
-document.getElementById('nav-new-applicant').addEventListener('click', () => createNewApplicant());
-document.getElementById('bew-new-btn').addEventListener('click', () => createNewApplicant());
+document.getElementById('nav-new-applicant').addEventListener('click', () => openBewerberCreateForm());
+document.getElementById('bew-new-btn').addEventListener('click', () => openBewerberCreateForm());
 document.getElementById('picker-cancel').addEventListener('click', closeInterviewPicker);
-document.getElementById('picker-new-applicant').addEventListener('click', async () => {
-  const a = await createNewApplicant({ switchView: false, toast: 'Bewerber angelegt – Interview wird gestartet' });
-  if (a) await startInterviewForApplicant(a);
-});
+document.getElementById('picker-new-applicant').addEventListener('click', () => openBewerberCreateForm({ startInterviewAfterSave: true }));
 document.getElementById('interview-picker-overlay').addEventListener('click', (e) => {
   if (e.target.id === 'interview-picker-overlay') closeInterviewPicker();
 });
 document.getElementById('bew-search').addEventListener('input', (e) => { state.bewFilterText = e.target.value; renderBewerberList(); });
 document.getElementById('bew-filter-status').addEventListener('change', (e) => { state.bewFilterStatus = e.target.value; renderBewerberList(); });
 
-document.getElementById('iv-meta-kandidat').addEventListener('input', (e) => setMetaField('kandidat', e.target.value));
-document.getElementById('iv-meta-interviewer').addEventListener('input', (e) => setMetaField('interviewer', e.target.value));
-document.getElementById('iv-meta-datum').addEventListener('input', (e) => setMetaField('datum', e.target.value));
-document.getElementById('iv-meta-runde').addEventListener('change', (e) => {
-  const newVal = e.target.value;
-  const prev = state.erst.meta.runde || 'erst';
-  if (newVal === 'zweit' && !isZweitUnlocked()) {
-    e.target.value = prev;
-    document.getElementById('zweit-locked-overlay').classList.add('visible');
-    return;
-  }
-  if (newVal === 'zweit' && isZweitUnlocked()) {
-    document.getElementById('round-switch-overlay').classList.add('visible');
-    document.getElementById('round-switch-confirm').onclick = () => {
-      dispatch({ type: 'SET_META', field: 'runde', value: 'zweit' });
-      document.getElementById('round-switch-overlay').classList.remove('visible');
-      renderInterview();
-    };
-    document.getElementById('round-switch-cancel').onclick = () => {
+function bindRundeSelectHandler(sel) {
+  if (!sel || sel._bound) return;
+  sel._bound = true;
+  sel.addEventListener('change', (e) => {
+    const newVal = e.target.value;
+    const prev = state.erst.meta.runde || 'erst';
+    if (newVal === 'zweit' && !isZweitUnlocked()) {
       e.target.value = prev;
-      document.getElementById('round-switch-overlay').classList.remove('visible');
-    };
-    e.target.value = prev;
-    return;
-  }
-  dispatch({ type: 'SET_META', field: 'runde', value: newVal });
-  renderInterview();
-});
+      document.getElementById('zweit-locked-overlay').classList.add('visible');
+      return;
+    }
+    if (newVal === 'zweit' && isZweitUnlocked()) {
+      document.getElementById('round-switch-overlay').classList.add('visible');
+      document.getElementById('round-switch-confirm').onclick = () => {
+        dispatch({ type: 'SET_META', field: 'runde', value: 'zweit' });
+        document.getElementById('round-switch-overlay').classList.remove('visible');
+        renderInterview();
+      };
+      document.getElementById('round-switch-cancel').onclick = () => {
+        e.target.value = prev;
+        document.getElementById('round-switch-overlay').classList.remove('visible');
+      };
+      e.target.value = prev;
+      return;
+    }
+    dispatch({ type: 'SET_META', field: 'runde', value: newVal });
+    renderInterview();
+  });
+}
 document.getElementById('zweit-locked-close').addEventListener('click', () => {
   document.getElementById('zweit-locked-overlay').classList.remove('visible');
 });
