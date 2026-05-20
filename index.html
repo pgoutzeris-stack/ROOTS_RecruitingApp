@@ -290,6 +290,20 @@
     .gesamt-note { width: 100%; min-height: 100px; margin-top: 1rem; padding: 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .9rem; resize: vertical; outline: none; }
     .gesamt-note:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
 
+    .abschluss-panel { border: 2px solid var(--brand); background: linear-gradient(180deg, var(--brand-light) 0%, var(--bg) 120px); }
+    .abschluss-status { display: inline-flex; align-items: center; gap: 8px; padding: .45rem .9rem; border-radius: 999px; font-size: .82rem; font-weight: 700; margin-bottom: 1rem; }
+    .abschluss-status--draft { background: #fff7ed; color: #b45309; border: 1px solid #fed7aa; }
+    .abschluss-status--done { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+    .abschluss-checklist { display: flex; flex-direction: column; gap: 6px; margin: 1rem 0 1.25rem; }
+    .abschluss-check-item { display: flex; align-items: flex-start; gap: 10px; padding: .65rem .85rem; border-radius: 10px; font-size: .88rem; background: var(--bg); border: 1px solid var(--line); }
+    .abschluss-check-item.done { border-color: #a7f3d0; background: #f0fdf4; color: #065f46; }
+    .abschluss-check-item.missing { border-color: #fecaca; background: #fef2f2; color: #991b1b; }
+    .abschluss-check-item i { margin-top: 2px; flex-shrink: 0; }
+    .abschluss-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .cand-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 700; padding: .25rem .55rem; border-radius: 999px; margin-bottom: .5rem; }
+    .cand-badge--done { background: #ecfdf5; color: #047857; }
+    .cand-badge--draft { background: #fff7ed; color: #b45309; }
+
     /* ─── Save badge ─── */
     .save-badge { display: inline-flex; align-items: center; gap: 6px; padding: .4rem .85rem; border-radius: 999px; font-size: .78rem; font-weight: 500; }
     .save-badge--idle { background: var(--status-bg); color: var(--muted); }
@@ -911,6 +925,7 @@ const INITIAL_STATE = {
   gesamtNote: '', recommendation: '',
   abschlussNotes: {}, rtiDone: false, caseChecks: {}, zweitAnmerkung: '',
   cultureFitAnswers: {},
+  completed: false, completedAt: null,
 };
 
 const recruitingDb = () => sb.schema('recruiting');
@@ -957,6 +972,7 @@ function dispatch(action) {
     updateInterviewSubtitle();
   }
   scheduleSave();
+  scheduleAbschlussRefresh();
   if (state.view === 'interview' && action.type !== 'SET_META') {
     scheduleRenderInterview(true);
   }
@@ -967,6 +983,7 @@ function setMetaField(field, value) {
   state.zweit.meta[field] = value;
   updateInterviewSubtitle();
   scheduleSave();
+  scheduleAbschlussRefresh();
 }
 
 function updateInterviewSubtitle() {
@@ -1067,11 +1084,12 @@ function getAllEvaluatedQuestions() {
   return arr;
 }
 
-async function saveCurrent() {
+async function saveCurrent(opts = {}) {
   if (savingPromise) await savingPromise;
   const meta = state.erst.meta;
   if (!meta.sessionId) meta.sessionId = state.zweit.meta.sessionId = genSessionId();
   const scores = calculateScores();
+  const activeSlice = isZweit() ? state.zweit : state.erst;
   const row = {
     session_id: meta.sessionId,
     kandidat: meta.kandidat || '',
@@ -1080,24 +1098,148 @@ async function saveCurrent() {
     runde: meta.runde || 'erst',
     erst: state.erst,
     zweit: state.zweit,
-    recommendation: (isZweit() ? state.zweit.recommendation : state.erst.recommendation) || null,
+    recommendation: activeSlice.recommendation || null,
     weighted_overall: scores.overall,
   };
-  // localStorage backup
   try { localStorage.setItem('roots-recruit-last', JSON.stringify({ erst: state.erst, zweit: state.zweit })); } catch {}
-  if (!row.kandidat) return;
+  if (!row.kandidat && !opts.allowEmptyKandidat) return;
   setSaveStatus('saving');
   try {
     savingPromise = recruitingDb().from('interviews').upsert(row, { onConflict: 'session_id' });
     await savingPromise;
-    await syncApplicantFromInterview(row);
+    if (row.kandidat) await syncApplicantFromInterview(row);
     setSaveStatus('saved');
+    const idx = state.candidates.findIndex(c => c.session_id === row.session_id);
+    if (idx >= 0) state.candidates[idx] = { ...state.candidates[idx], ...row };
+    else if (row.kandidat) state.candidates.unshift(row);
+    if (state.view === 'dashboard') renderDashboard();
     if (state.view === 'bewerber') renderBewerberDetail(state.selectedApplicantId);
   } catch (e) {
-    setSaveStatus('idle', 'Offline');
+    console.error('saveCurrent', e);
+    setSaveStatus('idle', 'Speichern fehlgeschlagen');
+    if (opts.throwOnError) throw e;
   } finally {
     savingPromise = null;
   }
+}
+
+async function saveCurrentImmediate(opts = {}) {
+  if (saveTimer) clearTimeout(saveTimer);
+  await saveCurrent(opts);
+}
+
+function isRoundCompletedInData(c, runde) {
+  const sl = runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
+  return !!sl.completed;
+}
+
+function getActiveRoundSlice(runde = null) {
+  const z = runde ? runde === 'zweit' : isZweit();
+  return z ? state.zweit : state.erst;
+}
+
+function getActiveRoundSections(runde = null) {
+  const z = runde ? runde === 'zweit' : isZweit();
+  return z ? SECTIONS_ZWEIT : SECTIONS_ERST;
+}
+
+function collectCompletionChecks(runde = null) {
+  const useZweit = runde ? runde === 'zweit' : isZweit();
+  const slice = getActiveRoundSlice(useZweit ? 'zweit' : 'erst');
+  const sections = getActiveRoundSections(useZweit ? 'zweit' : 'erst');
+  const missing = [];
+  const done = [];
+
+  const req = (ok, label) => (ok ? done.push(label) : missing.push(label));
+
+  req(!!state.erst.meta.kandidat?.trim(), 'Kandidat:in');
+  req(!!state.erst.meta.interviewer?.trim(), 'Interviewer:in');
+  req(!!state.erst.meta.datum, 'Datum');
+
+  for (const s of sections) {
+    if (s.type === 'rti') req(slice.rtiDone, 'RTI bestätigt');
+    if (s.cultureFitQuestions) {
+      for (const q of s.cultureFitQuestions) {
+        req(!!slice.cultureFitAnswers[q.id], `Culture-Fit (${q.optionA} vs. ${q.optionB})`);
+      }
+    }
+    const rateBlock = (qid, evals, labelPrefix) => {
+      if (!evals) return;
+      evals.forEach((ev, idx) => {
+        const v = (slice.ratings[qid] || {})[idx];
+        req(v != null && v >= 1, `${labelPrefix}: ${ev.label}`);
+      });
+    };
+    if (s.questions) for (const q of s.questions) rateBlock(q.id, q.evaluations, 'Bewertung');
+    if (s.blockEvaluation) rateBlock(s.blockEvaluation.id, s.blockEvaluation.evaluations, 'Blockbewertung');
+    if (s.outroEvaluation) rateBlock(s.outroEvaluation.id, s.outroEvaluation.evaluations, 'Bewertung Rückfragen');
+    if (s.outroFields) for (const f of s.outroFields) {
+      req(!!(slice.abschlussNotes[f] || '').trim(), `Abschlussfeld „${f}"`);
+    }
+    if (s.outroQuestion?.evaluations?.length) {
+      rateBlock(s.outroQuestion.id, s.outroQuestion.evaluations, 'Bewertung');
+    }
+  }
+
+  req(!!slice.recommendation, 'Empfehlung gewählt');
+  req(!!(slice.gesamtNote || '').trim(), 'Gesamteindruck / Fazit');
+
+  return {
+    complete: missing.length === 0,
+    missing,
+    done,
+    slice,
+    runde: useZweit ? 'zweit' : 'erst',
+    rundeLabel: useZweit ? 'Zweitgespräch' : 'Erstgespräch',
+  };
+}
+
+async function finalizeInterview() {
+  const check = collectCompletionChecks();
+  const el = document.getElementById('sec-abschluss');
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (!check.complete) {
+    toast(`Noch ${check.missing.length} Punkt(e) offen – siehe Checkliste unten`, 'error');
+    if (state.view === 'interview') {
+      renderMain();
+      renderSidenav();
+    }
+    return;
+  }
+  check.slice.completed = true;
+  check.slice.completedAt = new Date().toISOString();
+  try {
+    await saveCurrentImmediate({ throwOnError: true });
+    toast(`${check.rundeLabel} abgeschlossen und gespeichert`);
+    renderMain();
+    renderSidenav();
+    if (state.view === 'dashboard') renderDashboard();
+  } catch (e) {
+    check.slice.completed = false;
+    check.slice.completedAt = null;
+    toast('Abschluss konnte nicht gespeichert werden', 'error');
+  }
+}
+
+function reopenInterviewRound() {
+  const slice = currentSlice();
+  slice.completed = false;
+  slice.completedAt = null;
+  scheduleSave();
+  toast('Bearbeitung wieder geöffnet');
+  renderMain();
+  renderSidenav();
+}
+
+function printInterviewById(sessionId) {
+  const c = state.candidates.find(x => x.session_id === sessionId);
+  if (!c) return;
+  const prevView = state.view;
+  loadCandidateIntoInterview(c);
+  setTimeout(() => {
+    window.print();
+    if (prevView !== 'interview') switchView(prevView);
+  }, 700);
 }
 
 async function loadAllCandidates() {
@@ -1266,9 +1408,14 @@ function renderDashboard() {
     const score = c.weighted_overall != null ? c.weighted_overall.toFixed(1) : '–';
     const dateStr = c.datum || (c.updated_at ? c.updated_at.slice(0,10) : '');
     const runde = (c.runde === 'zweit') ? 'Zweitgespräch' : 'Erstgespräch';
+    const rundeKey = c.runde || 'erst';
+    const completed = isRoundCompletedInData(c, rundeKey);
+    const completedAt = (rundeKey === 'zweit' ? c.zweit : c.erst)?.completedAt;
+    const completedDate = completedAt ? new Date(completedAt).toLocaleDateString('de-DE') : '';
     return `<div class="cand-card" data-id="${escapeHtml(c.session_id)}">
       <div class="cand-card-head">
         <div>
+          <span class="cand-badge ${completed ? 'cand-badge--done' : 'cand-badge--draft'}"><i class="fa-solid ${completed ? 'fa-circle-check' : 'fa-pen'}"></i>${completed ? 'Abgeschlossen' : 'Entwurf'}${completedDate ? ' · ' + completedDate : ''}</span>
           <div class="cand-name">${escapeHtml(c.kandidat || 'Unbenannt')}</div>
           <div class="cand-meta">
             <span class="cand-meta-item"><i class="fa-regular fa-calendar"></i>${escapeHtml(dateStr || '—')}</span>
@@ -1280,8 +1427,8 @@ function renderDashboard() {
       </div>
       ${reco ? `<div class="cand-reco cand-reco--${cat}">${escapeHtml(reco)}</div>` : `<div class="cand-reco cand-reco--none">Noch keine Empfehlung</div>`}
       <div class="cand-actions">
-        <button class="btn-ghost" data-act="open" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-pen"></i> Öffnen</button>
-        <button class="btn-ghost" data-act="print" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-file-pdf"></i> Drucken</button>
+        <button class="btn-ghost" data-act="open" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-pen"></i> ${completed ? 'Ansehen' : 'Bearbeiten'}</button>
+        <button class="btn-secondary" data-act="print" data-id="${escapeHtml(c.session_id)}"><i class="fa-solid fa-file-pdf"></i> Als PDF</button>
         <button class="btn-ghost" data-act="delete" data-id="${escapeHtml(c.session_id)}" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>`;
@@ -1296,7 +1443,7 @@ function renderDashboard() {
       if (!c) return;
       if (btn.dataset.act === 'open') loadCandidateIntoInterview(c);
       else if (btn.dataset.act === 'delete') deleteCandidate(id);
-      else if (btn.dataset.act === 'print') { loadCandidateIntoInterview(c); setTimeout(() => window.print(), 600); }
+      else if (btn.dataset.act === 'print') printInterviewById(id);
     });
   });
   list.querySelectorAll('.cand-card').forEach(card => {
@@ -1331,9 +1478,9 @@ function renderSidenav() {
     const num = i + 1;
     return `<a href="#sec-${s.id}" data-target="sec-${s.id}"><span class="iv-sidenav-num">${num}</span>${escapeHtml(s.main || s.sub || '–')}</a>`;
   }).join('') + `<a href="#sec-gesamt" data-target="sec-gesamt" style="margin-top:.5rem;border-top:1px solid var(--line);padding-top:.6rem"><span class="iv-sidenav-num"><i class="fa-solid fa-star"></i></span>Gesamtbewertung</a>`
+   + `<a href="#sec-abschluss" data-target="sec-abschluss"><span class="iv-sidenav-num"><i class="fa-solid fa-flag-checkered"></i></span>Abschluss</a>`
    + `<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:.4rem">
-        <button class="btn-secondary" onclick="window.print()" style="justify-content:center"><i class="fa-solid fa-file-pdf"></i> Als PDF drucken</button>
-        <button class="btn-ghost" id="iv-back-dash" style="justify-content:center"><i class="fa-solid fa-arrow-left"></i> Zurück zum Dashboard</button>
+        <button class="btn-ghost" id="iv-back-dash" style="justify-content:center"><i class="fa-solid fa-arrow-left"></i> Zurück zu Interviews</button>
       </div>`;
   document.getElementById('iv-back-dash').addEventListener('click', () => switchView('dashboard'));
   nav.querySelectorAll('a').forEach(a => {
@@ -1367,9 +1514,70 @@ function renderMain() {
 
   // Gesamt evaluation
   html += renderGesamtEvaluation();
+  html += renderAbschlussPanel();
 
   main.innerHTML = html;
   bindMainHandlers();
+}
+
+function renderAbschlussChecklistHtml() {
+  const check = collectCompletionChecks();
+  const allLabels = [...check.done, ...check.missing];
+  if (!allLabels.length) return '<p style="color:var(--muted);font-size:.88rem">Keine Pflichtfelder für diese Runde.</p>';
+  return check.done.map(l => `<div class="abschluss-check-item done"><i class="fa-solid fa-circle-check"></i><span>${escapeHtml(l)}</span></div>`).join('')
+    + check.missing.map(l => `<div class="abschluss-check-item missing"><i class="fa-solid fa-circle-xmark"></i><span>${escapeHtml(l)}</span></div>`).join('');
+}
+
+function renderAbschlussPanel() {
+  const check = collectCompletionChecks();
+  const slice = check.slice;
+  const done = !!slice.completed;
+  const doneDate = slice.completedAt ? new Date(slice.completedAt).toLocaleString('de-DE') : '';
+
+  return `<div class="panel abschluss-panel" id="sec-abschluss">
+    <div class="panel-h">
+      <div class="panel-title"><i class="fa-solid fa-flag-checkered"></i> Interview abschließen · ${escapeHtml(check.rundeLabel)}</div>
+    </div>
+    <p style="font-size:.9rem;color:var(--muted);margin-bottom:.75rem;line-height:1.5">
+      Wenn alle Pflichtfelder ausgefüllt sind, schließe das Interview hier ab. Erst dann gilt die Bewertung als vollständig gespeichert und erscheint in der Interview-Übersicht als <strong>Abgeschlossen</strong>.
+      PDF-Export findest du in der <strong>Interview-Übersicht</strong> (Button „Als PDF“).
+    </p>
+    <div class="abschluss-status ${done ? 'abschluss-status--done' : 'abschluss-status--draft'}">
+      <i class="fa-solid ${done ? 'fa-circle-check' : 'fa-hourglass-half'}"></i>
+      ${done ? `Abgeschlossen${doneDate ? ' · ' + escapeHtml(doneDate) : ''}` : `${check.missing.length} offene Punkt(e) · Entwurf`}
+    </div>
+    <div class="abschluss-checklist" id="abschluss-checklist">${renderAbschlussChecklistHtml()}</div>
+    <div class="abschluss-actions">
+      ${done
+        ? `<button type="button" class="btn-secondary" id="iv-reopen-round"><i class="fa-solid fa-pen"></i> Bearbeitung fortsetzen</button>
+           <button type="button" class="btn-primary" id="iv-back-dash-abschluss"><i class="fa-solid fa-grip"></i> Zur Interview-Übersicht</button>`
+        : `<button type="button" class="btn-primary" id="iv-finalize" ${check.complete ? '' : 'disabled style="opacity:.55;cursor:not-allowed"'}><i class="fa-solid fa-cloud-arrow-up"></i> Interview abschließen &amp; speichern</button>
+           <button type="button" class="btn-secondary" id="iv-back-dash-abschluss"><i class="fa-solid fa-grip"></i> Später fortsetzen</button>`}
+    </div>
+  </div>`;
+}
+
+let abschlussRefreshTimer = null;
+function scheduleAbschlussRefresh() {
+  if (state.view !== 'interview') return;
+  if (abschlussRefreshTimer) clearTimeout(abschlussRefreshTimer);
+  abschlussRefreshTimer = setTimeout(() => {
+    const list = document.getElementById('abschluss-checklist');
+    const status = document.querySelector('#sec-abschluss .abschluss-status');
+    if (!list) return;
+    const check = collectCompletionChecks();
+    list.innerHTML = renderAbschlussChecklistHtml();
+    const btn = document.getElementById('iv-finalize');
+    if (btn) {
+      btn.disabled = !check.complete;
+      btn.style.opacity = check.complete ? '' : '.55';
+      btn.style.cursor = check.complete ? '' : 'not-allowed';
+    }
+    if (status && !currentSlice().completed) {
+      status.className = 'abschluss-status ' + (check.complete ? 'abschluss-status--done' : 'abschluss-status--draft');
+      status.innerHTML = `<i class="fa-solid ${check.complete ? 'fa-circle-check' : 'fa-hourglass-half'}"></i> ${check.complete ? 'Alle Pflichtfelder erfüllt – bereit zum Abschließen' : check.missing.length + ' offene Punkt(e) · Entwurf'}`;
+    }
+  }, 250);
 }
 
 function renderSection(s, num) {
@@ -1556,6 +1764,11 @@ function renderGesamtEvaluation() {
    ────────────────────────────────────────────── */
 function bindMainHandlers() {
   const main = document.getElementById('iv-main');
+  const fin = document.getElementById('iv-finalize');
+  if (fin) fin.addEventListener('click', () => finalizeInterview());
+  const reopen = document.getElementById('iv-reopen-round');
+  if (reopen) reopen.addEventListener('click', () => reopenInterviewRound());
+  document.getElementById('iv-back-dash-abschluss')?.addEventListener('click', () => switchView('dashboard'));
   main.querySelectorAll('[data-act]').forEach(el => {
     const act = el.dataset.act;
     if (act === 'toggle-check') {
@@ -1566,6 +1779,7 @@ function bindMainHandlers() {
         const slice = currentSlice();
         slice.notes[el.dataset.qid] = v;
         scheduleSave();
+        scheduleAbschlussRefresh();
       });
     } else if (act === 'set-rating') {
       el.addEventListener('click', () => dispatch({ type: 'SET_RATING', qid: el.dataset.qid, evalIdx: +el.dataset.eval, value: +el.dataset.val }));
@@ -1578,13 +1792,18 @@ function bindMainHandlers() {
         const slice = currentSlice();
         slice.abschlussNotes[el.dataset.key] = el.value;
         scheduleSave();
+        scheduleAbschlussRefresh();
       });
     } else if (act === 'set-reco') {
-      el.addEventListener('click', () => dispatch({ type: 'SET_RECOMMENDATION', value: el.dataset.val }));
+      el.addEventListener('click', () => {
+        dispatch({ type: 'SET_RECOMMENDATION', value: el.dataset.val });
+        scheduleAbschlussRefresh();
+      });
     } else if (act === 'set-gesamt-note') {
       el.addEventListener('input', () => {
         currentSlice().gesamtNote = el.value;
         scheduleSave();
+        scheduleAbschlussRefresh();
       });
     } else if (act === 'set-zweitanmerkung') {
       el.addEventListener('input', () => {
