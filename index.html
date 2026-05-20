@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
+  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ROOTS Recruiting · Interview-Leitfaden</title>
@@ -227,14 +227,19 @@
     .team-member-opt-name { font-size: .88rem; font-weight: 700; color: var(--ink); }
     .team-member-opt-role { font-size: .72rem; color: var(--muted); }
     .team-panel-foot { padding: 1rem 1.35rem 1.25rem; border-top: 1px solid var(--line); display: flex; gap: .5rem; justify-content: flex-end; }
-    .notif-stack { position: fixed; bottom: 20px; right: 20px; left: auto; z-index: 9800; display: flex; flex-direction: column-reverse; gap: .65rem; max-width: min(380px, calc(100vw - 40px)); pointer-events: none; }
-    .notif-card { pointer-events: auto; display: flex; gap: 12px; align-items: flex-start; background: var(--bg); color: var(--ink); border-radius: 14px; padding: .9rem 1rem; box-shadow: 0 12px 36px rgba(15,23,42,.14), 0 0 0 1px var(--line); cursor: pointer; animation: notif-in .28s ease; border-left: 3px solid var(--brand); transition: transform .15s, box-shadow .15s; }
-    .notif-card:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(32,110,251,.18), 0 0 0 1px #c7dbfa; }
-    .notif-card-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--brand-light); color: var(--brand); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: .9rem; }
-    .notif-card-content { min-width: 0; flex: 1; }
-    .notif-card-title { font-size: .84rem; font-weight: 700; margin-bottom: .2rem; color: var(--ink); }
-    .notif-card-body { font-size: .78rem; color: var(--muted); line-height: 1.45; }
-    @keyframes notif-in { from { opacity: 0; transform: translateY(12px) translateX(8px); } to { opacity: 1; transform: translateY(0) translateX(0); } }
+    #toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 999999; max-width: min(380px, calc(100vw - 40px)); pointer-events: none; }
+    .toast { background: var(--bg); border-left: 4px solid var(--brand); box-shadow: var(--shadow); padding: 12px 20px; border-radius: 8px; display: flex; align-items: flex-start; gap: 12px; min-width: 250px; max-width: 100%; animation: slideIn 0.3s ease; color: var(--ink); font-size: 0.9rem; pointer-events: auto; line-height: 1.45; }
+    .toast.is-persistent { cursor: pointer; }
+    .toast.is-persistent:hover { box-shadow: 0 8px 24px rgba(15,23,42,.12); }
+    .toast.error { border-color: var(--danger); }
+    .toast.success { border-color: var(--success); }
+    .toast > i { flex-shrink: 0; margin-top: 2px; color: var(--brand); }
+    .toast.error > i { color: var(--danger); }
+    .toast.success > i { color: var(--success); }
+    .toast > span { min-width: 0; flex: 1; }
+    .toast-title { display: block; font-weight: 700; margin-bottom: 2px; }
+    .toast-body { display: block; font-size: 0.82rem; color: var(--muted); }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     .dash-empty i { font-size: 3rem; color: var(--line); margin-bottom: 1rem; }
     .dash-empty h3 { font-size: 1.15rem; font-weight: 700; color: var(--ink); margin-bottom: .5rem; }
 
@@ -245,7 +250,7 @@
     .iv-sidenav a { display: block; padding: .65rem .85rem; border-radius: 10px; text-decoration: none; color: var(--ink); font-size: .86rem; font-weight: 500; line-height: 1.4; transition: all .15s; border-left: 3px solid transparent; word-wrap: break-word; overflow-wrap: anywhere; hyphens: auto; }
     .iv-sidenav a:hover { background: var(--status-bg); }
     .iv-sidenav a.active { background: var(--brand); color: #fff; border-left-color: var(--brand-dark); box-shadow: 0 4px 14px rgba(32,110,251,.28); }
-    .iv-content-col { min-width: 0; display: flex; flex-direction: column; flex: 1; min-height: 0; height: 100%; }
+    .iv-content-col { min-width: 0; width: 100%; overflow: hidden; display: flex; flex-direction: column; flex: 1; min-height: 0; height: 100%; }
     #view-interview.active { display: flex; flex-direction: column; height: calc(100dvh - 72px); max-height: calc(100dvh - 72px); }
     #view-interview .iv-layout { flex: 1; min-height: 0; overflow: hidden; }
     .iv-sidenav-spacer { flex: 1; min-height: .75rem; }
@@ -268,7 +273,8 @@
     .iv-sidenav-runde select { width: 100%; height: 38px; margin-top: .4rem; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .88rem; background: var(--bg); color: var(--ink); cursor: pointer; }
     .bew-name-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     @media (max-width: 720px) { .bew-name-row { grid-template-columns: 1fr; } }
-    .iv-main { min-width: 0; flex: 1; height: 100%; min-height: 0; overflow-y: auto; scroll-snap-type: y proximity; scroll-behavior: smooth; scroll-padding-top: 0; scroll-padding-bottom: 2rem; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
+    .iv-main { min-width: 0; width: 100%; flex: 1; height: 100%; min-height: 0; overflow-x: hidden; overflow-y: auto; scroll-snap-type: y proximity; scroll-behavior: smooth; scroll-padding-top: 0; scroll-padding-bottom: 1.5rem; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius) var(--radius) 0 0; border-bottom: none; }
+    .iv-interview-footer { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; padding: .85rem 1.25rem; border: 1px solid var(--line); border-radius: 0 0 var(--radius) var(--radius); background: var(--bg); }
     .btn-zweit-quick { background: var(--brand); color: #fff; border: none; }
     .btn-zweit-quick:hover { background: var(--brand-dark); color: #fff; }
     .cand-actions-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: .35rem; }
@@ -277,10 +283,10 @@
     .iv-zweit-note-body { font-size: .9rem; color: var(--ink); white-space: pre-wrap; line-height: 1.55; }
 
     /* ─── Sections: frei im Kapitel scrollen, beim Verlassen weich einrasten ─── */
-    .iv-snap-section { min-height: 100%; scroll-snap-align: start; scroll-snap-stop: always; scroll-margin-top: 0; padding: 1.75rem 2rem 2.5rem; box-sizing: border-box; background: var(--bg); }
-    .gesamt-panel { min-height: auto; scroll-snap-align: none; scroll-snap-stop: normal; padding: 1.75rem 2rem 1rem; box-sizing: border-box; background: var(--bg); }
+    .iv-snap-section { min-height: 100%; scroll-snap-align: start; scroll-snap-stop: normal; scroll-margin-top: 0; padding: 1.75rem 2rem 2.5rem; box-sizing: border-box; background: var(--bg); width: 100%; max-width: 100%; overflow-x: hidden; }
+    .gesamt-panel { min-height: auto; scroll-snap-align: end; scroll-snap-stop: normal; padding: 1.75rem 2rem 2rem; box-sizing: border-box; background: var(--bg); width: 100%; max-width: 100%; overflow-x: hidden; }
     .sec-block { margin-bottom: 0; }
-    .sec-body { display: flex; flex-direction: column; gap: 1.5rem; max-width: 900px; }
+    .sec-body { display: flex; flex-direction: column; gap: 1.5rem; max-width: 900px; width: 100%; min-width: 0; }
     .sec-title { display: flex; align-items: flex-start; gap: 14px; flex-wrap: nowrap; border-bottom: 1px solid var(--line); padding-bottom: 1.25rem; margin-bottom: 1.5rem; }
     .sec-num { font-size: 2rem; font-weight: 800; color: var(--brand); letter-spacing: -1px; line-height: 1; flex-shrink: 0; }
     .sec-name { font-size: 1.25rem; font-weight: 700; color: var(--ink); flex: 1; min-width: 0; line-height: 1.35; }
@@ -314,10 +320,10 @@
     /* ─── Eval Row ─── */
     .eval-row { background: none; border: none; border-top: 1px solid var(--line); border-radius: 0; padding: .85rem 0 0; margin-top: .75rem; }
     .eval-label { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--brand); margin-bottom: .4rem; }
-    .eval-anchors { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .5rem; margin-bottom: .65rem; font-size: .72rem; color: var(--muted); line-height: 1.45; }
+    .eval-anchors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; margin-bottom: .65rem; font-size: .72rem; color: var(--muted); line-height: 1.45; }
     .eval-anchor { padding: .25rem 0; background: none; }
     .eval-anchor b { display: block; color: var(--ink); font-size: .68rem; margin-bottom: 2px; }
-    .rating-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: .35rem; }
+    .rating-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .35rem; }
     .rating-pill { padding: .55rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); cursor: pointer; text-align: center; font-weight: 700; font-size: .9rem; color: var(--muted); transition: all .15s; }
     .rating-pill:hover { border-color: var(--brand); color: var(--brand); }
     .rating-pill.active { background: var(--brand); color: #fff; border-color: var(--brand); box-shadow: 0 2px 8px rgba(32,110,251,.25); }
@@ -329,7 +335,7 @@
 
     /* ─── Culture Fit ─── */
     .cf-grid { display: flex; flex-direction: column; gap: .55rem; margin-bottom: 1rem; }
-    .cf-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; align-items: center; padding: .5rem 0; background: none; border: none; border-bottom: 1px solid var(--line); }
+    .cf-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 1rem; align-items: center; padding: .5rem 0; background: none; border: none; border-bottom: 1px solid var(--line); }
     .cf-opt { padding: .65rem 1rem; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); cursor: pointer; text-align: center; font-size: .88rem; font-weight: 600; color: var(--muted); transition: all .15s; }
     .cf-opt:hover { border-color: var(--brand); color: var(--brand); }
     .cf-opt.selected { background: var(--brand); color: #fff; border-color: var(--brand); }
@@ -348,10 +354,10 @@
 
     /* ─── Gesamt Evaluation ─── */
     .gesamt-panel { background: linear-gradient(135deg, #ffffff 0%, var(--brand-light) 100%); border: 1px solid #c7dbfa; }
-    .gesamt-overall { display: flex; align-items: center; gap: 1.25rem; padding: 1rem 1.25rem; background: var(--bg); border-radius: 12px; margin-bottom: 1.25rem; box-shadow: 0 2px 8px rgba(32,110,251,.1); }
+    .gesamt-overall { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; padding: 1rem 1.25rem; background: var(--bg); border-radius: 12px; margin-bottom: 1.25rem; box-shadow: 0 2px 8px rgba(32,110,251,.1); }
+    .gesamt-score-meta { flex: 1; min-width: min(100%, 200px); }
     .gesamt-score-big { font-size: 2.5rem; font-weight: 800; color: var(--brand); letter-spacing: -1.5px; line-height: 1; }
     .gesamt-score-label { font-size: .85rem; color: var(--muted); }
-    .gesamt-score-meta { flex: 1; }
     .gesamt-score-bar { height: 10px; background: var(--status-bg); border-radius: 999px; overflow: hidden; margin-top: .5rem; }
     .gesamt-score-fill { height: 100%; background: linear-gradient(90deg, var(--brand) 0%, var(--brand-dark) 100%); border-radius: 999px; transition: width .6s ease; }
     .dim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .65rem; margin-bottom: 1.25rem; }
@@ -363,14 +369,13 @@
     .dim-bar-fill { height: 100%; background: var(--brand); border-radius: 999px; transition: width .4s ease; }
     .reco-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
     .reco-h { font-size: .85rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ink); margin-bottom: .65rem; }
-    .reco-buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .5rem; }
+    .reco-buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
     .reco-btn { padding: .9rem 1rem; border: 1.5px solid var(--line); border-radius: 12px; background: var(--bg); cursor: pointer; text-align: center; font-size: .88rem; font-weight: 600; color: var(--ink); transition: all .15s; line-height: 1.3; }
     .reco-btn:hover { border-color: var(--brand); color: var(--brand); }
     .reco-btn.selected { background: var(--brand); color: #fff; border-color: var(--brand); box-shadow: 0 4px 16px rgba(32,110,251,.3); transform: translateY(-1px); }
     .gesamt-note { width: 100%; min-height: 100px; margin-top: 1rem; padding: 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .9rem; resize: vertical; outline: none; }
     .gesamt-note:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
 
-    .gesamt-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 1.5rem; padding: 1.25rem 0 1.5rem; border-top: 1px solid var(--line); position: sticky; bottom: 0; z-index: 6; background: linear-gradient(180deg, rgba(255,255,255,0) 0%, var(--bg) 18%); }
     [data-admin-only] { display: none !important; }
     [data-admin-only].is-admin-visible { display: flex !important; }
     .cand-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 700; padding: .25rem .55rem; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
@@ -384,8 +389,6 @@
     .save-badge--saved { background: #d0f4ee; color: #0f6b57; }
 
     /* ─── Toast ─── */
-    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: #fff; padding: .85rem 1.25rem; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.2); z-index: 10000; font-size: .9rem; font-weight: 500; transition: opacity .25s, transform .25s; opacity: 0; transform: translateY(20px); pointer-events: none; }
-    .toast.visible { opacity: 1; transform: translateY(0); }
 
     /* ─── Misc ─── */
     .round-switch-overlay { position: fixed; inset: 0; z-index: 9000; background: rgba(15,23,42,.5); display: none; align-items: center; justify-content: center; padding: 2rem; }
@@ -602,6 +605,10 @@
       <aside class="iv-sidenav" id="iv-sidenav"></aside>
       <div class="iv-content-col">
         <main class="iv-main" id="iv-main"></main>
+        <div class="iv-interview-footer" id="iv-interview-footer" hidden>
+          <button type="button" class="btn-primary" id="iv-save-interview"><i class="fa-solid fa-floppy-disk"></i> Speichern</button>
+          <button type="button" class="btn-secondary" id="iv-back-dash-abschluss"><i class="fa-solid fa-clock"></i> Später fortsetzen</button>
+        </div>
       </div>
     </div>
   </div>
@@ -659,10 +666,7 @@
   </div>
 </div>
 
-<div class="notif-stack" id="notif-stack"></div>
-
-<!-- ─── Toast ─── -->
-<div class="toast" id="toast"></div>
+<div id="toast-container"></div>
 
 <!-- ─── User Settings Modal ─── -->
 <div id="roots-user-settings-modal">
@@ -691,7 +695,7 @@
   </div>
 </div>
 
-<script>
+    <script>
 /* ──────────────────────────────────────────────
    Supabase init + Auth
    ────────────────────────────────────────────── */
@@ -780,8 +784,8 @@ window.RootsUser = window.RootsUser || {
   openSettings(){const p=this._p||{};document.getElementById('rus-name').value=p.full_name||'';document.getElementById('rus-email').value=p.email||'';document.getElementById('rus-position').value=p.position||'';document.getElementById('rus-linkedin').value=p.linkedin_url||'';document.getElementById('rus-msg').style.display='none';document.getElementById('roots-user-settings-modal').classList.add('visible');this._cs=null;this._initCropEditor();this._cropDraw();if(p.avatar_url){const _i=new Image();_i.crossOrigin='anonymous';_i.onload=()=>{this._cs={img:_i,x:0,y:0,scale:1,dragging:false,lastX:0,lastY:0};document.getElementById('rus-zoom-row').style.display='flex';this._cropDraw();};_i.onerror=()=>this._cropDraw();_i.src=p.avatar_url;}},
   closeSettings(){document.getElementById('roots-user-settings-modal').classList.remove('visible')},
   async saveSettings(){const name=document.getElementById('rus-name').value.trim(),email=document.getElementById('rus-email').value.trim(),pos=document.getElementById('rus-position').value.trim(),li=document.getElementById('rus-linkedin').value.trim(),av=this._getCroppedDataURL();const btn=document.getElementById('rus-save'),msg=document.getElementById('rus-msg');btn.disabled=true;btn.textContent='Speichern…';msg.style.display='none';const{error}=await this._sb.schema('users').from('profiles').update({full_name:name,position:pos,linkedin_url:li,avatar_url:av}).eq('id',this._uid);btn.disabled=false;btn.textContent='Speichern';if(error){msg.style.cssText='display:block;color:#dc2626;font-size:.85rem;text-align:center;margin-top:.5rem';msg.textContent='Fehler: '+error.message;}else{Object.assign(this._p,{full_name:name,position:pos,linkedin_url:li,avatar_url:av});if(email!==this._p.email)this._p.email=email;msg.style.cssText='display:block;color:#10b981;font-size:.85rem;text-align:center;margin-top:.5rem';msg.textContent='✓ Gespeichert!';this._mount();setTimeout(()=>this.closeSettings(),700);}}
-};
-</script>
+      };
+    </script>
 
 <script>
 /* ──────────────────────────────────────────────
@@ -1299,21 +1303,20 @@ async function loadNotifications() {
 }
 
 function renderNotificationStack() {
-  const stack = document.getElementById('notif-stack');
+  const stack = document.getElementById('toast-container');
   if (!stack) return;
-  if (!state.notifications.length) {
-    stack.innerHTML = '';
-    return;
-  }
-  stack.innerHTML = state.notifications.map(n => `
-    <div class="notif-card" data-notif-id="${escapeHtml(n.id)}" data-session="${escapeHtml(n.session_id || '')}" data-runde="${escapeHtml(n.runde || 'erst')}">
-      <div class="notif-card-icon"><i class="fa-solid fa-bell"></i></div>
-      <div class="notif-card-content">
-        <div class="notif-card-title">${escapeHtml(n.title)}</div>
-        <div class="notif-card-body">${escapeHtml(n.message)}</div>
-      </div>
-    </div>`).join('');
-  stack.querySelectorAll('.notif-card').forEach(card => {
+  stack.querySelectorAll('.toast.is-persistent').forEach(el => el.remove());
+  if (!state.notifications.length) return;
+  state.notifications.forEach(n => {
+    const card = document.createElement('div');
+    card.className = 'toast info is-persistent';
+    card.dataset.notifId = n.id;
+    card.dataset.session = n.session_id || '';
+    card.dataset.runde = n.runde || 'erst';
+    card.innerHTML = `<i class="fa-solid fa-bell"></i><span><span class="toast-title">${escapeHtml(n.title)}</span><span class="toast-body">${escapeHtml(n.message)}</span></span>`;
+    stack.appendChild(card);
+  });
+  stack.querySelectorAll('.toast.is-persistent').forEach(card => {
     card.addEventListener('click', async () => {
       const id = card.dataset.notifId;
       await recruitingDb().from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
@@ -2369,9 +2372,11 @@ function updateAppNavForView(v) {
   const main = document.getElementById('app-nav-main');
   const def = document.getElementById('app-nav-actions-default');
   const iv = document.getElementById('app-nav-actions-interview');
+  const ivFooter = document.getElementById('iv-interview-footer');
   if (main) main.hidden = isInterview;
   if (def) def.hidden = isInterview;
   if (iv) iv.hidden = !isInterview;
+  if (ivFooter) ivFooter.hidden = !isInterview;
   document.querySelectorAll('.app-nav-btn[data-view]').forEach(btn => {
     btn.classList.toggle('active', !isInterview && btn.dataset.view === v);
   });
@@ -2809,10 +2814,6 @@ function renderGesamtEvaluation() {
       ${!zweit ? `<label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:1rem;margin-bottom:.35rem">Anmerkungen für Zweitinterviewer:in (optional)</label>
         <textarea class="gesamt-note" data-act="set-zweitanmerkung" placeholder="Was sollte der Zweitinterviewer wissen?">${escapeHtml(state.erst.zweitAnmerkung || '')}</textarea>` : ''}
     </div>
-    <div class="gesamt-actions">
-      <button type="button" class="btn-primary" id="iv-save-interview"><i class="fa-solid fa-floppy-disk"></i> Speichern</button>
-      <button type="button" class="btn-secondary" id="iv-back-dash-abschluss"><i class="fa-solid fa-clock"></i> Später fortsetzen</button>
-    </div>
     </div>
   </div>`;
 }
@@ -2820,10 +2821,16 @@ function renderGesamtEvaluation() {
 /* ──────────────────────────────────────────────
    Handlers
    ────────────────────────────────────────────── */
-function bindMainHandlers() {
-  const main = document.getElementById('iv-main');
+let ivFooterHandlersBound = false;
+function bindInterviewFooterHandlers() {
+  if (ivFooterHandlersBound) return;
+  ivFooterHandlersBound = true;
   document.getElementById('iv-save-interview')?.addEventListener('click', () => saveInterviewDraft());
   document.getElementById('iv-back-dash-abschluss')?.addEventListener('click', () => leaveInterviewToDashboard());
+}
+
+function bindMainHandlers() {
+  const main = document.getElementById('iv-main');
   main.querySelectorAll('[data-act]').forEach(el => {
     const act = el.dataset.act;
     if (act === 'toggle-check') {
@@ -3211,10 +3218,14 @@ function escapeHtml(s) {
 }
 
 function toast(msg, type = 'info') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('visible');
-  setTimeout(() => el.classList.remove('visible'), 2200);
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icon = type === 'success' ? 'fa-check' : (type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info');
+  el.innerHTML = `<i class="fa-solid ${icon}"></i><span>${escapeHtml(msg)}</span>`;
+  container.appendChild(el);
+  setTimeout(() => { if (el.parentElement) el.remove(); }, 5000);
 }
 
 document.querySelectorAll('.app-nav-btn[data-view]').forEach(btn => {
@@ -3310,8 +3321,9 @@ try {
   }
 } catch {}
 
+bindInterviewFooterHandlers();
 switchView('dashboard');
 </script>
 
-</body>
+  </body>
 </html>
