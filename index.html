@@ -807,9 +807,11 @@ document.getElementById('roots-go-login').addEventListener('click', () => { vFor
 function onAuthReady() {
   window.RootsUser._loadAndMount(sb);
   loadTeamMembers().then(() => {
-    loadNotifications();
-    if (!window._recruitNotifPoll) {
-      window._recruitNotifPoll = setInterval(loadNotifications, 45000);
+    if (!isIntranetEmbedded()) {
+      loadNotifications();
+      if (!window._recruitNotifPoll) {
+        window._recruitNotifPoll = setInterval(loadNotifications, 45000);
+      }
     }
   });
   loadAllCandidates();
@@ -1490,7 +1492,12 @@ async function setRoundOwner(sessionId, runde, userId, opts = {}) {
   }
 }
 
+function isIntranetEmbedded() {
+  return window.parent !== window || Boolean(window.RootsUserBridge?.IN_IFRAME);
+}
+
 async function loadNotifications() {
+  if (isIntranetEmbedded()) return;
   const uid = window.RootsUser?._uid;
   if (!uid) return;
   try {
@@ -1524,6 +1531,7 @@ function scheduleNotifAutoDismiss(card, notifId) {
 }
 
 function renderNotificationStack() {
+  if (isIntranetEmbedded()) return;
   const stack = document.getElementById('toast-container');
   if (!stack) return;
   stack.querySelectorAll('.toast.is-persistent').forEach(el => el.remove());
