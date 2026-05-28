@@ -2437,14 +2437,16 @@ async function saveInterviewComplete() {
 }
 
 async function leaveInterviewToDashboard() {
+  let saveOk = false;
   try {
     await flushInterviewDraftToDb();
-    await loadAllCandidates();
-    toast('Entwurf gespeichert');
+    saveOk = true;
   } catch (e) {
-    console.error('leaveInterviewToDashboard', e);
+    console.error('leaveInterviewToDashboard – save failed:', e);
     toast('Entwurf konnte nicht gespeichert werden', 'error');
   }
+  await loadAllCandidates();          // always refresh, regardless of save result
+  if (saveOk) toast('Entwurf gespeichert');
   exitInterviewFullscreenIfActive();
   switchView('dashboard');
 }
@@ -2583,6 +2585,7 @@ async function loadAllCandidates() {
       delete c._zweitDirty;
     }
   } catch (e) {
+    console.error('loadAllCandidates – Supabase error:', e);
     state.candidates = [];
   }
   renderDashboard();
