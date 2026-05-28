@@ -730,6 +730,20 @@
   </div>
 </div>
 
+<!-- ─── Finalize-Confirm (optionale Notizfelder leer) ─── -->
+<div class="round-switch-overlay" id="finalize-confirm-overlay">
+  <div class="round-switch-card">
+    <h3 id="finalize-confirm-title">Interview abschließen?</h3>
+    <p>Nicht alle Notizfelder sind ausgefüllt:</p>
+    <ul id="finalize-confirm-list" style="margin:.5rem 0 1rem 0;padding-left:1.2rem;max-height:180px;overflow:auto;color:var(--muted);font-size:.9rem"></ul>
+    <p style="font-size:.85rem;color:var(--muted)"><i class="fa-solid fa-circle-info" style="margin-right:.4rem"></i>Abgeschlossene Interviews können im Dashboard jederzeit nachträglich bearbeitet werden.</p>
+    <div class="round-switch-actions">
+      <button class="btn-secondary" id="finalize-confirm-cancel">Abbrechen</button>
+      <button class="btn-primary" id="finalize-confirm-ok"><i class="fa-solid fa-circle-check"></i> Trotzdem abschließen</button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── Team Panel ─── -->
 <div class="team-panel-overlay" id="team-panel-overlay">
   <div class="team-panel-card" role="dialog" aria-labelledby="team-panel-title">
@@ -2213,19 +2227,25 @@ function scheduleDbAutosave() {
 }
 
 function isInterviewRoundComplete() {
+  // "Complete enough to finalize" = all score-relevant fields filled.
+  // Free-text notes are not required (user gets a confirm prompt instead).
   const check = collectCompletionChecks();
-  return check.complete && calculateScores().overall != null;
+  return check.scoreReady && calculateScores().overall != null;
 }
 
 function updateInterviewSaveButtons() {
   const btn = document.getElementById('iv-save-interview');
   if (!btn || state.view !== 'interview') return;
   const check = collectCompletionChecks();
-  const canFinalize = check.complete && calculateScores().overall != null;
+  const canFinalize = check.scoreReady && calculateScores().overall != null;
   btn.disabled = !canFinalize;
-  btn.title = canFinalize
-    ? 'Alle Pflichtfelder erfüllt – Interview abschließen'
-    : `Noch ${check.missing.length} Punkt(e) offen – Entwurf wird automatisch gespeichert`;
+  if (!canFinalize) {
+    btn.title = `Noch ${check.requiredMissing.length} Bewertung(en) offen – Entwurf wird automatisch gespeichert`;
+  } else if (check.optionalMissing.length) {
+    btn.title = `Bereit zum Abschluss – ${check.optionalMissing.length} Notizfeld(er) noch leer, abschließbar mit Bestätigung`;
+  } else {
+    btn.title = 'Alle Felder ausgefüllt – Interview abschließen';
+  }
 }
 
 async function persistInterviewDraftToDb() {
@@ -2364,9 +2384,11 @@ async function saveCurrent(opts = {}) {
   const scores = calculateScores();
   if (!opts.allowIncomplete) {
     const check = collectCompletionChecks();
-    if (!check.complete || scores.overall == null) {
-      const msg = !check.complete
-        ? `Noch ${check.missing.length} Punkt(e) offen – Speichern nicht möglich`
+    // For the "abschließen" path we only block on the hard (numeric/select)
+    // fields; optional note fields are confirmed via modal one level up.
+    if (!check.scoreReady || scores.overall == null) {
+      const msg = !check.scoreReady
+        ? `Noch ${check.requiredMissing.length} Bewertung(en) offen – Speichern nicht möglich`
         : 'Score noch nicht ermittelt – bitte alle Bewertungen ausfüllen';
       if (opts.throwOnError) throw new Error(msg);
       if (!opts.silent) toast(msg, 'error');
@@ -2423,10 +2445,37 @@ async function saveCurrentImmediate(opts = {}) {
   await saveCurrent(opts);
 }
 
+function showFinalizeConfirm(missingList, rundeLabel) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('finalize-confirm-overlay');
+    const title = document.getElementById('finalize-confirm-title');
+    const list = document.getElementById('finalize-confirm-list');
+    const okBtn = document.getElementById('finalize-confirm-ok');
+    const cancelBtn = document.getElementById('finalize-confirm-cancel');
+    if (!overlay || !okBtn || !cancelBtn) { resolve(true); return; }
+    title.textContent = `${rundeLabel || 'Interview'} abschließen?`;
+    list.innerHTML = missingList.map(m => `<li>${escapeHtml(m)}</li>`).join('');
+    const close = (result) => {
+      overlay.classList.remove('visible');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      overlay.removeEventListener('click', onBackdrop);
+      resolve(result);
+    };
+    const onOk = () => close(true);
+    const onCancel = () => close(false);
+    const onBackdrop = (e) => { if (e.target === overlay) close(false); };
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    overlay.addEventListener('click', onBackdrop);
+    overlay.classList.add('visible');
+  });
+}
+
 async function saveInterviewComplete() {
   const check = collectCompletionChecks();
-  if (!check.complete) {
-    toast(`Noch ${check.missing.length} Punkt(e) offen`, 'error');
+  if (!check.scoreReady) {
+    toast(`Noch ${check.requiredMissing.length} Bewertung(en) offen`, 'error');
     updateInterviewSaveButtons();
     return;
   }
@@ -2434,6 +2483,11 @@ async function saveInterviewComplete() {
     toast('Score noch nicht ermittelt – bitte alle Bewertungen ausfüllen', 'error');
     updateInterviewSaveButtons();
     return;
+  }
+  // Soft validation: confirm if optional note fields are still empty
+  if (check.optionalMissing.length) {
+    const proceed = await showFinalizeConfirm(check.optionalMissing, check.rundeLabel);
+    if (!proceed) return;
   }
   try {
     check.slice.completed = true;
@@ -2488,46 +2542,52 @@ function collectCompletionChecks(runde = null) {
   const useZweit = runde ? runde === 'zweit' : isZweit();
   const slice = getActiveRoundSlice(useZweit ? 'zweit' : 'erst');
   const sections = getActiveRoundSections(useZweit ? 'zweit' : 'erst');
-  const missing = [];
+  const requiredMissing = [];   // numeric / select fields needed for the score
+  const optionalMissing = [];   // free-text notes — nice to have, can be filled later
   const done = [];
 
-  const req = (ok, label) => (ok ? done.push(label) : missing.push(label));
+  const reqHard = (ok, label) => (ok ? done.push(label) : requiredMissing.push(label));
+  const reqSoft = (ok, label) => (ok ? done.push(label) : optionalMissing.push(label));
 
-  req(!!state.erst.meta.kandidat?.trim(), 'Bewerber verknüpft');
+  reqHard(!!state.erst.meta.kandidat?.trim(), 'Bewerber verknüpft');
 
   for (const s of sections) {
-    if (s.type === 'rti') req(slice.rtiDone, 'RTI bestätigt');
+    if (s.type === 'rti') reqHard(slice.rtiDone, 'RTI bestätigt');
     if (s.cultureFitQuestions) {
       for (const q of s.cultureFitQuestions) {
-        req(!!slice.cultureFitAnswers[q.id], `Culture-Fit (${q.optionA} vs. ${q.optionB})`);
+        reqHard(!!slice.cultureFitAnswers[q.id], `Culture-Fit (${q.optionA} vs. ${q.optionB})`);
       }
     }
     const rateBlock = (qid, evals, labelPrefix) => {
       if (!evals) return;
       evals.forEach((ev, idx) => {
         const v = (slice.ratings[qid] || {})[idx];
-        req(v != null && v >= 1, `${labelPrefix}: ${ev.label}`);
+        reqHard(v != null && v >= 1, `${labelPrefix}: ${ev.label}`);
       });
     };
     if (s.questions) for (const q of s.questions) rateBlock(q.id, q.evaluations, 'Bewertung');
     if (s.blockEvaluation) rateBlock(s.blockEvaluation.id, s.blockEvaluation.evaluations, 'Blockbewertung');
     if (s.outroEvaluation) rateBlock(s.outroEvaluation.id, s.outroEvaluation.evaluations, 'Bewertung Rückfragen');
     if (s.outroFields) for (const f of s.outroFields) {
-      req(!!(slice.abschlussNotes[f] || '').trim(), `Abschlussfeld „${f}"`);
+      reqSoft(!!(slice.abschlussNotes[f] || '').trim(), `Notiz „${f}"`);
     }
     if (s.outroQuestion?.evaluations?.length) {
       rateBlock(s.outroQuestion.id, s.outroQuestion.evaluations, 'Bewertung');
     }
   }
 
-  req(!!slice.recommendation, 'Empfehlung gewählt');
-  req(!!(slice.gesamtNote || '').trim(), 'Gesamteindruck / Fazit');
+  reqHard(!!slice.recommendation, 'Empfehlung gewählt');
+  reqSoft(!!(slice.gesamtNote || '').trim(), 'Gesamteindruck / Fazit');
   const scores = calculateScores();
-  req(scores.overall != null, 'Gewichteter Score ermittelt');
+  reqHard(scores.overall != null, 'Gewichteter Score ermittelt');
 
+  const missing = [...requiredMissing, ...optionalMissing];
   return {
     complete: missing.length === 0,
+    scoreReady: requiredMissing.length === 0,   // all numeric/select fields filled
     missing,
+    requiredMissing,
+    optionalMissing,
     done,
     slice,
     runde: useZweit ? 'zweit' : 'erst',
@@ -2541,13 +2601,17 @@ async function saveInterviewDraft() {
 
 async function finalizeInterview() {
   const check = collectCompletionChecks();
-  if (!check.complete) {
-    toast(`Noch ${check.missing.length} Punkt(e) offen`, 'error');
+  if (!check.scoreReady) {
+    toast(`Noch ${check.requiredMissing.length} Bewertung(en) offen`, 'error');
     if (state.view === 'interview') {
       renderMain();
       renderSidenav();
     }
     return;
+  }
+  if (check.optionalMissing.length) {
+    const proceed = await showFinalizeConfirm(check.optionalMissing, check.rundeLabel);
+    if (!proceed) return;
   }
   check.slice.completed = true;
   check.slice.completedAt = new Date().toISOString();
