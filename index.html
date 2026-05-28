@@ -1501,15 +1501,21 @@ function canOpenTeamPanel(slice, context = {}) {
   const uid = window.RootsUser?._uid;
   if (!uid || !slice?.meta) return false;
   const erst = context.erstSlice || state.erst;
-  const isZweitCtx = context.runde === 'zweit' || slice?.meta?.runde === 'zweit';
+  // FIX: when context.runde is explicitly given, trust it. Otherwise the slice
+  // meta could be polluted by stale 'zweit' on the erst slice (saved from
+  // loadCandidateIntoInterview which sets both metas), causing infinite
+  // recursion via the erst-fallback below.
+  const isZweitCtx = context.runde
+    ? context.runde === 'zweit'
+    : slice?.meta?.runde === 'zweit';
   if (isZweitCtx) ensureZweitTeamMeta(erst, slice);
   else ensureInitialOwner(slice);
   if (canTransferInterviewOwner(slice)) return true;
   if (String(slice.meta.ownerId || '') === uid) return true;
   if (getSliceParticipants(slice).some(p => p.userId === uid)) return true;
-  if (isZweitCtx) {
-    const erst = context.erstSlice || state.erst;
-    if (erst && canOpenTeamPanel(erst, { runde: 'erst', erstSlice: erst })) return true;
+  if (isZweitCtx && context.runde !== 'erst') {
+    const erstSlice = context.erstSlice || state.erst;
+    if (erstSlice && erstSlice !== slice && canOpenTeamPanel(erstSlice, { runde: 'erst', erstSlice })) return true;
   }
   return false;
 }
