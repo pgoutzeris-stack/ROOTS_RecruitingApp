@@ -1612,7 +1612,12 @@ function renderNotificationStack() {
   stack.querySelectorAll('.toast.is-persistent').forEach(card => {
     card.addEventListener('click', async () => {
       const id = card.dataset.notifId;
-      await recruitingDb().from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
+      const { error } = await recruitingDb().from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
+      if (error) {
+        console.error('notification mark-read:', error);
+        toast('Benachrichtigung konnte nicht als gelesen markiert werden', 'error');
+        return; // keep notification visible so user can retry
+      }
       state.dismissedNotifIds.add(id);
       state.notifications = state.notifications.filter(x => x.id !== id);
       renderNotificationStack();
@@ -2285,7 +2290,8 @@ function effectiveRatings() {
   for (const [qid, evals] of Object.entries(state.erst.ratings || {})) merged[qid] = { ...evals };
   for (const [qid, evals] of Object.entries(state.zweit.ratings || {})) {
     if (!merged[qid]) merged[qid] = {};
-    for (const [idx, v] of Object.entries(evals)) merged[qid][idx] = v;
+    // only override Erst rating when Zweit has a real value, never let null/undefined wipe it
+    for (const [idx, v] of Object.entries(evals)) if (v != null) merged[qid][idx] = v;
   }
   return merged;
 }
@@ -2388,8 +2394,14 @@ async function saveCurrent(opts = {}) {
   setSaveStatus('saving');
   try {
     savingPromise = recruitingDb().from('interviews').upsert(row, { onConflict: 'session_id' });
-    const { error: _upsertErr } = await savingPromise;
-    if (_upsertErr) throw _upsertErr;
+    let { error: _upsertErr } = await savingPromise;
+    if (_upsertErr) {
+      // one retry after 800ms — covers transient network blips
+      await new Promise(r => setTimeout(r, 800));
+      savingPromise = recruitingDb().from('interviews').upsert(row, { onConflict: 'session_id' });
+      ({ error: _upsertErr } = await savingPromise);
+      if (_upsertErr) throw _upsertErr;
+    }
     if (row.kandidat) await syncApplicantFromInterview(row);
     setSaveStatus('saved');
     const idx = state.candidates.findIndex(c => c.session_id === row.session_id);
@@ -3366,11 +3378,13 @@ async function syncApplicantFromInterview(row) {
     ...abs,
   };
   if (existing) {
-    await recruitingDb().from('applicants').update(payload).eq('id', existing.id);
+    const { error } = await recruitingDb().from('applicants').update(payload).eq('id', existing.id);
+    if (error) console.error('syncApplicantFromInterview update:', error);
   } else {
     payload.created_by = window.RootsUser._uid || null;
     payload.role_title = 'Junior Marketing Consultant';
-    await recruitingDb().from('applicants').upsert(payload, { onConflict: 'session_id' });
+    const { error } = await recruitingDb().from('applicants').upsert(payload, { onConflict: 'session_id' });
+    if (error) console.error('syncApplicantFromInterview upsert:', error);
   }
   await loadAllApplicants();
 }
@@ -3627,7 +3641,7 @@ async function uploadApplicantDocument(applicantId, file) {
   const { error: upErr } = await sb.storage.from('recruiting-documents').upload(path, file, { upsert: true });
   if (upErr) { toast('Upload fehlgeschlagen: ' + upErr.message, 'error'); return; }
   const { data: urlData } = await sb.storage.from('recruiting-documents').createSignedUrl(path, 60 * 60 * 24 * 365);
-  await recruitingDb().from('applicant_documents').insert({
+  const { error: docErr } = await recruitingDb().from('applicant_documents').insert({
     applicant_id: applicantId,
     doc_type: file.name.toLowerCase().includes('anschreiben') ? 'cover_letter' : 'cv',
     file_name: file.name,
@@ -3637,6 +3651,11 @@ async function uploadApplicantDocument(applicantId, file) {
     file_size_bytes: file.size,
     uploaded_by: window.RootsUser._uid || null,
   });
+  if (docErr) {
+    toast('Dokument-Metadaten konnten nicht gespeichert werden', 'error');
+    console.error('uploadApplicantDocument insert:', docErr);
+    return;
+  }
   toast('Dokument hochgeladen');
   await loadAllApplicants();
   renderBewerberDetail(applicantId);
