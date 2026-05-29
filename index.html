@@ -200,6 +200,10 @@
     .bew-detail { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.5rem; }
     .bew-detail-actions { display: flex; gap: 8px; flex-wrap: nowrap; justify-content: flex-end; align-items: center; width: 100%; overflow-x: auto; padding-bottom: 2px; }
     .bew-detail-actions button { flex: 0 0 auto; white-space: nowrap; }
+    .bew-detail-actions .btn-primary,
+    .bew-detail-actions .btn-secondary,
+    .bew-detail-actions .btn-danger { min-height: 38px; padding: .62rem 1rem; font-size: .85rem; box-shadow: none; transform: none; }
+    .bew-detail-actions .btn-primary:hover:not(:disabled) { transform: none; }
     .bew-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem 1rem; }
     .bew-field { display: flex; flex-direction: column; gap: .3rem; }
     .bew-field.full { grid-column: 1 / -1; }
@@ -1359,10 +1363,10 @@ let state = {
 let chapterNavCollapsed = true;
 
 let renderInterviewTimer = null;
-function scheduleRenderInterview(partial = false) {
+function scheduleRenderInterview(partial = false, opts = {}) {
   if (renderInterviewTimer) clearTimeout(renderInterviewTimer);
   renderInterviewTimer = setTimeout(() => {
-    if (state.view === 'interview') renderInterview(partial);
+    if (state.view === 'interview') renderInterview(partial, opts);
   }, 80);
 }
 
@@ -2075,7 +2079,7 @@ function teardownInterviewObservers() {
   activeSectionId = null;
 }
 
-function initInterviewScrollAndTimers() {
+function initInterviewScrollAndTimers(resetScroll = true) {
   teardownInterviewObservers();
   const main = document.getElementById('iv-main');
   if (!main || state.view !== 'interview') return;
@@ -2098,9 +2102,13 @@ function initInterviewScrollAndTimers() {
   };
   main.addEventListener('scroll', ivScrollHandler, { passive: true });
 
-  const first = sections[0];
-  activateInterviewSection(first.dataset.sectionId, parseInt(first.dataset.plannedMin, 10) || 5);
-  main.scrollTop = 0;
+  if (resetScroll) {
+    const first = sections[0];
+    activateInterviewSection(first.dataset.sectionId, parseInt(first.dataset.plannedMin, 10) || 5);
+    main.scrollTop = 0;
+  } else {
+    syncActiveSectionFromScroll();
+  }
 }
 
 function buildFullName(first, last) {
@@ -2154,7 +2162,7 @@ function dispatch(action) {
   if (state.view === 'interview') {
     if (action.type === 'SET_RECOMMENDATION') {
       refreshRecoButtons(action.value);
-      scheduleRenderInterview(false);
+      scheduleRenderInterview(false, { preserveScroll: true });
       if (state.view === 'interview') renderSidenav();
     } else if (action.type === 'SET_RATING') {
       refreshRatingPills(action.qid, action.evalIdx, action.value);
@@ -3076,12 +3084,18 @@ function getRoundScores(c, runde) {
 /* ──────────────────────────────────────────────
    Render: Interview
    ────────────────────────────────────────────── */
-function renderInterview(partial = false) {
+function renderInterview(partial = false, opts = {}) {
+  const mainEl = document.getElementById('iv-main');
+  const preserveScrollTop = opts.preserveScroll ? (mainEl?.scrollTop || 0) : null;
   renderSidenav();
   if (!partial) {
     renderMain();
     requestAnimationFrame(() => {
-      initInterviewScrollAndTimers();
+      initInterviewScrollAndTimers(!opts.preserveScroll);
+      if (opts.preserveScroll && mainEl) {
+        mainEl.scrollTop = preserveScrollTop;
+        requestAnimationFrame(() => { mainEl.scrollTop = preserveScrollTop; });
+      }
       refreshLiveScores();
       updateInterviewSaveButtons();
       scheduleDbAutosave();
@@ -3451,6 +3465,16 @@ function abschlussToApplicant(abs) {
   };
 }
 
+function mergeAbschlussNotes(primary = {}, fallback = {}) {
+  const keys = ['Arbeitsaufwand','Home Office','Reisetätigkeit','Einstiegsdatum','Aktuelles Gehalt','Gehaltswunsch','Erwartungen 12 Mon.'];
+  return keys.reduce((acc, key) => {
+    const primaryVal = primary[key];
+    const fallbackVal = fallback[key];
+    acc[key] = String(primaryVal || '').trim() ? primaryVal : (fallbackVal || '');
+    return acc;
+  }, {});
+}
+
 function pipelineFromInterview(meta, recommendation) {
   if (recommendation === 'Einstellen') return 'offer';
   if (recommendation === 'Nicht einstellen' || recommendation === 'Nicht passend') return 'rejected';
@@ -3478,10 +3502,14 @@ async function loadAllApplicants() {
 async function syncApplicantFromInterview(row) {
   if (!row.session_id || !row.kandidat) return;
   const slice = row.runde === 'zweit' ? (row.zweit || {}) : (row.erst || {});
-  const abs = abschlussToApplicant(slice.abschlussNotes || {});
+  const fallbackSlice = row.runde === 'zweit' ? (row.erst || {}) : (row.zweit || {});
   const existing = state.linkedApplicantId
     ? state.applicants.find(a => a.id === state.linkedApplicantId)
     : state.applicants.find(a => a.session_id === row.session_id);
+  const abs = abschlussToApplicant(mergeAbschlussNotes(slice.abschlussNotes || {}, fallbackSlice.abschlussNotes || {}));
+  for (const [key, value] of Object.entries(abs)) {
+    if ((value == null || value === '') && existing?.[key]) delete abs[key];
+  }
   const namePayload = existing?.first_name && existing?.last_name
     ? { first_name: existing.first_name, last_name: existing.last_name, full_name: getApplicantDisplayName(existing) || row.kandidat }
     : (() => {
@@ -3689,7 +3717,6 @@ function renderBewerberDetail(id) {
       <div class="bew-field"><label>Arbeitsaufwand</label><input name="workload_expectation" value="${escapeHtml(a.workload_expectation||'')}"></div>
       <div class="bew-field"><label>Aktueller Arbeitgeber</label><input name="current_employer" value="${escapeHtml(a.current_employer||'')}"></div>
       <div class="bew-field"><label>Kündigungsfrist</label><input name="notice_period" value="${escapeHtml(a.notice_period||'')}"></div>
-      <div class="bew-field full"><label>Erwartungen erste 12 Monate</label><textarea name="expectations_12_months">${escapeHtml(a.expectations_12_months||'')}</textarea></div>
       <div class="bew-field full"><label>Interne Notizen</label><textarea name="notes_internal">${escapeHtml(a.notes_internal||'')}</textarea></div>
       ${a.recommendation_last ? `<div class="bew-field full"><label>Letzte Empfehlung</label><input readonly value="${escapeHtml(a.recommendation_last)}"></div>` : ''}
       ${a.weighted_score != null ? `<div class="bew-field"><label>Score</label><input readonly value="${Number(a.weighted_score).toFixed(1)} / 5"></div>` : ''}
