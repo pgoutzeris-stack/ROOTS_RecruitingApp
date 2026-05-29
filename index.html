@@ -3842,9 +3842,167 @@ try {
 } catch {
   document.documentElement.classList.add('in-iframe');
 }
+
+const RECRUITING_SUPABASE_REF = (() => {
+  try {
+    return new URL(SB_URL).hostname.split('.')[0] || 'csmguwcvzreefluhahyu';
+  } catch (_) {
+    return 'csmguwcvzreefluhahyu';
+  }
+})();
+
+const RECRUITING_SUPABASE_DASHBOARD_URL = `https://supabase.com/dashboard/project/${RECRUITING_SUPABASE_REF}`;
+
+async function recruitingRealtimeHealthCheck(sb) {
+  const cache = window.__rootsRecruitingRealtimeHealthCache;
+  if (cache && Date.now() - cache.checkedAt < 60000) {
+    return cache.result;
+  }
+  if (!sb?.channel || !sb?.removeChannel) {
+    const result = { ok: false, detail: 'client_unavailable', ms: 0 };
+    window.__rootsRecruitingRealtimeHealthCache = { checkedAt: Date.now(), result };
+    return result;
+  }
+
+  const started = Date.now();
+  const channelName = `roots-health-${Math.random().toString(36).slice(2)}`;
+  const channel = sb.channel(channelName, {
+    config: {
+      broadcast: { ack: false },
+      presence: { key: channelName },
+    },
+  });
+
+  const result = await new Promise((resolve) => {
+    let settled = false;
+    const finish = async (payload) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      try {
+        await sb.removeChannel(channel);
+      } catch (_) {}
+      resolve({ ...payload, ms: Date.now() - started });
+    };
+
+    const timer = setTimeout(() => {
+      void finish({ ok: false, detail: 'timeout' });
+    }, 5000);
+
+    channel.subscribe((status, err) => {
+      if (status === 'SUBSCRIBED') {
+        void finish({ ok: true, detail: 'subscribed' });
+        return;
+      }
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+        const detail = err?.message || status.toLowerCase();
+        void finish({ ok: false, detail });
+      }
+    });
+  });
+
+  window.__rootsRecruitingRealtimeHealthCache = {
+    checkedAt: Date.now(),
+    result,
+  };
+  return result;
+}
+
+window.RootsSyncStatusConfig = {
+  toolName: 'ROOTS Recruiting',
+  databases: [
+    {
+      id: `sb-project:${RECRUITING_SUPABASE_REF}`,
+      label: `Supabase · ${RECRUITING_SUPABASE_REF}`,
+      href: RECRUITING_SUPABASE_DASHBOARD_URL,
+    },
+    {
+      id: `sb-table:${RECRUITING_SUPABASE_REF}:recruiting.interviews`,
+      label: 'recruiting.interviews',
+      href: RECRUITING_SUPABASE_DASHBOARD_URL,
+    },
+    {
+      id: `sb-table:${RECRUITING_SUPABASE_REF}:recruiting.applicants`,
+      label: 'recruiting.applicants',
+      href: RECRUITING_SUPABASE_DASHBOARD_URL,
+    },
+    {
+      id: `sb-realtime:${RECRUITING_SUPABASE_REF}`,
+      label: 'Supabase Realtime',
+      href: `${RECRUITING_SUPABASE_DASHBOARD_URL}/database/replication`,
+    },
+  ],
+  ping: async (sb) => {
+    const lines = ['health  Supabase Health Recruiting Tool Databases (recruiting.interviews, recruiting.applicants, realtime)'];
+
+    if (!sb) {
+      lines.push('status  issues detected');
+      lines.push('error   no_supabase_client');
+      lines.push('hint    warte auf auth-session…');
+      return { online: false, lines };
+    }
+
+    const { data: { session }, error: sessionError } = await sb.auth.getSession();
+    if (sessionError) lines.push(`error   auth ${sessionError.message}`);
+    if (!session) {
+      lines.push('check   auth issues (no active session)');
+      lines.push('status  issues detected');
+      lines.push('hint    bitte neu anmelden');
+      return { online: false, lines };
+    }
+
+    lines.push(`auth    session ok (${session.user.id.slice(0, 8)}…)`);
+
+    let hasIssues = false;
+
+    const runCheck = async (label, fn) => {
+      const started = Date.now();
+      try {
+        await fn();
+        lines.push(`check   ${label} operating (${Date.now() - started}ms)`);
+      } catch (error) {
+        hasIssues = true;
+        lines.push(`check   ${label} issues (${Date.now() - started}ms)`);
+        if (error?.code) lines.push(`code    ${label} ${error.code}`);
+        lines.push(`error   ${label} ${error?.message || 'unknown_error'}`);
+      }
+    };
+
+    await runCheck('recruiting.interviews', async () => {
+      const { error } = await sb
+        .schema('recruiting')
+        .from('interviews')
+        .select('id', { head: true, count: 'exact' })
+        .limit(1);
+      if (error) throw error;
+    });
+
+    await runCheck('recruiting.applicants', async () => {
+      const { error } = await sb
+        .schema('recruiting')
+        .from('applicants')
+        .select('id', { head: true, count: 'exact' })
+        .limit(1);
+      if (error) throw error;
+    });
+
+    const realtime = await recruitingRealtimeHealthCheck(sb);
+    if (realtime.ok) {
+      lines.push(`check   realtime operating (${realtime.ms}ms)`);
+    } else {
+      hasIssues = true;
+      lines.push(`check   realtime issues (${realtime.ms}ms)`);
+      lines.push(`error   realtime ${realtime.detail || 'unknown_error'}`);
+    }
+
+    lines.push(`status  ${hasIssues ? 'issues detected' : 'operating'}`);
+    return { online: !hasIssues, lines };
+  },
+};
+
 switchView('dashboard');
 </script>
-<script src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260522-hover"></script>
+<script src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260529-recruiting-health"></script>
 
   </body>
 </html>
