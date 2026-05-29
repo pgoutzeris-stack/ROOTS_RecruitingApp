@@ -198,6 +198,8 @@
     .bew-status--rejected { background: #fee2e2; color: #b91c1c; }
     .bew-status--withdrawn { background: #fff1f2; color: #be123c; }
     .bew-detail { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.5rem; }
+    .bew-detail-actions { display: flex; gap: 8px; flex-wrap: nowrap; justify-content: flex-end; align-items: center; width: 100%; overflow-x: auto; padding-bottom: 2px; }
+    .bew-detail-actions button { flex: 0 0 auto; white-space: nowrap; }
     .bew-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem 1rem; }
     .bew-field { display: flex; flex-direction: column; gap: .3rem; }
     .bew-field.full { grid-column: 1 / -1; }
@@ -211,7 +213,7 @@
     .bew-doc-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: .65rem .85rem; background: var(--status-bg); border-radius: 10px; margin-bottom: .5rem; }
     .bew-upload-zone { border: 2px dashed var(--line); border-radius: 12px; padding: 1.25rem; text-align: center; color: var(--muted); font-size: .88rem; cursor: pointer; transition: border-color .2s; margin-top: .65rem; }
     .bew-upload-zone:hover { border-color: var(--brand); color: var(--brand); }
-    @media (max-width: 960px) { .bew-layout { grid-template-columns: 1fr; } .bew-list-panel { max-height: 320px; } .bew-form-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 960px) { .bew-layout { grid-template-columns: 1fr; } .bew-list-panel { max-height: 320px; } .bew-form-grid { grid-template-columns: 1fr; } .bew-detail-actions { justify-content: flex-start; } }
 
     /* ─── Section card (gemeinsam) ─── */
     .panel { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.5rem; margin-bottom: 1.25rem; }
@@ -3655,15 +3657,13 @@ function renderBewerberDetail(id) {
     return;
   }
   const docs = a.applicant_documents || [];
-  const displayName = getApplicantDisplayName(a) || 'Unbenannt';
   const rounds = applicantInterviewRounds(a);
   const canOpenIv = applicantHasValidName(a);
   detail.innerHTML = `
     <div class="panel-h" style="margin-bottom:1.25rem">
-      <div class="panel-title"><i class="fa-solid fa-user"></i> ${escapeHtml(displayName)}</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button type="button" class="btn-secondary" id="bew-open-erst" ${!canOpenIv || !rounds.erst ? 'disabled' : ''} title="${rounds.erst ? 'Erstgespräch öffnen' : 'Noch kein Erstgespräch'}"><i class="fa-solid fa-user-tie"></i> Erstgespräch einsehen</button>
-        <button type="button" class="btn-secondary btn-bew-zweit" id="bew-open-zweit" ${!canOpenIv || !rounds.zweit ? 'disabled' : ''} title="${rounds.zweit ? 'Zweitgespräch öffnen' : 'Zweitgespräch noch nicht verfügbar'}"><i class="fa-solid fa-forward"></i> Zweitgespräch einsehen</button>
+      <div class="bew-detail-actions" aria-label="Bewerber-Aktionen">
+        <button type="button" class="btn-secondary" id="bew-open-erst" ${!canOpenIv || !rounds.erst ? 'disabled' : ''} title="${rounds.erst ? 'Erstgespräch öffnen' : 'Noch kein Erstgespräch'}"><i class="fa-solid fa-user-tie"></i> Erstgespräch</button>
+        <button type="button" class="btn-secondary btn-bew-zweit" id="bew-open-zweit" ${!canOpenIv || !rounds.zweit ? 'disabled' : ''} title="${rounds.zweit ? 'Zweitgespräch öffnen' : 'Zweitgespräch noch nicht verfügbar'}"><i class="fa-solid fa-forward"></i> Zweitgespräch</button>
         <button class="btn-danger btn-withdraw" id="bew-withdraw-btn"><i class="fa-solid fa-user-slash"></i> Absage durch Bewerber</button>
         <button class="btn-primary" id="bew-save-btn"><i class="fa-solid fa-floppy-disk"></i> Speichern</button>
         <button class="btn-danger" id="bew-delete-btn"><i class="fa-solid fa-trash"></i></button>
