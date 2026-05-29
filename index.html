@@ -105,23 +105,30 @@
     .btn-header-action.btn-primary-header:hover{background:var(--brand-dark);border-color:var(--brand-dark);color:#fff}
     .dash-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
     .dash-sidebar {
-      width: 260px; background: var(--bg); border-right: 1px solid var(--line);
+      width: 64px; background: var(--bg); border-right: 1px solid var(--line);
       display: flex; flex-direction: column; flex-shrink: 0;
+      transition: width .22s ease, box-shadow .22s ease;
+      overflow: hidden;
     }
+    .dash-sidebar:hover, .dash-sidebar:focus-within { width: 260px; box-shadow: 12px 0 28px rgba(15,23,42,.08); }
     .dash-nav { padding: 1rem .75rem; flex: 1; overflow-y: auto; }
     .dash-nav-item {
       display: flex; align-items: center; gap: 10px; padding: .65rem .85rem; border-radius: 10px;
       cursor: pointer; font-size: .92rem; color: var(--muted); font-weight: 500; margin-bottom: 2px;
       transition: all .15s; border: none; background: none; width: 100%; text-align: left; font-family: inherit;
+      white-space: nowrap;
     }
+    .dash-sidebar:not(:hover):not(:focus-within) .dash-nav-item { justify-content: center; gap: 0; font-size: 0; padding-left: .65rem; padding-right: .65rem; }
     .dash-nav-item[hidden] { display: none !important; }
     .dash-nav-item:hover { background: var(--brand-light); color: var(--brand); }
     .dash-nav-item.active { background: var(--brand-light); color: var(--brand); font-weight: 600; }
     .dash-nav-item i { width: 18px; font-size: 1rem; text-align: center; flex-shrink: 0; }
+    .dash-sidebar:not(:hover):not(:focus-within) .dash-nav-item i { margin: 0; }
     .dash-nav-section {
       font-size: .68rem; font-weight: 700; color: var(--muted); text-transform: uppercase;
       letter-spacing: .08em; padding: .75rem .85rem .35rem;
     }
+    .dash-sidebar:not(:hover):not(:focus-within) .dash-nav-section { opacity: 0; height: .35rem; padding: .2rem 0; overflow: hidden; }
     .dash-nav-section[hidden] { display: none !important; }
     .dash-main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; animation: fadeIn .35s ease; }
     #shell-toolbar {
@@ -133,7 +140,8 @@
     .dash-content { flex: 1; overflow-y: auto; padding: 1.5rem 2rem 3rem; min-height: 0; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @media (max-width: 900px) {
-      .dash-sidebar { width: 220px; }
+      .dash-sidebar { width: 58px; }
+      .dash-sidebar:hover, .dash-sidebar:focus-within { width: 220px; }
       #shell-toolbar, .dash-content { padding-left: 1rem; padding-right: 1rem; }
     }
     @media (max-width: 768px) {
@@ -188,6 +196,7 @@
     .bew-status--zweit { background: #ede9fe; color: #5b21b6; }
     .bew-status--hired { background: #d0f4ee; color: #0f6b57; }
     .bew-status--rejected { background: #fee2e2; color: #b91c1c; }
+    .bew-status--withdrawn { background: #fff1f2; color: #be123c; }
     .bew-detail { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.5rem; }
     .bew-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem 1rem; }
     .bew-field { display: flex; flex-direction: column; gap: .3rem; }
@@ -195,7 +204,9 @@
     .bew-field label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
     .bew-field input, .bew-field select, .bew-field textarea { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .9rem; color: var(--ink); background: var(--bg); outline: none; }
     .bew-field input:focus, .bew-field select:focus, .bew-field textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
-    .bew-field textarea { min-height: 72px; resize: vertical; }
+    .bew-field textarea { min-height: 112px; resize: vertical; }
+    .btn-withdraw { border-color: #fecdd3; background: #fff1f2; color: #be123c; }
+    .btn-withdraw:hover { background: #be123c; border-color: #be123c; color: #fff; }
     .bew-docs { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
     .bew-doc-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: .65rem .85rem; background: var(--status-bg); border-radius: 10px; margin-bottom: .5rem; }
     .bew-upload-zone { border: 2px dashed var(--line); border-radius: 12px; padding: 1.25rem; text-align: center; color: var(--muted); font-size: .88rem; cursor: pointer; transition: border-color .2s; margin-top: .65rem; }
@@ -307,12 +318,26 @@
     .dash-empty h3 { font-size: 1.15rem; font-weight: 700; color: var(--ink); margin-bottom: .5rem; }
 
     /* ─── Interview layout ─── */
-    .iv-layout { display: grid; grid-template-columns: minmax(260px, 300px) 1fr; gap: 1.25rem; align-items: stretch; min-height: 0; height: 100%; }
-    .iv-sidenav { height: 100%; min-height: 0; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem 1.1rem; overflow-y: auto; display: flex; flex-direction: column; box-sizing: border-box; }
+    .iv-layout { display: grid; grid-template-columns: minmax(260px, 300px) 1fr; gap: 1.25rem; align-items: stretch; min-height: 0; height: 100%; transition: grid-template-columns .22s ease; }
+    .iv-layout.iv-layout--nav-collapsed { grid-template-columns: 64px 1fr; }
+    .iv-sidenav { height: 100%; min-height: 0; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem 1.1rem; overflow-y: auto; display: flex; flex-direction: column; box-sizing: border-box; transition: padding .22s ease; }
+    .iv-sidenav-top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .75rem; }
     .iv-sidenav-h { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: var(--muted); margin-bottom: .75rem; padding: 0 .15rem; }
+    .iv-sidenav-top .iv-sidenav-h { margin-bottom: 0; }
+    .iv-sidenav-toggle { width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0; }
+    .iv-sidenav-toggle:hover { background: var(--brand-light); border-color: var(--brand); color: var(--brand); }
     .iv-sidenav a { display: block; padding: .65rem .85rem; border-radius: 10px; text-decoration: none; color: var(--ink); font-size: .86rem; font-weight: 500; line-height: 1.4; transition: all .15s; border-left: 3px solid transparent; word-wrap: break-word; overflow-wrap: anywhere; hyphens: auto; }
     .iv-sidenav a:hover { background: var(--status-bg); }
     .iv-sidenav a.active { background: var(--brand); color: #fff; border-left-color: var(--brand-dark); box-shadow: none; }
+    .iv-sidenav.is-collapsed { padding: .85rem .45rem; overflow-x: hidden; }
+    .iv-sidenav.is-collapsed .iv-sidenav-top { justify-content: center; }
+    .iv-sidenav.is-collapsed .iv-sidenav-h,
+    .iv-sidenav.is-collapsed .iv-sidenav-applicant,
+    .iv-sidenav.is-collapsed .iv-sidenav-owner,
+    .iv-sidenav.is-collapsed .iv-sidenav-runde { display: none; }
+    .iv-sidenav.is-collapsed a { font-size: 0; padding: .62rem .3rem; text-align: center; border-left-width: 0; }
+    .iv-sidenav.is-collapsed a::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .45; vertical-align: middle; }
+    .iv-sidenav.is-collapsed a.active::before { opacity: 1; background: #fff; }
     .iv-content-col { min-width: 0; width: 100%; overflow: hidden; display: flex; flex-direction: column; flex: 1; min-height: 0; height: 100%; }
     #view-interview.active { display: flex; flex-direction: column; flex: 1; min-height: 0; height: auto; max-height: none; overflow: hidden; }
     #view-interview .iv-layout { flex: 1; min-height: 0; overflow: hidden; }
@@ -338,8 +363,8 @@
     @media (max-width: 720px) { .bew-name-row { grid-template-columns: 1fr; } }
     .iv-main { min-width: 0; width: 100%; flex: 1; height: 100%; min-height: 0; overflow-x: hidden; overflow-y: auto; scroll-snap-type: none; scroll-behavior: smooth; scroll-padding-top: 0; scroll-padding-bottom: 1.5rem; overscroll-behavior-y: contain; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
     .iv-interview-footer { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; padding: .75rem 0 0; border: none; background: transparent; }
-    body.mode-interview .iv-interview-footer { position: fixed; left: 260px; right: 0; bottom: 0; z-index: 8500; margin: 0; padding: .75rem 2rem max(.75rem, env(safe-area-inset-bottom)); background: transparent; border: none; box-shadow: none; pointer-events: none; box-sizing: border-box; justify-content: flex-end; }
-    @media (max-width: 900px) { body.mode-interview .iv-interview-footer { left: 220px; padding-left: 1rem; padding-right: 1rem; } }
+    body.mode-interview .iv-interview-footer { position: fixed; left: 64px; right: 0; bottom: 0; z-index: 8500; margin: 0; padding: .75rem 2rem max(.75rem, env(safe-area-inset-bottom)); background: transparent; border: none; box-shadow: none; pointer-events: none; box-sizing: border-box; justify-content: flex-end; }
+    @media (max-width: 900px) { body.mode-interview .iv-interview-footer { left: 58px; padding-left: 1rem; padding-right: 1rem; } }
     body.mode-interview .iv-interview-footer button { pointer-events: auto; }
     body.mode-interview .iv-main { padding-bottom: 4.25rem; border-radius: var(--radius); border-bottom: 1px solid var(--line); scroll-padding-bottom: 4.5rem; }
     body.mode-interview .iv-content-col .iv-interview-footer[hidden] { display: none !important; }
@@ -380,14 +405,19 @@
     .q-checks { display: flex; flex-direction: column; gap: .45rem; margin-bottom: .85rem; padding: 0; background: none; }
     .q-check { display: flex; align-items: flex-start; gap: .55rem; font-size: .87rem; line-height: 1.4; cursor: pointer; }
     .q-check input { margin-top: 2px; width: 16px; height: 16px; accent-color: var(--brand); flex-shrink: 0; }
-    .q-note { width: 100%; min-height: 78px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .9rem; color: var(--ink); background: var(--bg); resize: vertical; outline: none; line-height: 1.55; transition: border-color .2s, box-shadow .2s; }
+    .q-note { width: 100%; min-height: 124px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .9rem; color: var(--ink); background: var(--bg); resize: vertical; outline: none; line-height: 1.55; transition: border-color .2s, box-shadow .2s; }
     .q-note:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
     .q-erst-note { font-size: .82rem; color: var(--muted); padding: .35rem 0; background: none; margin-bottom: .5rem; white-space: pre-wrap; line-height: 1.5; border-left: 2px solid var(--line); padding-left: .65rem; }
     .q-erst-note-h { font-weight: 700; color: var(--ink); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .25rem; }
 
     /* ─── Eval Row ─── */
-    .eval-row { background: none; border: none; border-top: 1px solid var(--line); border-radius: 0; padding: .85rem 0 0; margin-top: .75rem; }
-    .eval-label { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--brand); margin-bottom: .4rem; }
+    .eval-row { background: none; border: none; border-top: 1px solid var(--line); border-radius: 0; padding: .75rem 0 0; margin-top: .75rem; }
+    .eval-head { width: 100%; border: none; background: transparent; color: var(--brand); padding: .25rem 0 .35rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; cursor: pointer; font-family: inherit; text-align: left; }
+    .eval-label { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--brand); }
+    .eval-toggle { color: var(--muted); font-size: .78rem; transition: transform .18s ease; }
+    .eval-body { display: none; padding-bottom: .25rem; }
+    .eval-row:hover .eval-body, .eval-row.is-open .eval-body { display: block; }
+    .eval-row.is-open .eval-toggle { transform: rotate(180deg); }
     .eval-anchors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; margin-bottom: .65rem; font-size: .72rem; color: var(--muted); line-height: 1.45; }
     .eval-anchor { padding: .25rem 0; background: none; }
     .eval-anchor b { display: block; color: var(--ink); font-size: .68rem; margin-bottom: 2px; }
@@ -437,11 +467,11 @@
     .dim-bar-fill { height: 100%; background: var(--brand); border-radius: 999px; transition: width .4s ease; }
     .reco-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
     .reco-h { font-size: .85rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ink); margin-bottom: .65rem; }
-    .reco-buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+    .reco-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .5rem; }
     .reco-btn { padding: .9rem 1rem; border: 1.5px solid var(--line); border-radius: 12px; background: var(--bg); cursor: pointer; text-align: center; font-size: .88rem; font-weight: 600; color: var(--ink); transition: all .15s; line-height: 1.3; }
     .reco-btn:hover { border-color: var(--brand); color: var(--brand); }
     .reco-btn.selected { background: var(--brand); color: #fff; border-color: var(--brand); box-shadow: 0 4px 16px rgba(32,110,251,.3); transform: translateY(-1px); }
-    .gesamt-note { width: 100%; min-height: 100px; margin-top: 1rem; padding: 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .9rem; resize: vertical; outline: none; }
+    .gesamt-note { width: 100%; min-height: 132px; margin-top: 1rem; padding: 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: .9rem; resize: vertical; outline: none; }
     .gesamt-note:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
 
     [data-admin-only] { display: none !important; }
@@ -484,6 +514,7 @@
       .dash-lane { grid-template-columns: 1fr; gap: .5rem; }
       .dash-lane-actions { flex-wrap: wrap; }
       .iv-layout { grid-template-columns: 1fr; height: auto; }
+      .iv-layout.iv-layout--nav-collapsed { grid-template-columns: 1fr; }
       .iv-sidenav { height: auto; max-height: 280px; padding: .85rem; }
       .sec-title { flex-wrap: wrap; }
       .reco-buttons { grid-template-columns: 1fr; }
@@ -630,6 +661,7 @@
         <option value="zweit">Zweitgespräch</option>
         <option value="hired">Eingestellt</option>
         <option value="rejected">Abgelehnt</option>
+        <option value="withdrawn">Zurückgezogen</option>
       </select>
       <select id="bew-sort" class="dash-filter">
         <option value="date_desc">Neueste zuerst</option>
@@ -1282,7 +1314,7 @@ const SECTIONS_ZWEIT = [
       anchor5:'Stellt differenzierte Fragen zu Rolle, Lernmöglichkeiten, Kundenbasis; zeigt echte Vorbereitung'}]}},
 ];
 
-const RECO_OPTIONS_ERST = ['Zum Zweitgespräch einladen', 'Vielleicht – weitere Klärung nötig', 'Nicht passend'];
+const RECO_OPTIONS_ERST = ['Zum Zweitgespräch einladen', 'Nicht passend'];
 const RECO_OPTIONS_ZWEIT = ['Einstellen', 'Vielleicht – weitere Diskussion', 'Nicht einstellen'];
 </script>
 
@@ -1321,6 +1353,8 @@ let state = {
   notifications: [],
   dismissedNotifIds: new Set(),
 };
+
+let chapterNavCollapsed = true;
 
 let renderInterviewTimer = null;
 function scheduleRenderInterview(partial = false) {
@@ -2118,6 +2152,7 @@ function dispatch(action) {
   if (state.view === 'interview') {
     if (action.type === 'SET_RECOMMENDATION') {
       refreshRecoButtons(action.value);
+      scheduleRenderInterview(false);
       if (state.view === 'interview') renderSidenav();
     } else if (action.type === 'SET_RATING') {
       refreshRatingPills(action.qid, action.evalIdx, action.value);
@@ -3056,7 +3091,15 @@ function renderSidenav() {
   const nav = document.getElementById('iv-sidenav');
   const sections = getSections();
   const zweit = isZweit();
-  nav.innerHTML = '<div class="iv-sidenav-h">Kapitel</div>' + sections.map((s) => {
+  const layout = nav.closest('.iv-layout');
+  nav.classList.toggle('is-collapsed', chapterNavCollapsed);
+  layout?.classList.toggle('iv-layout--nav-collapsed', chapterNavCollapsed);
+  nav.innerHTML = `<div class="iv-sidenav-top">
+    <div class="iv-sidenav-h">Kapitel</div>
+    <button type="button" class="iv-sidenav-toggle" id="iv-chapter-toggle" aria-label="${chapterNavCollapsed ? 'Kapitel-Navigation öffnen' : 'Kapitel-Navigation einklappen'}" title="${chapterNavCollapsed ? 'Kapitel öffnen' : 'Kapitel einklappen'}">
+      <i class="fa-solid ${chapterNavCollapsed ? 'fa-angles-right' : 'fa-angles-left'}"></i>
+    </button>
+  </div>` + sections.map((s) => {
     const tid = 'sec-' + s.id;
     const label = s.sub ? `${s.main} · ${s.sub}` : (s.main || '–');
     return `<a href="#${tid}" data-target="${tid}">${escapeHtml(label)}</a>`;
@@ -3064,6 +3107,10 @@ function renderSidenav() {
    + `<div class="iv-sidenav-spacer"></div>`
    + renderSidenavApplicantHtml()
    + renderSidenavOwnerHtml();
+  document.getElementById('iv-chapter-toggle')?.addEventListener('click', () => {
+    chapterNavCollapsed = !chapterNavCollapsed;
+    renderSidenav();
+  });
   const teamBtn = document.getElementById('iv-sidenav-team-btn');
   if (teamBtn) {
     teamBtn.addEventListener('click', (e) => {
@@ -3095,6 +3142,7 @@ function renderMain() {
 
   main.innerHTML = html;
   bindMainHandlers();
+  enhanceTextAssists(main);
 }
 
 function renderSection(s, num) {
@@ -3198,9 +3246,14 @@ function renderEvalRow(ev, qid, idx, slice) {
     return `<button type="button" class="rating-pill ${active ? 'active' : ''} ${isErstShadow ? 'erst-shadow' : ''}" data-act="set-rating" data-qid="${qid}" data-eval="${idx}" data-val="${v}" title="${active ? 'Aktuell' : (isErstShadow ? 'Aus Erstgespräch' : 'Bewerten')}">${v}${isErstShadow ? '<small style="display:block;font-size:.55rem;letter-spacing:.05em">Erst</small>' : ''}</button>`;
   }).join('');
   return `<div class="eval-row">
-    <div class="eval-label">${escapeHtml(ev.label)}${ev.dimension ? ` · <span style="opacity:.7">${escapeHtml(DIMENSIONS[ev.dimension] || ev.dimension)}</span>` : ''}</div>
-    ${anchors}
-    <div class="rating-row">${pills}</div>
+    <button type="button" class="eval-head" data-act="toggle-eval">
+      <span class="eval-label">${escapeHtml(ev.label)}${ev.dimension ? ` · <span style="opacity:.7">${escapeHtml(DIMENSIONS[ev.dimension] || ev.dimension)}</span>` : ''}</span>
+      <i class="fa-solid fa-chevron-down eval-toggle"></i>
+    </button>
+    <div class="eval-body">
+      ${anchors}
+      <div class="rating-row">${pills}</div>
+    </div>
   </div>`;
 }
 
@@ -3286,7 +3339,7 @@ function renderGesamtEvaluation() {
       <div class="reco-buttons">${recos.map(r => `<button type="button" class="reco-btn ${slice.recommendation === r ? 'selected' : ''}" data-act="set-reco" data-val="${escapeHtml(r)}">${escapeHtml(r)}</button>`).join('')}</div>
       <label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:1rem;margin-bottom:.35rem">Gesamteindruck / Fazit</label>
       <textarea class="gesamt-note" data-act="set-gesamt-note" placeholder="Zusammenfassende Bewertung, Stärken, Risiken, offene Punkte…">${escapeHtml(slice.gesamtNote)}</textarea>
-      ${!zweit ? `<label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:1rem;margin-bottom:.35rem">Anmerkungen für Zweitinterviewer:in (optional)</label>
+      ${!zweit && slice.recommendation === ZWEIT_INVITE_RECO ? `<label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:1rem;margin-bottom:.35rem">Anmerkungen für Zweitinterviewer:in (optional)</label>
         <textarea class="gesamt-note" data-act="set-zweitanmerkung" placeholder="Was sollte der Zweitinterviewer wissen?">${escapeHtml(state.erst.zweitAnmerkung || '')}</textarea>` : ''}
     </div>
     </div>
@@ -3346,6 +3399,10 @@ function bindMainHandlers() {
       el.addEventListener('input', () => {
         state.erst.zweitAnmerkung = el.value;
         scheduleSave();
+      });
+    } else if (act === 'toggle-eval') {
+      el.addEventListener('click', () => {
+        el.closest('.eval-row')?.classList.toggle('is-open');
       });
     }
   });
@@ -3543,6 +3600,7 @@ function renderBewerberCreateForm() {
     state.bewerberCreateMode = null;
     detail.innerHTML = '<p style="color:var(--muted);text-align:center;padding:3rem 1rem">Wähle einen Bewerber aus der Liste oder lege einen neuen an.</p>';
   };
+  enhanceTextAssists(detail);
 }
 
 async function saveNewApplicantFromCreateForm() {
@@ -3606,6 +3664,7 @@ function renderBewerberDetail(id) {
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button type="button" class="btn-secondary" id="bew-open-erst" ${!canOpenIv || !rounds.erst ? 'disabled' : ''} title="${rounds.erst ? 'Erstgespräch öffnen' : 'Noch kein Erstgespräch'}"><i class="fa-solid fa-user-tie"></i> Erstgespräch einsehen</button>
         <button type="button" class="btn-secondary btn-bew-zweit" id="bew-open-zweit" ${!canOpenIv || !rounds.zweit ? 'disabled' : ''} title="${rounds.zweit ? 'Zweitgespräch öffnen' : 'Zweitgespräch noch nicht verfügbar'}"><i class="fa-solid fa-forward"></i> Zweitgespräch einsehen</button>
+        <button class="btn-danger btn-withdraw" id="bew-withdraw-btn"><i class="fa-solid fa-user-slash"></i> Absage durch Bewerber</button>
         <button class="btn-primary" id="bew-save-btn"><i class="fa-solid fa-floppy-disk"></i> Speichern</button>
         <button class="btn-danger" id="bew-delete-btn"><i class="fa-solid fa-trash"></i></button>
       </div>
@@ -3648,6 +3707,7 @@ function renderBewerberDetail(id) {
 
   document.getElementById('bew-save-btn').onclick = () => saveApplicantFromForm(a.id);
   document.getElementById('bew-delete-btn').onclick = () => deleteApplicant(a.id);
+  document.getElementById('bew-withdraw-btn').onclick = () => withdrawApplicant(a.id);
   const openErst = document.getElementById('bew-open-erst');
   if (openErst) openErst.onclick = () => {
     if (!applicantHasValidName(a)) { toast('Für das Interview Vorname und Nachname eintragen', 'error'); return; }
@@ -3668,6 +3728,7 @@ function renderBewerberDetail(id) {
   const fi = document.getElementById('bew-file-input');
   uz.onclick = () => fi.click();
   fi.onchange = () => { if (fi.files[0]) uploadApplicantDocument(a.id, fi.files[0]); };
+  enhanceTextAssists(detail);
 }
 
 async function saveApplicantFromForm(id) {
@@ -3697,6 +3758,36 @@ async function deleteApplicant(id) {
   await loadAllApplicants();
   document.getElementById('bew-detail').innerHTML = '<p style="color:var(--muted);text-align:center;padding:3rem 1rem">Bewerber gelöscht.</p>';
   toast('Bewerber gelöscht');
+}
+
+async function withdrawApplicant(id) {
+  const a = state.applicants.find(x => x.id === id);
+  const name = getApplicantDisplayName(a) || 'diese Person';
+  const ok = confirm(`Absage durch Bewerber für ${name} erfassen?\n\nDabei werden Bewerberdaten, Interviews, Dokumente und Backup-Kopien dauerhaft gelöscht. Das kann nicht rückgängig gemacht werden.`);
+  if (!ok) return;
+
+  const btn = document.getElementById('bew-withdraw-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch roots-spin"></i> Löschen...';
+  }
+
+  try {
+    const { data, error } = await recruitingDb().rpc('delete_applicant_withdrawal', { p_applicant_id: id });
+    if (error) throw error;
+    if (a?.session_id) state.candidates = state.candidates.filter(c => c.session_id !== a.session_id);
+    state.applicants = state.applicants.filter(x => x.id !== id);
+    state.selectedApplicantId = null;
+    state.linkedApplicantId = null;
+    renderBewerberList();
+    renderDashboard();
+    document.getElementById('bew-detail').innerHTML = '<p style="color:var(--muted);text-align:center;padding:3rem 1rem">Absage durch Bewerber erfasst. Daten wurden gesetzeskonform gelöscht.</p>';
+    toast(`Absage durch Bewerber verarbeitet${data?.deleted?.storage_objects != null ? ` · ${data.deleted.storage_objects} Datei(en) entfernt` : ''}`, 'success');
+  } catch (e) {
+    console.error('withdrawApplicant', e);
+    toast('Löschung fehlgeschlagen: ' + (e.message || 'Unbekannter Fehler'), 'error');
+    renderBewerberDetail(id);
+  }
 }
 
 async function uploadApplicantDocument(applicantId, file) {
@@ -3735,6 +3826,21 @@ async function openInterviewForApplicant(a) {
 function escapeHtml(s) {
   if (s == null) return '';
   return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+function enhanceTextAssists(root = document) {
+  const textInputs = root.querySelectorAll('textarea, input[type="text"], input:not([type])');
+  textInputs.forEach(el => {
+    if (el.readOnly || el.disabled) return;
+    el.setAttribute('spellcheck', 'true');
+    el.setAttribute('lang', 'de-DE');
+    el.setAttribute('autocorrect', 'on');
+    el.setAttribute('autocapitalize', 'sentences');
+  });
+  root.querySelectorAll('input[type="email"], input[type="url"], input[type="password"]').forEach(el => {
+    el.setAttribute('spellcheck', 'false');
+    el.setAttribute('autocorrect', 'off');
+  });
 }
 
 function toast(msg, type = 'info') {
