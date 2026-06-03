@@ -959,35 +959,78 @@ document.addEventListener('keydown', (e) => {
   }
 });
 function setupRealtimeSubscriptions() {
-  // Interviews-Channel
+  // ── Interviews: payload-based instant update (kein Re-Fetch) ──────────────
   const interviewsCh = sb.channel('recruiting-interviews')
     .on('postgres_changes', {
       event: '*',
       schema: 'recruiting',
       table: 'interviews',
     }, (payload) => {
-      console.log('[Realtime] interviews change:', payload.eventType);
-      loadAllCandidates(); // vollständig neu laden für Konsistenz
+      const { eventType, new: row, old } = payload;
+      if (eventType === 'INSERT' && row?.id) {
+        const mapped = { ...row, erst: row.erst || {}, zweit: row.zweit || {} };
+        state.candidates = [mapped, ...state.candidates];
+        renderDashboard();
+      } else if (eventType === 'UPDATE' && row?.id) {
+        const mapped = { ...row, erst: row.erst || {}, zweit: row.zweit || {} };
+        const idx = state.candidates.findIndex(c => c.id === row.id);
+        if (idx !== -1) state.candidates[idx] = mapped;
+        else state.candidates = [mapped, ...state.candidates];
+        renderDashboard();
+      } else if (eventType === 'DELETE' && old?.id) {
+        state.candidates = state.candidates.filter(c => c.id !== old.id);
+        renderDashboard();
+      } else {
+        // Fallback: full reload nur wenn Payload unvollständig
+        loadAllCandidates();
+      }
     })
     .subscribe();
 
-  // Bewerber-Channel
+  // ── Applicants: gezielte Einzel-Abfrage statt Komplett-Reload ────────────
   const applicantsCh = sb.channel('recruiting-applicants')
     .on('postgres_changes', {
       event: '*',
       schema: 'recruiting',
       table: 'applicants',
-    }, (payload) => {
-      console.log('[Realtime] applicants change:', payload.eventType);
-      loadAllApplicants();
+    }, async (payload) => {
+      const { eventType, new: row, old } = payload;
+      if (eventType === 'DELETE' && old?.id) {
+        state.applicants = state.applicants.filter(a => a.id !== old.id);
+        if (state.view === 'bewerber') renderBewerberList();
+      } else if (row?.id) {
+        // Nur diese eine Zeile neu laden (mit Dokumenten-JOIN)
+        const { data } = await recruitingDb()
+          .from('applicants')
+          .select('*, applicant_documents(*)')
+          .eq('id', row.id)
+          .single();
+        if (data) {
+          const idx = state.applicants.findIndex(a => a.id === data.id);
+          if (idx !== -1) state.applicants[idx] = data;
+          else state.applicants = [data, ...state.applicants];
+          if (state.view === 'bewerber') renderBewerberList();
+        }
+      }
     })
     .on('postgres_changes', {
       event: '*',
       schema: 'recruiting',
       table: 'applicant_documents',
-    }, (payload) => {
-      console.log('[Realtime] applicant_documents change:', payload.eventType);
-      loadAllApplicants();
+    }, async (payload) => {
+      // Nur den betroffenen Bewerber neu laden
+      const applicantId = payload.new?.applicant_id ?? payload.old?.applicant_id;
+      if (!applicantId) return;
+      const { data } = await recruitingDb()
+        .from('applicants')
+        .select('*, applicant_documents(*)')
+        .eq('id', applicantId)
+        .single();
+      if (data) {
+        const idx = state.applicants.findIndex(a => a.id === data.id);
+        if (idx !== -1) state.applicants[idx] = data;
+        if (state.view === 'bewerber') renderBewerberList();
+      }
     })
     .subscribe();
 
