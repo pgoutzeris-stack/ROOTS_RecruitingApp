@@ -950,6 +950,14 @@ function onAuthReady() {
   setupRealtimeSubscriptions();
 }
 
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    ['rm-interview-delete','rm-applicant-delete','rm-applicant-withdraw'].forEach(id => {
+      document.getElementById(id)?.classList.remove('open');
+    });
+  }
+});
 function setupRealtimeSubscriptions() {
   // Interviews-Channel
   const interviewsCh = sb.channel('recruiting-interviews')
@@ -2785,8 +2793,32 @@ async function loadAllCandidates() {
   renderDashboard();
 }
 
+// Roots Confirm Modal Helper
+function rootsConfirm(modalId) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById(modalId);
+    if (!overlay) { resolve(false); return; }
+    overlay.classList.add('open');
+    const confirm = overlay.querySelector('[id$="-confirm"]');
+    const cancel  = overlay.querySelector('[id$="-cancel"]');
+    function close(val) {
+      overlay.classList.remove('open');
+      confirm?.removeEventListener('click', onYes);
+      cancel?.removeEventListener('click', onNo);
+      overlay.removeEventListener('click', onOverlay);
+      resolve(val);
+    }
+    const onYes     = () => close(true);
+    const onNo      = () => close(false);
+    const onOverlay = (e) => { if (e.target === overlay) close(false); };
+    confirm?.addEventListener('click', onYes);
+    cancel?.addEventListener('click', onNo);
+    overlay.addEventListener('click', onOverlay);
+  });
+}
+
 async function deleteCandidate(sessionId) {
-  if (!confirm('Dieses Interview wirklich löschen? Das kann nicht rückgängig gemacht werden.')) return;
+  if (!await rootsConfirm('rm-interview-delete')) return;
   try {
     await recruitingDb().from('interviews').delete().eq('session_id', sessionId);
     state.candidates = state.candidates.filter(c => c.session_id !== sessionId);
@@ -3846,7 +3878,7 @@ async function saveApplicantFromForm(id) {
 }
 
 async function deleteApplicant(id) {
-  if (!confirm('Bewerber wirklich löschen?')) return;
+  if (!await rootsConfirm('rm-applicant-delete')) return;
   await recruitingDb().from('applicants').delete().eq('id', id);
   state.selectedApplicantId = null;
   await loadAllApplicants();
@@ -3857,8 +3889,9 @@ async function deleteApplicant(id) {
 async function withdrawApplicant(id) {
   const a = state.applicants.find(x => x.id === id);
   const name = getApplicantDisplayName(a) || 'diese Person';
-  const ok = confirm(`Absage durch Bewerber für ${name} erfassen?\n\nDabei werden Bewerberdaten, Interviews, Dokumente und Backup-Kopien dauerhaft gelöscht. Das kann nicht rückgängig gemacht werden.`);
-  if (!ok) return;
+  const withdrawText = document.getElementById('rm-applicant-withdraw-text');
+  if (withdrawText) withdrawText.textContent = `Absage durch Bewerber für ${name} erfassen? Bewerberdaten, Interviews, Dokumente und Backup-Kopien werden dauerhaft gelöscht.`;
+  if (!await rootsConfirm('rm-applicant-withdraw')) return;
 
   const btn = document.getElementById('bew-withdraw-btn');
   if (btn) {
@@ -4204,5 +4237,42 @@ switchView('dashboard');
 </script>
 <script src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260601-final"></script>
 
-  </body>
+  <!-- Recruiting: Confirm Modals -->
+<div class="roots-modal-overlay" id="rm-interview-delete">
+  <div class="roots-modal-box">
+    <div class="roots-modal-icon danger"><i class="fa-solid fa-trash"></i></div>
+    <div class="roots-modal-title">Interview löschen</div>
+    <div class="roots-modal-body">Dieses Interview wirklich löschen? Das kann nicht rückgängig gemacht werden.</div>
+    <div class="roots-modal-actions">
+      <button class="btn-cancel" id="rm-interview-delete-cancel">Abbrechen</button>
+      <button class="btn-confirm danger" id="rm-interview-delete-confirm"><i class="fa-solid fa-trash"></i> Löschen</button>
+    </div>
+  </div>
+</div>
+
+<div class="roots-modal-overlay" id="rm-applicant-delete">
+  <div class="roots-modal-box">
+    <div class="roots-modal-icon danger"><i class="fa-solid fa-user-xmark"></i></div>
+    <div class="roots-modal-title">Bewerber löschen</div>
+    <div class="roots-modal-body">Bewerber wirklich löschen? Alle Daten, Interviews und Dokumente werden entfernt.</div>
+    <div class="roots-modal-actions">
+      <button class="btn-cancel" id="rm-applicant-delete-cancel">Abbrechen</button>
+      <button class="btn-confirm danger" id="rm-applicant-delete-confirm"><i class="fa-solid fa-trash"></i> Löschen</button>
+    </div>
+  </div>
+</div>
+
+<div class="roots-modal-overlay" id="rm-applicant-withdraw">
+  <div class="roots-modal-box">
+    <div class="roots-modal-icon warning"><i class="fa-solid fa-user-minus"></i></div>
+    <div class="roots-modal-title">Absage erfassen</div>
+    <div class="roots-modal-body" id="rm-applicant-withdraw-text">Absage durch Bewerber erfassen? Alle Daten werden dauerhaft gelöscht.</div>
+    <div class="roots-modal-actions">
+      <button class="btn-cancel" id="rm-applicant-withdraw-cancel">Abbrechen</button>
+      <button class="btn-confirm warning" id="rm-applicant-withdraw-confirm"><i class="fa-solid fa-user-minus"></i> Absage erfassen</button>
+    </div>
+  </div>
+</div>
+
+</body>
 </html>
