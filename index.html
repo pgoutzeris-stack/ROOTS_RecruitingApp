@@ -940,10 +940,19 @@ function _triggerAuthReady() {
 // Microtasks zwischen Script-Blöcken würden auf noch-undefinierte Funktionen
 // (loadAllCandidates, isIntranetEmbedded, window.RootsUser …) treffen.
 // DOMContentLoaded garantiert: ALLE Script-Blöcke sind vollständig gelaufen.
-document.addEventListener('DOMContentLoaded', () => {
+// roots-auth-ready FRÜH registrieren (Bridge-defer läuft vor DOMContentLoaded,
+// seine async-Arbeit kann aber NACH DOMContentLoaded fertig werden → beide Wege abdecken)
+window.addEventListener('roots-auth-ready', (e) => {
+  console.log('[ROOTS Auth] roots-auth-ready empfangen, fired:', _authReadyFired);
+  if (e.detail?.session) _triggerAuthReady();
+});
 
-  // 1. onAuthStateChange zuerst registrieren (vor getSession!)
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('[ROOTS Auth] DOMContentLoaded – starte Auth-Init');
+
+  // onAuthStateChange: fängt INITIAL_SESSION auf (wenn Bridge Session bereits gesetzt hat)
   sb.auth.onAuthStateChange((event, session) => {
+    console.log('[ROOTS Auth] onAuthStateChange:', event, '| session:', !!session, '| fired:', _authReadyFired);
     if (event === 'SIGNED_OUT') { _authReadyFired = false; showAuthOverlay(); return; }
     if (event === 'TOKEN_REFRESHED') return;
     if (!session) return;
@@ -954,28 +963,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 2. roots-auth-ready vom Bridge
-  window.addEventListener('roots-auth-ready', (e) => {
-    if (e.detail?.session) _triggerAuthReady();
-  });
-
-  // 3. Session direkt prüfen (schnellster Pfad via localStorage)
+  // Direkte Session-Prüfung
   sb.auth.getSession().then(({ data: { session } }) => {
+    console.log('[ROOTS Auth] getSession:', !!session, '| fired:', _authReadyFired);
     if (session) {
       _triggerAuthReady();
     } else if (!isIntranetEmbedded()) {
+      console.log('[ROOTS Auth] kein Login, standalone → zeige Login');
       resetLoginUi();
     } else {
-      // Intranet-Iframe ohne localStorage-Session → auf Bridge warten
+      console.log('[ROOTS Auth] kein Login, Iframe → warte 1s auf Bridge');
       setTimeout(() => {
         if (!_authReadyFired) {
           sb.auth.getSession().then(({ data: { session: s2 } }) => {
+            console.log('[ROOTS Auth] Retry getSession:', !!s2);
             if (s2) _triggerAuthReady(); else resetLoginUi();
           });
         }
       }, 1000);
     }
-  }).catch(() => { if (!_authReadyFired) resetLoginUi(); });
+  }).catch((err) => {
+    console.error('[ROOTS Auth] getSession Fehler:', err);
+    if (!_authReadyFired) resetLoginUi();
+  });
 
 });
 
