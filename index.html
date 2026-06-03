@@ -1007,7 +1007,7 @@ async function onAuthReady() {
 
   // 2. Profil laden und mounten (MUSS fertig sein bevor wir rendern)
   try {
-    await window.RootsUser._loadAndMount(sb);
+    if (window.RootsUser) await window.RootsUser._loadAndMount(sb);
   } catch (e) {
     console.warn('[Auth] _loadAndMount failed:', e);
   }
