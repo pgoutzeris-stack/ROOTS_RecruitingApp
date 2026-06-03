@@ -6,6 +6,7 @@
   <title>ROOTS Recruiting · Interview-Leitfaden</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script async src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260601-final"></script>
   <style>
     @import url('https://fonts.cdnfonts.com/css/circular-std');
 
@@ -526,7 +527,64 @@
       .reco-buttons { grid-template-columns: 1fr; }
       .eval-anchors { grid-template-columns: 1fr; }
     }
-  </style>
+  
+    /* ── ROOTS Confirm Modals ──────────────────────────────────────────── */
+    .roots-modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 100000;
+      background: rgba(15,23,42,.55); backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; padding: 1.25rem;
+    }
+    .roots-modal-overlay.open { display: flex; }
+    .roots-modal-box {
+      background: var(--bg); border-radius: 20px;
+      border: 1px solid var(--line); box-shadow: var(--shadow-modal);
+      max-width: 360px; width: 100%; padding: 1.75rem;
+      text-align: center;
+      animation: roots-modal-in .22s cubic-bezier(.22,1,.36,1);
+    }
+    @keyframes roots-modal-in {
+      from { opacity:0; transform:scale(.95) translateY(10px); }
+      to   { opacity:1; transform:none; }
+    }
+    .roots-modal-icon {
+      width: 46px; height: 46px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; margin: 0 auto .75rem;
+    }
+    .roots-modal-icon.danger  { background: #fef2f2; color: #dc2626; }
+    .roots-modal-icon.warning { background: #fffbeb; color: #d97706; }
+    .roots-modal-icon.info    { background: #eff6ff; color: #3b82f6; }
+    .roots-modal-title {
+      font-size: 1rem; font-weight: 700; color: var(--ink);
+      margin-bottom: .4rem;
+    }
+    .roots-modal-body {
+      font-size: .875rem; color: var(--muted);
+      line-height: 1.5; margin-bottom: 1.25rem;
+    }
+    .roots-modal-actions {
+      display: flex; gap: .6rem; justify-content: center;
+    }
+    .roots-modal-actions .btn-cancel {
+      flex: 1; padding: .7rem 1rem; border: 1px solid var(--line);
+      border-radius: 10px; background: transparent;
+      font-family: inherit; font-weight: 600; font-size: .875rem;
+      color: var(--ink); cursor: pointer; transition: all .15s;
+    }
+    .roots-modal-actions .btn-cancel:hover {
+      border-color: var(--brand); color: var(--brand);
+    }
+    .roots-modal-actions .btn-confirm {
+      flex: 1; padding: .7rem 1rem; border: none; border-radius: 10px;
+      font-family: inherit; font-weight: 600; font-size: .875rem;
+      color: #fff; cursor: pointer; transition: opacity .15s;
+    }
+    .roots-modal-actions .btn-confirm:hover { opacity: .88; }
+    .roots-modal-actions .btn-confirm.danger  { background: #dc2626; }
+    .roots-modal-actions .btn-confirm.warning { background: #d97706; }
+    .roots-modal-actions .btn-confirm.info    { background: #3b82f6; }
+</style>
 </head>
 <body>
 
@@ -889,7 +947,7 @@ sb.auth.getSession().then(({ data: { session } }) => {
           if (s2) _triggerAuthReady(); else resetLoginUi();
         });
       }
-    }, 2500);
+    }, 800);
   }
 });
 
@@ -4278,7 +4336,6 @@ window.RootsSyncStatusConfig = {
 
 switchView('dashboard');
 </script>
-<script src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260601-final"></script>
 
   <!-- Recruiting: Confirm Modals -->
 <div class="roots-modal-overlay" id="rm-interview-delete">
