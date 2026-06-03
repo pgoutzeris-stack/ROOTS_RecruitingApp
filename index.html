@@ -936,37 +936,47 @@ function _triggerAuthReady() {
   onAuthReady();
 }
 
-sb.auth.getSession().then(({ data: { session } }) => {
-  if (session) { _triggerAuthReady(); }
-  else if (!isIntranetEmbedded()) { resetLoginUi(); }
-  else {
-    // Iframe: warte auf Bridge-Session-Sync
-    setTimeout(() => {
-      if (!_authReadyFired) {
-        sb.auth.getSession().then(({ data: { session: s2 } }) => {
-          if (s2) _triggerAuthReady(); else resetLoginUi();
-        });
-      }
-    }, 800);
-  }
-});
+// ── Auth-Init in DOMContentLoaded ─────────────────────────────────────────
+// Microtasks zwischen Script-Blöcken würden auf noch-undefinierte Funktionen
+// (loadAllCandidates, isIntranetEmbedded, window.RootsUser …) treffen.
+// DOMContentLoaded garantiert: ALLE Script-Blöcke sind vollständig gelaufen.
+document.addEventListener('DOMContentLoaded', () => {
 
-sb.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_OUT') { _authReadyFired = false; showAuthOverlay(); return; }
-  if (!session) return;
-  if (event === 'TOKEN_REFRESHED') return; // ignore token refresh
-  // SIGNED_IN or INITIAL_SESSION
-  if (!_authReadyFired) {
-    _triggerAuthReady();
-  } else if (event === 'SIGNED_IN') {
-    // Neuer Login nach vorherigem Sign-Out: Daten neu laden
-    Promise.all([loadAllCandidates(), loadAllApplicants()]).catch(() => {});
-  }
-});
+  // 1. onAuthStateChange zuerst registrieren (vor getSession!)
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT') { _authReadyFired = false; showAuthOverlay(); return; }
+    if (event === 'TOKEN_REFRESHED') return;
+    if (!session) return;
+    if (!_authReadyFired) {
+      _triggerAuthReady();
+    } else if (event === 'SIGNED_IN') {
+      Promise.all([loadAllCandidates(), loadAllApplicants()]).catch(() => {});
+    }
+  });
 
-// Bridge: Session vom Intranet empfangen
-window.addEventListener('roots-auth-ready', (e) => {
-  if (e.detail?.session) _triggerAuthReady();
+  // 2. roots-auth-ready vom Bridge
+  window.addEventListener('roots-auth-ready', (e) => {
+    if (e.detail?.session) _triggerAuthReady();
+  });
+
+  // 3. Session direkt prüfen (schnellster Pfad via localStorage)
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+      _triggerAuthReady();
+    } else if (!isIntranetEmbedded()) {
+      resetLoginUi();
+    } else {
+      // Intranet-Iframe ohne localStorage-Session → auf Bridge warten
+      setTimeout(() => {
+        if (!_authReadyFired) {
+          sb.auth.getSession().then(({ data: { session: s2 } }) => {
+            if (s2) _triggerAuthReady(); else resetLoginUi();
+          });
+        }
+      }, 1000);
+    }
+  }).catch(() => { if (!_authReadyFired) resetLoginUi(); });
+
 });
 
 document.getElementById('roots-login-form').addEventListener('submit', async (e) => {
