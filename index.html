@@ -870,13 +870,37 @@ function hideAuthOverlay() {
   if (overlay) overlay.style.display = 'none';
 }
 
+let _authReadyFired = false;
+function _triggerAuthReady() {
+  if (_authReadyFired) return;
+  _authReadyFired = true;
+  hideAuthOverlay();
+  onAuthReady();
+}
+
 sb.auth.getSession().then(({ data: { session } }) => {
-  if (session) { hideAuthOverlay(); onAuthReady(); }
-  else { resetLoginUi(); }
+  if (session) { _triggerAuthReady(); }
+  else if (!isIntranetEmbedded()) { resetLoginUi(); }
+  else {
+    // Iframe: warte auf Bridge-Session-Sync
+    setTimeout(() => {
+      if (!_authReadyFired) {
+        sb.auth.getSession().then(({ data: { session: s2 } }) => {
+          if (s2) _triggerAuthReady(); else resetLoginUi();
+        });
+      }
+    }, 2500);
+  }
 });
+
 sb.auth.onAuthStateChange((event, session) => {
-  if (session) { hideAuthOverlay(); onAuthReady(); }
-  else if (event === 'SIGNED_OUT') { showAuthOverlay(); }
+  if (session) { _triggerAuthReady(); }
+  else if (event === 'SIGNED_OUT') { _authReadyFired = false; showAuthOverlay(); }
+});
+
+// Bridge: Session vom Intranet empfangen
+window.addEventListener('roots-auth-ready', (e) => {
+  if (e.detail?.session) _triggerAuthReady();
 });
 
 document.getElementById('roots-login-form').addEventListener('submit', async (e) => {
@@ -923,6 +947,49 @@ function onAuthReady() {
   });
   loadAllCandidates();
   loadAllApplicants();
+  setupRealtimeSubscriptions();
+}
+
+function setupRealtimeSubscriptions() {
+  // Interviews-Channel
+  const interviewsCh = sb.channel('recruiting-interviews')
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'recruiting',
+      table: 'interviews',
+    }, (payload) => {
+      console.log('[Realtime] interviews change:', payload.eventType);
+      loadAllCandidates(); // vollständig neu laden für Konsistenz
+    })
+    .subscribe();
+
+  // Bewerber-Channel
+  const applicantsCh = sb.channel('recruiting-applicants')
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'recruiting',
+      table: 'applicants',
+    }, (payload) => {
+      console.log('[Realtime] applicants change:', payload.eventType);
+      loadAllApplicants();
+    })
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'recruiting',
+      table: 'applicant_documents',
+    }, (payload) => {
+      console.log('[Realtime] applicant_documents change:', payload.eventType);
+      loadAllApplicants();
+    })
+    .subscribe();
+
+  // Cleanup bei Sign-Out
+  sb.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_OUT') {
+      sb.removeChannel(interviewsCh);
+      sb.removeChannel(applicantsCh);
+    }
+  });
 }
 </script>
 
