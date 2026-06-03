@@ -6,7 +6,7 @@
   <title>ROOTS Recruiting · Interview-Leitfaden</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script async src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260601-final"></script>
+  <script defer src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260601-final"></script>
   <style>
     @import url('https://fonts.cdnfonts.com/css/circular-std');
 
@@ -952,8 +952,16 @@ sb.auth.getSession().then(({ data: { session } }) => {
 });
 
 sb.auth.onAuthStateChange((event, session) => {
-  if (session) { _triggerAuthReady(); }
-  else if (event === 'SIGNED_OUT') { _authReadyFired = false; showAuthOverlay(); }
+  if (event === 'SIGNED_OUT') { _authReadyFired = false; showAuthOverlay(); return; }
+  if (!session) return;
+  if (event === 'TOKEN_REFRESHED') return; // ignore token refresh
+  // SIGNED_IN or INITIAL_SESSION
+  if (!_authReadyFired) {
+    _triggerAuthReady();
+  } else if (event === 'SIGNED_IN') {
+    // Neuer Login nach vorherigem Sign-Out: Daten neu laden
+    Promise.all([loadAllCandidates(), loadAllApplicants()]).catch(() => {});
+  }
 });
 
 // Bridge: Session vom Intranet empfangen
@@ -994,15 +1002,17 @@ document.getElementById('roots-go-forgot').addEventListener('click', () => { vLo
 document.getElementById('roots-go-login').addEventListener('click', () => { vForgot.style.display='none'; vLogin.style.display='block'; resetLoginUi(); });
 
 async function onAuthReady() {
-  // 1. Profil laden und mounten (MUSS fertig sein bevor wir rendern,
-  //    da renderDashboard() app_role + Avatar braucht)
+  // 1. Lade-Indikator im Dashboard sofort zeigen
+  _setDashLoading(true);
+
+  // 2. Profil laden und mounten (MUSS fertig sein bevor wir rendern)
   try {
     await window.RootsUser._loadAndMount(sb);
   } catch (e) {
     console.warn('[Auth] _loadAndMount failed:', e);
   }
 
-  // 2. Daten + Benachrichtigungen parallel laden
+  // 3. Daten + Benachrichtigungen parallel laden
   loadTeamMembers().then(() => {
     if (!isIntranetEmbedded()) {
       loadNotifications();
@@ -1012,24 +1022,34 @@ async function onAuthReady() {
     }
   });
 
-  const [cands, apps] = await Promise.all([
-    loadAllCandidates(),
-    loadAllApplicants(),
-  ]);
+  await Promise.all([loadAllCandidates(), loadAllApplicants()]);
+  _setDashLoading(false);
 
-  // 3. Retry: wenn beide leer zurückkommen, war die Session noch nicht
-  //    vollständig hydratisiert – einmalig nach kurzer Pause wiederholen
-  const noData = (state.candidates.length === 0 && state.applicants.length === 0);
-  if (noData) {
-    await new Promise(r => setTimeout(r, 1200));
+  // 4. Retry: wenn beide leer UND Session vorhanden → einmalig wiederholen
+  //    (fängt Race-Conditions beim ersten Auth-Start ab)
+  if (state.candidates.length === 0 && state.applicants.length === 0) {
     const { data: { session } } = await sb.auth.getSession().catch(() => ({ data: { session: null } }));
     if (session) {
+      _setDashLoading(true);
+      await new Promise(r => setTimeout(r, 800));
       await Promise.all([loadAllCandidates(), loadAllApplicants()]);
+      _setDashLoading(false);
     }
   }
 
-  // 4. Realtime-Subscriptions erst NACH initialem Load setzen
+  // 5. Realtime-Subscriptions erst NACH initialem Load setzen
   setupRealtimeSubscriptions();
+}
+
+function _setDashLoading(on) {
+  const list = document.getElementById('dash-list');
+  const bewList = document.getElementById('bew-list');
+  if (!list) return;
+  if (on) {
+    const html = '<div class="dash-empty" style="padding:3rem 1rem"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:1.4rem;color:var(--brand);opacity:.6"></i><p style="margin-top:.75rem;color:var(--muted);font-size:.875rem">Daten werden geladen …</p></div>';
+    list.innerHTML = html;
+    if (bewList) bewList.innerHTML = html;
+  }
 }
 
 
