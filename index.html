@@ -993,8 +993,16 @@ document.getElementById('roots-forgot-form').addEventListener('submit', async (e
 document.getElementById('roots-go-forgot').addEventListener('click', () => { vLogin.style.display='none'; vForgot.style.display='block'; });
 document.getElementById('roots-go-login').addEventListener('click', () => { vForgot.style.display='none'; vLogin.style.display='block'; resetLoginUi(); });
 
-function onAuthReady() {
-  window.RootsUser._loadAndMount(sb);
+async function onAuthReady() {
+  // 1. Profil laden und mounten (MUSS fertig sein bevor wir rendern,
+  //    da renderDashboard() app_role + Avatar braucht)
+  try {
+    await window.RootsUser._loadAndMount(sb);
+  } catch (e) {
+    console.warn('[Auth] _loadAndMount failed:', e);
+  }
+
+  // 2. Daten + Benachrichtigungen parallel laden
   loadTeamMembers().then(() => {
     if (!isIntranetEmbedded()) {
       loadNotifications();
@@ -1003,8 +1011,24 @@ function onAuthReady() {
       }
     }
   });
-  loadAllCandidates();
-  loadAllApplicants();
+
+  const [cands, apps] = await Promise.all([
+    loadAllCandidates(),
+    loadAllApplicants(),
+  ]);
+
+  // 3. Retry: wenn beide leer zurückkommen, war die Session noch nicht
+  //    vollständig hydratisiert – einmalig nach kurzer Pause wiederholen
+  const noData = (state.candidates.length === 0 && state.applicants.length === 0);
+  if (noData) {
+    await new Promise(r => setTimeout(r, 1200));
+    const { data: { session } } = await sb.auth.getSession().catch(() => ({ data: { session: null } }));
+    if (session) {
+      await Promise.all([loadAllCandidates(), loadAllApplicants()]);
+    }
+  }
+
+  // 4. Realtime-Subscriptions erst NACH initialem Load setzen
   setupRealtimeSubscriptions();
 }
 
