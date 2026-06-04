@@ -906,11 +906,6 @@ const { createClient } = window.supabase;
 const sb = createClient(SB_URL, SB_ANON);
 window.__rootsSupabaseClient = sb;
 
-// Minimal-Stub: verhindert TypeError wenn onAuthReady vor Block-2 feuert.
-// Der echte window.RootsUser (mit _loadAndMount, _mount etc.) wird in
-// Script-Block 2 vollständig definiert und überschreibt diesen Stub.
-window.RootsUser = window.RootsUser || { _loadAndMount: async () => {}, _mount: () => {} };
-
 const overlay = document.getElementById('roots-auth-overlay');
 const vLogin  = document.getElementById('roots-view-login');
 const vForgot = document.getElementById('roots-view-forgot');
