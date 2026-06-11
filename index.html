@@ -140,6 +140,43 @@
     .dash-title { font-size: 1.25rem; font-weight: 700; flex: 1; margin: 0; min-width: 140px; }
     .dash-content { flex: 1; overflow-y: auto; padding: 1.5rem 2rem 3rem; min-height: 0; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ─── ROOTS Custom Select Dropdown ─── */
+    .roots-custom-select { position: relative; }
+    .roots-select-trigger {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      width: 100%; height: 38px; padding: 0 12px;
+      border: 1px solid var(--line); border-radius: 8px;
+      background: var(--bg); color: var(--ink);
+      font-family: inherit; font-size: .9rem; cursor: pointer; text-align: left;
+      transition: border-color .2s, box-shadow .2s; box-sizing: border-box;
+    }
+    .roots-select-trigger:hover { border-color: rgba(32,110,251,.5); }
+    .roots-select-trigger:focus-visible { outline: 2px solid rgba(32,110,251,.35); outline-offset: 1px; }
+    .roots-select-value { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .roots-select-value.is-placeholder { color: var(--muted); }
+    .roots-select-chevron { transition: transform .2s; color: var(--muted); font-size: .78rem; flex-shrink: 0; }
+    .roots-custom-select.is-open .roots-select-chevron { transform: rotate(180deg); }
+    .roots-custom-select.is-open .roots-select-trigger { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
+    .roots-select-menu {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: var(--bg); border: 1px solid var(--line); border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(15,23,42,.13); z-index: 500; overflow: hidden;
+    }
+    .roots-select-option {
+      padding: .6rem 1rem; font-size: .875rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      transition: background .12s; color: var(--ink);
+    }
+    .roots-select-option:hover { background: var(--brand-light); color: var(--brand); }
+    .roots-select-option.is-selected { color: var(--brand); font-weight: 600; background: var(--brand-light); }
+    .roots-select-option.is-placeholder-opt { color: var(--muted); opacity: .7; }
+
+    /* ─── Mobile hamburger & sidebar overlay ─── */
+    .nav-hamburger { display: none; background: none; border: none; color: var(--ink); cursor: pointer; padding: 4px 6px; border-radius: 8px; font-size: 1.1rem; align-items: center; flex-shrink: 0; }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 8999; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+
+    /* ─── Tablet responsive ─── */
     @media (max-width: 900px) {
       .dash-sidebar { width: 58px; }
       .dash-sidebar:hover, .dash-sidebar:focus-within { width: 220px; }
@@ -149,6 +186,32 @@
       .sop-header { min-height: 56px; flex-wrap: wrap; }
       .header-left { width: 100%; }
       .header-right { width: 100%; justify-content: flex-end; }
+    }
+
+    /* ─── Mobile (<= 600px) ─── */
+    @media (max-width: 600px) {
+      .nav-hamburger { display: flex !important; }
+      .dash-sidebar {
+        position: fixed; left: 0; top: 0; height: 100vh !important; z-index: 9000;
+        transform: translateX(-110%);
+        transition: transform .27s cubic-bezier(.4,0,.2,1), box-shadow .27s;
+        width: 240px !important;
+        overflow-y: auto;
+      }
+      .dash-sidebar.is-open { transform: translateX(0) !important; box-shadow: 4px 0 24px rgba(15,23,42,.2); }
+      .sidebar-overlay.is-open { display: block !important; }
+      .dash-content { padding: .75rem 1rem 3rem; }
+      body.mode-interview .dash-content { padding: .5rem .5rem 0; }
+      .iv-snap-section { padding: 1.25rem 1rem 2rem; }
+      .gesamt-panel { padding: 1.25rem 1rem 2rem; }
+      .iv-sidenav { display: none !important; }
+      .iv-content-col { width: 100%; }
+      body.mode-interview .iv-interview-footer { left: 0 !important; padding-left: .75rem; padding-right: .75rem; }
+    }
+    @media (max-width: 480px) {
+      .sop-header { padding: .6rem 1rem; }
+      .dash-content { padding: .5rem .6rem 3rem; }
+      .iv-snap-section { padding: 1rem .75rem 2rem; }
     }
 
     /* ─── App container ─── */
@@ -660,6 +723,7 @@
 <div id="screen-app">
 <header class="sop-header" id="app-header">
   <div class="header-left">
+    <button id="nav-hamburger" class="nav-hamburger" aria-label="Menü öffnen"><i class="fa-solid fa-bars"></i></button>
     <div class="logo-mark">
       <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
         <rect x="2" y="2" width="5" height="5" rx="1.5" fill="white" opacity="0.9"/>
@@ -678,6 +742,8 @@
     <div id="roots-sync-status" class="roots-sync-wrap" aria-live="polite"></div>
   </div>
 </header>
+
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
 
 <div class="dash-body">
   <aside class="dash-sidebar">
@@ -3797,7 +3863,6 @@ async function syncApplicantFromInterview(row) {
     if (error) console.error('syncApplicantFromInterview update:', error);
   } else {
     payload.created_by = window.RootsUser._uid || null;
-    payload.role_title = 'Junior Marketing Consultant';
     const { error } = await recruitingDb().from('applicants').upsert(payload, { onConflict: 'session_id' });
     if (error) console.error('syncApplicantFromInterview upsert:', error);
   }
@@ -3878,17 +3943,86 @@ function openBewerberCreateForm(opts = {}) {
   }
 }
 
+const STELLE_OPTIONS = [
+  'Praktikant',
+  'Junior Marketing Consultant',
+  'Marketing Consultant',
+  'Senior Marketing Consultant',
+];
+
+function stelleDropdownHtml(currentValue) {
+  const opts = [{ value: '', label: 'Bitte auswählen' }, ...STELLE_OPTIONS.map(v => ({ value: v, label: v }))];
+  const isBlank = !currentValue;
+  return `<label>Stelle</label>
+    <div class="roots-custom-select" data-name="role_title">
+      <button type="button" class="roots-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+        <span class="roots-select-value${isBlank ? ' is-placeholder' : ''}">${escapeHtml(currentValue || 'Bitte auswählen…')}</span>
+        <i class="fa-solid fa-chevron-down roots-select-chevron"></i>
+      </button>
+      <div class="roots-select-menu" hidden role="listbox">
+        ${opts.map(o => {
+          const isP = o.value === '';
+          const isSel = o.value === currentValue && currentValue !== '';
+          return `<div class="roots-select-option${isP ? ' is-placeholder-opt' : ''}${isSel ? ' is-selected' : ''}" role="option" aria-selected="${isSel}" data-value="${escapeHtml(o.value)}">${escapeHtml(o.label)}${isSel ? ' <i class="fa-solid fa-check" style="color:var(--brand);font-size:.75rem"></i>' : ''}</div>`;
+        }).join('')}
+      </div>
+      <input type="hidden" name="role_title" value="${escapeHtml(currentValue || '')}">
+    </div>`;
+}
+
+function initRootsCustomSelects(container) {
+  container.querySelectorAll('.roots-custom-select').forEach(sel => {
+    const trigger = sel.querySelector('.roots-select-trigger');
+    const menu = sel.querySelector('.roots-select-menu');
+    const hiddenInput = sel.querySelector('input[type="hidden"]');
+    const valueSpan = sel.querySelector('.roots-select-value');
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const opening = menu.hidden;
+      document.querySelectorAll('.roots-select-menu').forEach(m => {
+        m.hidden = true;
+        m.closest('.roots-custom-select')?.classList.remove('is-open');
+        m.closest('.roots-custom-select')?.querySelector('.roots-select-trigger')?.setAttribute('aria-expanded', 'false');
+      });
+      if (opening) {
+        menu.hidden = false;
+        sel.classList.add('is-open');
+        trigger.setAttribute('aria-expanded', 'true');
+      }
+    });
+    sel.querySelectorAll('.roots-select-option').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const val = opt.dataset.value;
+        if (hiddenInput) hiddenInput.value = val;
+        valueSpan.textContent = val || 'Bitte auswählen…';
+        valueSpan.classList.toggle('is-placeholder', !val);
+        sel.querySelectorAll('.roots-select-option').forEach(o => {
+          const isSel = o.dataset.value === val && val !== '';
+          o.classList.toggle('is-selected', isSel);
+          o.querySelector('.fa-check')?.remove();
+          if (isSel) o.insertAdjacentHTML('beforeend', ' <i class="fa-solid fa-check" style="color:var(--brand);font-size:.75rem"></i>');
+        });
+        menu.hidden = true;
+        sel.classList.remove('is-open');
+        trigger.setAttribute('aria-expanded', 'false');
+      });
+    });
+  });
+}
+
 function renderBewerberCreateForm() {
   const detail = document.getElementById('bew-detail');
   detail.innerHTML = `
     <form id="bew-form" class="bew-form-grid">
       ${applicantNameFieldsHtml(null)}
-      <div class="bew-field"><label>Rolle / Position</label><input name="role_title" value="Junior Marketing Consultant"></div>
+      <div class="bew-field">${stelleDropdownHtml('')}</div>
     </form>
     <div style="margin-top:1.25rem;display:flex;gap:8px;flex-wrap:wrap">
       <button type="button" class="btn-primary" id="bew-save-btn"><i class="fa-solid fa-floppy-disk"></i> Bewerber speichern</button>
       <button type="button" class="btn-ghost" id="bew-create-cancel">Abbrechen</button>
     </div>`;
+  initRootsCustomSelects(detail);
   document.getElementById('bew-save-btn').onclick = () => saveNewApplicantFromCreateForm();
   document.getElementById('bew-create-cancel').onclick = () => {
     state.bewerberCreateMode = null;
@@ -3967,7 +4101,7 @@ function renderBewerberDetail(id) {
       <div class="bew-field"><label>Telefon</label><input name="phone" value="${escapeHtml(a.phone||'')}"></div>
       <div class="bew-field"><label>LinkedIn</label><input name="linkedin_url" value="${escapeHtml(a.linkedin_url||'')}"></div>
       <div class="bew-field"><label>Bewerbung auf Stelle</label><input name="position_applied" value="${escapeHtml(a.position_applied||'')}"></div>
-      <div class="bew-field"><label>Rolle / Position</label><input name="role_title" value="${escapeHtml(a.role_title||'Junior Marketing Consultant')}"></div>
+      <div class="bew-field">${stelleDropdownHtml(a.role_title||'')}</div>
       <div class="bew-field"><label>Quelle</label><input name="application_source" value="${escapeHtml(a.application_source||'')}"></div>
       <div class="bew-field"><label>Geburtsdatum</label><input name="date_of_birth" type="date" value="${a.date_of_birth||''}"></div>
       <div class="bew-field"><label>Einstiegsdatum</label><input name="availability_start" type="date" value="${a.availability_start||''}"></div>
@@ -4019,6 +4153,7 @@ function renderBewerberDetail(id) {
   const fi = document.getElementById('bew-file-input');
   uz.onclick = () => fi.click();
   fi.onchange = () => { if (fi.files[0]) uploadApplicantDocument(a.id, fi.files[0]); };
+  initRootsCustomSelects(detail);
   enhanceTextAssists(detail);
 }
 
@@ -4397,6 +4532,29 @@ window.RootsSyncStatusConfig = {
     return { online: !hasIssues, lines };
   },
 };
+
+// Mobile sidebar toggle
+(function() {
+  const hamburger = document.getElementById('nav-hamburger');
+  const sidebar = document.querySelector('.dash-sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  function closeSidebar() { sidebar?.classList.remove('is-open'); overlay?.classList.remove('is-open'); }
+  hamburger?.addEventListener('click', () => { sidebar?.classList.toggle('is-open'); overlay?.classList.toggle('is-open'); });
+  overlay?.addEventListener('click', closeSidebar);
+  document.querySelector('#app-nav')?.addEventListener('click', (e) => {
+    if (e.target.closest('.dash-nav-item') && window.innerWidth <= 600) closeSidebar();
+  });
+})();
+
+// Close ROOTS custom dropdowns on outside click
+document.addEventListener('click', () => {
+  document.querySelectorAll('.roots-select-menu:not([hidden])').forEach(m => {
+    m.hidden = true;
+    const sel = m.closest('.roots-custom-select');
+    sel?.classList.remove('is-open');
+    sel?.querySelector('.roots-select-trigger')?.setAttribute('aria-expanded', 'false');
+  });
+});
 
 switchView('dashboard');
 </script>
