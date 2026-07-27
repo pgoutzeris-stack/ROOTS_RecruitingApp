@@ -2892,6 +2892,15 @@ function hadInterviewSaveIssues() {
   return health.slowDetected || health.errorDetected || health.offlineDetected;
 }
 
+function acknowledgeInterviewSaveIssues() {
+  const health = ensureInterviewSaveHealth();
+  health.slowDetected = false;
+  health.errorDetected = false;
+  health.offlineDetected = false;
+  health.maxDurationMs = 0;
+  persistLocalDraft();
+}
+
 function describeInterviewSaveIssues() {
   const health = ensureInterviewSaveHealth();
   const issues = [];
@@ -3183,6 +3192,7 @@ async function finishInterviewStorageSafety(rundeLabel, { saveFailed = false } =
     downloadOfflineInterviewMarkdown({ verifiedInSupabase: true });
     toast('Markdown-Sicherheitskopie heruntergeladen', 'success');
   }
+  acknowledgeInterviewSaveIssues();
   return { verified: true, downloaded: shouldDownload };
 }
 
