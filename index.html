@@ -2108,7 +2108,9 @@ function canTransferInterviewOwner(slice) {
   const uid = window.RootsUser?._uid;
   if (!uid || !slice?.meta) return false;
   ensureInitialOwner(slice);
-  return String(slice.meta.initialOwnerId || '') === uid;
+  return String(slice.meta.initialOwnerId || '') === uid
+    || String(slice.meta.ownerId || '') === uid
+    || window.RootsUser?.isAdmin?.() === true;
 }
 
 function ensureZweitTeamMeta(erstSlice, zweitSlice) {
@@ -2119,7 +2121,7 @@ function ensureZweitTeamMeta(erstSlice, zweitSlice) {
   }
   if (!zweitSlice.meta.ownerId && erstSlice?.meta?.ownerId) {
     setSliceOwner(zweitSlice, erstSlice.meta.ownerId, erstSlice.meta.ownerName || '');
-  } else if (zweitSlice.meta.ownerId && !getSliceParticipants(zweitSlice).some(p => p.role === 'owner')) {
+  } else if (zweitSlice.meta.ownerId) {
     syncInviteesOwner(zweitSlice);
   }
 }
@@ -2154,7 +2156,7 @@ async function setRoundOwner(sessionId, runde, userId, opts = {}) {
   const slice = runde === 'zweit' ? (c.zweit = c.zweit || deepClone(INITIAL_STATE)) : (c.erst = c.erst || deepClone(INITIAL_STATE));
   ensureInitialOwner(slice);
   if (!opts.force && userId && userId !== slice.meta?.ownerId && !canTransferInterviewOwner(slice)) {
-    toast('Nur der initiale Owner darf die Owner-Rolle übergeben', 'error');
+    toast('Nur der aktuelle oder initiale Owner darf die Owner-Rolle übergeben', 'error');
     return;
   }
   const prevOwner = slice.meta?.ownerId;
@@ -2259,6 +2261,7 @@ function openTeamPanel(sessionId, runde) {
   if (!c) return;
   const slice = runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
   if (runde === 'zweit') ensureZweitTeamMeta(c.erst, c.zweit || {});
+  else if (slice.meta?.ownerId) syncInviteesOwner(slice);
   if (!canOpenTeamPanel(slice, { runde, erstSlice: c.erst })) {
     toast('Keine Berechtigung für Interviewer-Einstellungen', 'error');
     return;
@@ -2302,7 +2305,7 @@ function renderTeamPanelBody() {
   const ownerSection = allowOwnerTransfer
     ? `<div class="team-panel-section">
       <h4>Owner übergeben</h4>
-      <p style="font-size:.8rem;color:var(--muted);margin:0 0 .6rem;line-height:1.45">Nur du als initiale:r Owner:in kannst die Verantwortung übergeben.</p>
+      <p style="font-size:.8rem;color:var(--muted);margin:0 0 .6rem;line-height:1.45">Aktuelle und initiale Owner können die Verantwortung übergeben.</p>
       <div class="team-member-grid" id="tp-owner-list">${state.teamMembers.map(m => memberRow(m, 'owner')).join('')}</div>
     </div>`
     : '';
@@ -2362,7 +2365,7 @@ async function saveTeamPanel() {
 
   if (tp.ownerId && tp.ownerId !== prevOwner) {
     if (!canTransferInterviewOwner(slice)) {
-      toast('Nur der initiale Owner darf die Owner-Rolle übergeben', 'error');
+      toast('Nur der aktuelle oder initiale Owner darf die Owner-Rolle übergeben', 'error');
       return;
     }
     await setRoundOwner(tp.sessionId, tp.runde, tp.ownerId, { notify: tp.ownerId !== prevOwner, silent: true });
@@ -2446,8 +2449,9 @@ function renderLaneTeamAvatars(members, size = 36) {
 function renderLaneOwnerBtn(entry) {
   const c = entry.candidate;
   const slice = entry.runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
-  const members = getLaneTeamMembers(slice, c.interviewer);
   if (entry.runde === 'zweit') ensureZweitTeamMeta(c.erst, slice);
+  else if (slice.meta?.ownerId) syncInviteesOwner(slice);
+  const members = getLaneTeamMembers(slice, c.interviewer);
   const editBtn = canOpenTeamPanel(slice, { runde: entry.runde, erstSlice: c.erst })
     ? `<button type="button" class="lane-team-btn" data-act="team-panel" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="Interviewer bearbeiten"><i class="fa-solid fa-pencil"></i></button>`
     : '';
@@ -2460,7 +2464,10 @@ function renderLaneOwnerBtn(entry) {
 function backfillSliceOwner(slice) {
   if (!slice) return;
   ensureInitialOwner(slice);
-  if (slice.meta?.ownerId) return;
+  if (slice.meta?.ownerId) {
+    syncInviteesOwner(slice);
+    return;
+  }
   const name = (slice.meta?.interviewer || '').trim();
   const m = state.teamMembers.find(t => (t.full_name || '').trim() === name);
   if (m) setSliceOwner(slice, m.id, m.full_name);
@@ -3274,6 +3281,7 @@ function refreshLiveScores() {
 
 function effectiveRatings() {
   if (!isZweit()) return state.erst.ratings || {};
+  if (!hasRatingValues(state.zweit.ratings)) return {};
   const merged = {};
   for (const [questionId, evaluations] of Object.entries(state.erst.ratings || {})) {
     merged[questionId] = { ...evaluations };
@@ -3285,6 +3293,12 @@ function effectiveRatings() {
     }
   }
   return merged;
+}
+
+function hasRatingValues(ratings) {
+  return Object.values(ratings || {}).some(evaluations =>
+    Object.values(evaluations || {}).some(value => value != null)
+  );
 }
 
 function getAllEvaluatedQuestions() {
@@ -3318,6 +3332,7 @@ function getAllEvaluatedQuestions() {
 }
 
 function calculateScores() {
+  const emptyZweitgespraech = isZweit() && !hasRatingValues(state.zweit.ratings);
   const ratings = effectiveRatings();
   const perDim = {}, averages = {};
   for (const k of Object.keys(DIMENSIONS)) perDim[k] = { sum: 0, count: 0 };
@@ -3347,7 +3362,7 @@ function calculateScores() {
   return {
     perDim,
     averages,
-    overall: totalWeight > 0 ? weightedSum / totalWeight : null,
+    overall: emptyZweitgespraech ? 0 : (totalWeight > 0 ? weightedSum / totalWeight : null),
   };
 }
 
