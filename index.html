@@ -185,22 +185,31 @@
       #shell-toolbar, .dash-content { padding-left: 1rem; padding-right: 1rem; }
     }
     @media (max-width: 768px) {
-      .sop-header { min-height: 56px; flex-wrap: wrap; }
-      .header-left { width: 100%; }
-      .header-right { width: 100%; justify-content: flex-end; }
+      .sop-header { min-height: 56px; flex-wrap: wrap; padding: .75rem 1rem; gap: .75rem 1rem; }
+      .header-left,
+      .header-right { width: 100%; min-width: 0; }
+      .header-left { flex-wrap: wrap; gap: .65rem .75rem; }
+      .header-right { justify-content: space-between; gap: .5rem .75rem; flex-wrap: wrap; }
+      .header-divider,
+      .header-sep { display: none; }
+      .header-sub { flex: 1 1 100%; white-space: normal; line-height: 1.35; }
+      #shell-toolbar { padding: .9rem 1rem; gap: .75rem; }
+      .dash-title { min-width: 0; font-size: 1.1rem; }
+      .dash-content { padding: 1rem 1rem 2.5rem; }
     }
 
     /* ─── Mobile (<= 600px) ─── */
     @media (max-width: 600px) {
       .nav-hamburger { display: flex !important; }
       .dash-sidebar {
-        position: fixed; left: 0; top: 0; height: 100vh !important; z-index: 9000;
+        position: fixed; left: 0; top: 56px; height: calc(100dvh - 56px) !important; z-index: 9000;
         transform: translateX(-110%);
         transition: transform .27s cubic-bezier(.4,0,.2,1), box-shadow .27s;
         width: 240px !important;
         overflow-y: auto;
       }
       .dash-sidebar.is-open { transform: translateX(0) !important; box-shadow: 4px 0 24px rgba(15,23,42,.2); }
+      .sidebar-overlay { top: 56px; }
       .sidebar-overlay.is-open { display: block !important; }
       .dash-content { padding: .75rem 1rem 3rem; }
       body.mode-interview .dash-content { padding: .5rem .5rem 0; }
@@ -557,6 +566,9 @@
     .save-badge--idle { background: var(--status-bg); color: var(--muted); }
     .save-badge--saving { background: var(--warning-bg); color: var(--warning-text); }
     .save-badge--saved { background: #d0f4ee; color: #0f6b57; }
+    .save-badge--offline { background: #fff7ed; color: #9a3412; border: 1px solid #fdba74; cursor: help; }
+    .team-member-remove { margin-left: auto; width: 34px; height: 34px; border: 0; border-radius: 8px; background: #fff1f2; color: #be123c; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+    .team-member-remove:hover, .team-member-remove:focus-visible { background: #ffe4e6; outline: 2px solid #fb7185; outline-offset: 1px; }
 
     /* ─── Toast ─── */
 
@@ -591,6 +603,239 @@
       .sec-title { flex-wrap: wrap; }
       .reco-buttons { grid-template-columns: 1fr; }
       .eval-anchors { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-hamburger {
+        width: 42px; height: 42px; padding: 0; justify-content: center;
+        border: 1px solid var(--line); background: var(--bg);
+      }
+      .nav-hamburger:hover,
+      .nav-hamburger:focus-visible { background: var(--brand-light); color: var(--brand); border-color: var(--brand); outline: none; }
+      .dash-nav { padding: .9rem .7rem calc(1rem + env(safe-area-inset-bottom)); }
+      .dash-nav-item {
+        min-height: 44px; padding: .75rem .9rem; font-size: .9rem;
+      }
+      .dash-search-wrap {
+        min-width: 100%; max-width: none;
+      }
+      .dash-filter {
+        flex: 1 1 calc(50% - .375rem);
+        min-width: 0;
+      }
+      .dash-toolbar {
+        gap: .75rem;
+      }
+      .bew-layout {
+        gap: 1rem;
+      }
+      .bew-list-head,
+      .bew-detail,
+      .panel,
+      .team-panel-head,
+      .team-panel-body,
+      .team-panel-foot,
+      .round-switch-card {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+      .bew-detail {
+        padding-top: 1.1rem;
+        padding-bottom: 1.1rem;
+      }
+      .bew-detail-actions {
+        flex-wrap: wrap;
+        justify-content: stretch;
+        overflow: visible;
+      }
+      .bew-detail-actions button {
+        min-height: 42px;
+        justify-content: center;
+      }
+      .bew-doc-item {
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+      .dash-group-head {
+        min-width: 0;
+      }
+      .dash-group-name,
+      .dash-group-sub {
+        overflow-wrap: anywhere;
+      }
+      .dash-lane {
+        padding: .8rem .9rem;
+        align-items: flex-start;
+      }
+      .dash-lane-chips,
+      .dash-lane-actions {
+        width: 100%;
+      }
+      .lane-owner,
+      .dash-lane-actions {
+        min-height: 40px;
+      }
+      .lane-avatar-more,
+      .lane-team-btn,
+      .dash-icon-btn,
+      .iv-sidenav-toggle {
+        width: 40px;
+        height: 40px;
+      }
+      .panel-h {
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+      .panel-title,
+      .sec-name,
+      .q-text,
+      .team-panel-head h3 {
+        overflow-wrap: anywhere;
+      }
+      .iv-snap-section,
+      .gesamt-panel {
+        scroll-margin-top: .5rem;
+      }
+      .script-block,
+      .roots-block,
+      .rti-block,
+      .case-block {
+        padding-left: .85rem;
+      }
+      .rating-pill,
+      .cf-opt,
+      .reco-btn,
+      .picker-item,
+      .team-member-opt,
+      .roots-select-trigger,
+      .btn-primary,
+      .btn-secondary,
+      .btn-danger,
+      .btn-ghost {
+        min-height: 44px;
+      }
+      .cf-row {
+        grid-template-columns: 1fr;
+        gap: .65rem;
+      }
+      .cf-vs {
+        justify-self: center;
+      }
+      .gesamt-overall {
+        gap: 1rem;
+        padding: .9rem 1rem;
+      }
+      .dim-grid {
+        grid-template-columns: 1fr;
+      }
+      .team-panel-foot,
+      .round-switch-actions,
+      .roots-modal-actions {
+        flex-wrap: wrap;
+      }
+      .team-panel-foot > *,
+      .round-switch-actions > *,
+      .roots-modal-actions > * {
+        flex: 1 1 180px;
+      }
+      .iv-interview-footer {
+        gap: .65rem;
+      }
+      body.mode-interview .iv-main {
+        padding-bottom: 5.75rem;
+        scroll-padding-bottom: 6rem;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .sop-header {
+        flex-wrap: nowrap;
+        align-items: center;
+      }
+      .header-left,
+      .header-right {
+        width: auto;
+      }
+      .header-left {
+        flex: 1;
+        min-width: 0;
+        gap: .65rem;
+      }
+      .header-right {
+        flex: 0 0 auto;
+        justify-content: flex-end;
+      }
+      .header-sub {
+        display: none;
+      }
+      .wordmark {
+        font-size: 13px;
+      }
+      #shell-toolbar {
+        padding: .8rem 1rem;
+      }
+      .dash-filter,
+      .dash-search-wrap {
+        min-width: 100%;
+        width: 100%;
+      }
+      .bew-list-panel {
+        max-height: min(34vh, 300px);
+      }
+      .bew-detail-actions button,
+      .team-panel-foot > *,
+      .round-switch-actions > *,
+      .roots-modal-actions > * {
+        flex-basis: 100%;
+      }
+      .iv-interview-footer {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      body.mode-interview .iv-interview-footer button {
+        width: 100%;
+        justify-content: center;
+      }
+      .gesamt-score-big {
+        font-size: 2.2rem;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .logo-mark {
+        width: 26px;
+        height: 26px;
+      }
+      .wordmark {
+        font-size: 12px;
+      }
+      .dash-title {
+        font-size: 1rem;
+      }
+      .dash-content {
+        padding-left: .75rem;
+        padding-right: .75rem;
+      }
+      .panel,
+      .bew-detail,
+      .roots-modal-box,
+      .round-switch-card,
+      .team-panel-card {
+        border-radius: 14px;
+      }
+      .iv-snap-section,
+      .gesamt-panel,
+      .panel {
+        padding-left: .85rem;
+        padding-right: .85rem;
+      }
+      .rating-row {
+        gap: .25rem;
+      }
+      .rating-pill {
+        padding: .45rem .2rem;
+        font-size: .82rem;
+      }
     }
   
     /* ── ROOTS Confirm Modals ──────────────────────────────────────────── */
@@ -958,7 +1203,7 @@
     </div>
     <div style="display:flex;gap:.75rem;margin-top:1.5rem">
       <button id="rus-save" onclick="window.RootsUser.saveSettings()" style="flex:1;height:42px;background:#206efb;color:#fff;border:none;border-radius:999px;font-family:inherit;font-size:.9rem;font-weight:600;cursor:pointer;transition:background .2s">Speichern</button>
-      <button onclick="window.RootsUser.closeSettings()" style="height:42px;padding:0 1.25rem;background:none;border:1px solid var(--line);color:var(--ink);border-radius:999px;font-family:inherit;font-size:.9rem;cursor:pointer">Abbrechen</button>
+      <button id="rus-later" type="button" onclick="window.RootsUser.closeSettings()" style="height:42px;padding:0 1.25rem;background:none;border:1px solid var(--line);color:var(--ink);border-radius:999px;font-family:inherit;font-size:.9rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:.45rem"><i class="fa-regular fa-clock"></i> Später eintragen</button>
     </div>
     <div id="rus-msg" style="display:none;margin-top:.75rem;font-size:.85rem;text-align:center"></div>
   </div>
@@ -1636,12 +1881,17 @@ const RECO_OPTIONS_ZWEIT = ['Einstellen', 'Vielleicht – weitere Diskussion', '
 /* ──────────────────────────────────────────────
    State + Reducer + Persistence
    ────────────────────────────────────────────── */
+const DEFAULT_DIMENSION_WEIGHTS = Object.fromEntries(
+  Object.keys(DIMENSIONS).map(dimension => [dimension, 1])
+);
+
 const INITIAL_STATE = {
   checks: {}, notes: {}, observations: {}, ratings: {},
   meta: { kandidat: '', interviewer: '', datum: '', runde: 'erst', sessionId: '', ownerId: '', ownerName: '', initialOwnerId: '', zweitCreated: false, invitees: [] },
   gesamtNote: '', recommendation: '',
   abschlussNotes: {}, rtiDone: false, caseChecks: {}, zweitAnmerkung: '',
   cultureFitAnswers: {},
+  weights: { ...DEFAULT_DIMENSION_WEIGHTS },
   completed: false, completedAt: null,
 };
 
@@ -1790,7 +2040,7 @@ async function loadTeamMembers() {
 
 async function persistCandidateSlices(c) {
   if (!c?.session_id) return;
-  await recruitingDb().from('interviews').upsert({
+  const { error } = await recruitingDb().from('interviews').upsert({
     session_id: c.session_id,
     kandidat: c.kandidat || c.erst?.meta?.kandidat || '',
     interviewer: c.interviewer || c.erst?.meta?.interviewer || '',
@@ -1801,6 +2051,7 @@ async function persistCandidateSlices(c) {
     recommendation: c.recommendation ?? c.erst?.recommendation ?? null,
     weighted_overall: c.weighted_overall ?? null,
   }, { onConflict: 'session_id' });
+  if (error) throw error;
 }
 
 async function notifyUsers(userIds, payload) {
@@ -2027,6 +2278,7 @@ function renderTeamPanelBody() {
         <span class="team-member-opt-name">${escapeHtml(m.full_name || 'Unbenannt')}</span>
         <span class="team-member-opt-role">${escapeHtml(m.position || m.email || '')}</span>
       </span>
+      ${mode === 'participant' && selected ? `<button type="button" class="team-member-remove" data-remove-uid="${escapeHtml(m.id)}" title="${escapeHtml(m.full_name || 'Person')} aus dem Gespräch entfernen" aria-label="${escapeHtml(m.full_name || 'Person')} aus dem Gespräch entfernen"><i class="fa-solid fa-xmark"></i></button>` : ''}
     </label>`;
   };
   const c = state.candidates.find(x => x.session_id === tp.sessionId);
@@ -2068,6 +2320,14 @@ function renderTeamPanelBody() {
         cb.checked = true;
         label.classList.add('selected');
       }
+    });
+  });
+  body.querySelectorAll('[data-remove-uid]').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      tp.participantIds.delete(button.dataset.removeUid);
+      renderTeamPanelBody();
     });
   });
 }
@@ -2554,13 +2814,95 @@ const setSaveStatus = (status, msg) => {
   badge.style.display = 'inline-flex';
   badge.className = 'save-badge save-badge--' + status;
   txt.textContent = msg || (status === 'saving' ? 'Speichere…' : 'Gespeichert');
+  badge.title = status === 'offline'
+    ? 'Supabase war nicht erreichbar. Das vollständige Gespräch liegt im Local Storage und wurde als Markdown heruntergeladen. Suche in deinen Downloads nach „ROOTS-Interview“.'
+    : '';
   if (status === 'saved') setTimeout(() => { badge.style.display = 'none'; }, 1800);
 };
 
 function persistLocalDraft() {
   try {
     localStorage.setItem('roots-recruit-last', JSON.stringify({ erst: state.erst, zweit: state.zweit }));
-  } catch {}
+    return true;
+  } catch (e) {
+    console.error('persistLocalDraft', e);
+    return false;
+  }
+}
+
+function markdownValue(value) {
+  if (value == null || value === '') return '—';
+  if (typeof value === 'boolean') return value ? 'Ja' : 'Nein';
+  return String(value).replace(/\r\n/g, '\n').trim() || '—';
+}
+
+function markdownMap(title, values = {}) {
+  const entries = Object.entries(values).filter(([, value]) => value != null && value !== '' && !(typeof value === 'object' && !Object.keys(value).length));
+  if (!entries.length) return '';
+  return `\n### ${title}\n\n${entries.map(([key, value]) => {
+    const label = key.replace(/_/g, ' ');
+    if (value && typeof value === 'object') {
+      return `- **${label}:** ${Object.entries(value).map(([subKey, subValue]) => `${subKey}: ${markdownValue(subValue)}`).join(' · ')}`;
+    }
+    return `- **${label}:** ${markdownValue(value).replace(/\n/g, '\n  ')}`;
+  }).join('\n')}\n`;
+}
+
+function interviewMarkdown() {
+  const meta = state.erst.meta || {};
+  const rounds = [
+    ['Erstgespräch', state.erst],
+    ['Zweitgespräch', state.zweit],
+  ];
+  let md = `# ROOTS Interview · ${markdownValue(meta.kandidat)}\n\n`;
+  md += `> Automatische Offline-Sicherung, weil das Gespräch nicht erfolgreich in Supabase gespeichert werden konnte.\n\n`;
+  md += `- **Exportiert:** ${new Date().toLocaleString('de-DE')}\n`;
+  md += `- **Datum:** ${markdownValue(meta.datum)}\n`;
+  md += `- **Interviewer:in:** ${markdownValue(meta.interviewer)}\n`;
+  md += `- **Session-ID:** ${markdownValue(meta.sessionId)}\n`;
+  for (const [roundLabel, slice] of rounds) {
+    const participants = getSliceParticipants(slice).map(person => `${person.name || getTeamMember(person.userId)?.full_name || person.userId || 'Unbekannt'} (${person.role === 'owner' ? 'Owner' : 'Teilnehmer:in'})`);
+    md += `\n## ${roundLabel}\n\n`;
+    md += `- **Status:** ${slice.completed ? `Abgeschlossen${slice.completedAt ? ` am ${new Date(slice.completedAt).toLocaleString('de-DE')}` : ''}` : 'Entwurf'}\n`;
+    md += `- **Empfehlung:** ${markdownValue(slice.recommendation)}\n`;
+    md += `- **Gesprächspersonen:** ${participants.length ? participants.join(', ') : '—'}\n`;
+    if (slice.gesamtNote) md += `\n### Gesamteindruck\n\n${markdownValue(slice.gesamtNote)}\n`;
+    md += markdownMap('Bestätigungen', slice.checks);
+    md += markdownMap('Notizen', slice.notes);
+    md += markdownMap('Bewertungen', slice.ratings);
+    md += markdownMap('Beobachtungen', slice.observations);
+    md += markdownMap('Culture Fit', slice.cultureFitAnswers);
+    md += markdownMap('Case-Checks', slice.caseChecks);
+    md += markdownMap('Abschnittszeiten', slice.timerMinutes);
+    md += markdownMap('Abschlussnotizen', slice.abschlussNotes);
+    if (slice.rtiDone) md += `\n- **RTI bestätigt:** Ja\n`;
+    if (slice.zweitAnmerkung) md += `\n### Anmerkungen für das Zweitgespräch\n\n${markdownValue(slice.zweitAnmerkung)}\n`;
+  }
+  return md;
+}
+
+function downloadOfflineInterviewMarkdown() {
+  const candidate = (state.erst.meta?.kandidat || 'Interview')
+    .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'Interview';
+  const date = state.erst.meta?.datum || new Date().toISOString().slice(0, 10);
+  const blob = new Blob([interviewMarkdown()], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `ROOTS-Interview-${candidate}-${date}.md`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function completeInterviewOffline(check, error) {
+  persistLocalDraft();
+  downloadOfflineInterviewMarkdown();
+  setSaveStatus('offline', 'Nur lokal · MD-Download');
+  toast(`${check.rundeLabel} lokal gesichert · Markdown in Downloads`, 'error');
+  console.error('Offline-Abschluss nach Supabase-Fehler', error);
 }
 
 function scheduleSave() {
@@ -2658,60 +3000,82 @@ function refreshLiveScores() {
 }
 
 function effectiveRatings() {
-  if (!isZweit()) return state.erst.ratings;
+  if (!isZweit()) return state.erst.ratings || {};
   const merged = {};
-  for (const [qid, evals] of Object.entries(state.erst.ratings || {})) merged[qid] = { ...evals };
-  for (const [qid, evals] of Object.entries(state.zweit.ratings || {})) {
-    if (!merged[qid]) merged[qid] = {};
-    // only override Erst rating when Zweit has a real value, never let null/undefined wipe it
-    for (const [idx, v] of Object.entries(evals)) if (v != null) merged[qid][idx] = v;
+  for (const [questionId, evaluations] of Object.entries(state.erst.ratings || {})) {
+    merged[questionId] = { ...evaluations };
+  }
+  for (const [questionId, evaluations] of Object.entries(state.zweit.ratings || {})) {
+    if (!merged[questionId]) merged[questionId] = {};
+    for (const [evaluationIndex, value] of Object.entries(evaluations)) {
+      merged[questionId][evaluationIndex] = value;
+    }
   }
   return merged;
 }
 
+function getAllEvaluatedQuestions() {
+  const seen = new Set();
+  const questions = [];
+  for (const sections of [SECTIONS_ERST, SECTIONS_ZWEIT]) {
+    for (const section of sections) {
+      if (section.blockEvaluation && !seen.has(section.blockEvaluation.id)) {
+        seen.add(section.blockEvaluation.id);
+        questions.push({
+          id: section.blockEvaluation.id,
+          evaluations: section.blockEvaluation.evaluations,
+        });
+      }
+      if (section.outroEvaluation && !seen.has(section.outroEvaluation.id)) {
+        seen.add(section.outroEvaluation.id);
+        questions.push({
+          id: section.outroEvaluation.id,
+          evaluations: section.outroEvaluation.evaluations,
+        });
+      }
+      for (const question of section.questions || []) {
+        if (question.evaluations?.length && !seen.has(question.id)) {
+          seen.add(question.id);
+          questions.push(question);
+        }
+      }
+    }
+  }
+  return questions;
+}
+
 function calculateScores() {
-  const er = effectiveRatings();
+  const ratings = effectiveRatings();
   const perDim = {}, averages = {};
   for (const k of Object.keys(DIMENSIONS)) perDim[k] = { sum: 0, count: 0 };
-  const all = getAllEvaluatedQuestions();
-  for (const q of all) {
-    const r = er[q.id] || {};
+  for (const q of getAllEvaluatedQuestions()) {
+    const questionRatings = ratings[q.id] || {};
     q.evaluations.forEach((ev, idx) => {
-      const v = r[idx];
-      if (v != null && ev.dimension) {
-        perDim[ev.dimension].sum += v;
+      const value = questionRatings[idx];
+      if (value != null && ev.dimension) {
+        perDim[ev.dimension].sum += value;
         perDim[ev.dimension].count += 1;
       }
     });
   }
-  let sum = 0, count = 0;
   for (const k of Object.keys(DIMENSIONS)) {
     if (perDim[k].count > 0) {
       averages[k] = perDim[k].sum / perDim[k].count;
-      sum += averages[k]; count += 1;
     }
   }
-  return { perDim, averages, overall: count > 0 ? sum / count : null };
-}
-
-function getAllEvaluatedQuestions() {
-  const seen = new Set(), arr = [];
-  for (const list of [SECTIONS_ERST, SECTIONS_ZWEIT]) {
-    for (const s of list) {
-      if (s.blockEvaluation && !seen.has(s.blockEvaluation.id)) {
-        seen.add(s.blockEvaluation.id);
-        arr.push({ id: s.blockEvaluation.id, evaluations: s.blockEvaluation.evaluations });
-      }
-      if (s.outroEvaluation && !seen.has(s.outroEvaluation.id)) {
-        seen.add(s.outroEvaluation.id);
-        arr.push({ id: s.outroEvaluation.id, evaluations: s.outroEvaluation.evaluations });
-      }
-      if (s.questions) for (const q of s.questions) {
-        if (!seen.has(q.id) && q.evaluations) { seen.add(q.id); arr.push(q); }
-      }
-    }
+  const weights = currentSlice().weights || DEFAULT_DIMENSION_WEIGHTS;
+  let weightedSum = 0;
+  let totalWeight = 0;
+  for (const [dimension, average] of Object.entries(averages)) {
+    const weight = weights[dimension] ?? 1;
+    weightedSum += average * weight;
+    totalWeight += weight;
   }
-  return arr;
+  return {
+    perDim,
+    averages,
+    overall: totalWeight > 0 ? weightedSum / totalWeight : null,
+  };
 }
 
 function resolveInterviewKandidat() {
@@ -2764,7 +3128,7 @@ async function saveCurrent(opts = {}) {
     recommendation: activeSlice.recommendation || null,
     weighted_overall: scores.overall,
   };
-  try { localStorage.setItem('roots-recruit-last', JSON.stringify({ erst: state.erst, zweit: state.zweit })); } catch {}
+  persistLocalDraft();
   if (!row.kandidat && !opts.allowEmptyKandidat) return;
   setSaveStatus('saving');
   try {
@@ -2786,7 +3150,8 @@ async function saveCurrent(opts = {}) {
     if (state.view === 'bewerber') renderBewerberDetail(state.selectedApplicantId);
   } catch (e) {
     console.error('saveCurrent', e);
-    setSaveStatus('idle', 'Speichern fehlgeschlagen');
+    persistLocalDraft();
+    setSaveStatus('offline', 'Nur lokal gespeichert');
     if (opts.throwOnError) throw e;
   } finally {
     savingPromise = null;
@@ -2855,9 +3220,10 @@ async function saveInterviewComplete() {
     switchView('dashboard');
   } catch (e) {
     console.error('saveInterviewComplete', e);
-    check.slice.completed = false;
-    check.slice.completedAt = null;
-    toast('Speichern fehlgeschlagen', 'error');
+    completeInterviewOffline(check, e);
+    await loadAllCandidates();
+    exitInterviewFullscreenIfActive();
+    switchView('dashboard');
   }
 }
 
@@ -2978,9 +3344,10 @@ async function finalizeInterview() {
     renderSidenav();
     if (state.view === 'dashboard') renderDashboard();
   } catch (e) {
-    check.slice.completed = false;
-    check.slice.completedAt = null;
-    toast('Abschluss konnte nicht gespeichert werden', 'error');
+    completeInterviewOffline(check, e);
+    renderMain();
+    renderSidenav();
+    if (state.view === 'dashboard') renderDashboard();
   }
 }
 
@@ -3647,6 +4014,7 @@ function renderGesamtEvaluation() {
   const recos = zweit ? RECO_OPTIONS_ZWEIT : RECO_OPTIONS_ERST;
   const overall = scores.overall;
   const overallPct = overall != null ? Math.max(0, Math.min(100, (overall / 5) * 100)) : 0;
+  const scoreExplanation = `Auf Basis von ${Object.values(scores.perDim).reduce((a,b)=>a+b.count,0)} Bewertungen über ${Object.keys(scores.averages).length} Dimensionen`;
 
   let dims = '';
   for (const k of Object.keys(DIMENSIONS)) {
@@ -3675,7 +4043,7 @@ function renderGesamtEvaluation() {
         <div class="gesamt-score-label">Gewichteter Gesamtscore</div>
       </div>
       <div class="gesamt-score-meta">
-        <div style="font-size:.85rem;color:var(--muted)">Auf Basis von ${Object.values(scores.perDim).reduce((a,b)=>a+b.count,0)} Bewertungen über ${Object.keys(scores.averages).length} Dimensionen</div>
+        <div style="font-size:.85rem;color:var(--muted)">${scoreExplanation}</div>
         <div class="gesamt-score-bar"><div class="gesamt-score-fill" style="width:${overallPct}%"></div></div>
       </div>
     </div>
@@ -4540,11 +4908,30 @@ window.RootsSyncStatusConfig = {
   const hamburger = document.getElementById('nav-hamburger');
   const sidebar = document.querySelector('.dash-sidebar');
   const overlay = document.getElementById('sidebar-overlay');
-  function closeSidebar() { sidebar?.classList.remove('is-open'); overlay?.classList.remove('is-open'); }
-  hamburger?.addEventListener('click', () => { sidebar?.classList.toggle('is-open'); overlay?.classList.toggle('is-open'); });
+  const mobileNavMq = window.matchMedia('(max-width: 600px)');
+  function syncSidebarState(isOpen) {
+    sidebar?.classList.toggle('is-open', isOpen);
+    overlay?.classList.toggle('is-open', isOpen);
+    document.body.classList.toggle('sidebar-open', isOpen);
+    hamburger?.setAttribute('aria-expanded', String(isOpen));
+    hamburger?.setAttribute('aria-label', isOpen ? 'Menü schließen' : 'Menü öffnen');
+  }
+  function closeSidebar() { syncSidebarState(false); }
+  hamburger?.setAttribute('aria-controls', 'app-nav');
+  hamburger?.setAttribute('aria-expanded', 'false');
+  hamburger?.addEventListener('click', () => {
+    if (!mobileNavMq.matches) return;
+    syncSidebarState(!sidebar?.classList.contains('is-open'));
+  });
   overlay?.addEventListener('click', closeSidebar);
   document.querySelector('#app-nav')?.addEventListener('click', (e) => {
-    if (e.target.closest('.dash-nav-item') && window.innerWidth <= 600) closeSidebar();
+    if (e.target.closest('.dash-nav-item') && mobileNavMq.matches) closeSidebar();
+  });
+  window.addEventListener('resize', () => {
+    if (!mobileNavMq.matches) closeSidebar();
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSidebar();
   });
 })();
 
