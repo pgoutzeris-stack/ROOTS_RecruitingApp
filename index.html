@@ -1153,6 +1153,20 @@
   </div>
 </div>
 
+<!-- ─── Sicherheitskopie nach erkanntem Speicherproblem ─── -->
+<div class="round-switch-overlay" id="safety-download-overlay">
+  <div class="round-switch-card" role="dialog" aria-modal="true" aria-labelledby="safety-download-title">
+    <h3 id="safety-download-title">Sicherheitskopie herunterladen?</h3>
+    <p id="safety-download-message"></p>
+    <div class="round-switch-actions">
+      <button type="button" class="btn-secondary" id="safety-download-cancel">Nein, weiter</button>
+      <button type="button" class="btn-primary" id="safety-download-confirm">
+        <i class="fa-solid fa-download"></i> Markdown herunterladen
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ─── Team Panel ─── -->
 <div class="team-panel-overlay" id="team-panel-overlay">
   <div class="team-panel-card" role="dialog" aria-labelledby="team-panel-title">
@@ -2821,6 +2835,58 @@ let dbSaveTimer = null;
 let dbAutosaveInFlight = false;
 let dbAutosaveQueued = false;
 let savingPromise = null;
+const SUPABASE_SLOW_SAVE_MS = 2500;
+const SUPABASE_SAVE_TIMEOUT_MS = 10000;
+let interviewSaveHealth = {
+  sessionId: '',
+  slowDetected: false,
+  errorDetected: false,
+  offlineDetected: false,
+  maxDurationMs: 0,
+  verifiedFingerprint: '',
+};
+
+function resetInterviewSaveHealth(sessionId = '') {
+  interviewSaveHealth = {
+    sessionId,
+    slowDetected: false,
+    errorDetected: false,
+    offlineDetected: false,
+    maxDurationMs: 0,
+    verifiedFingerprint: '',
+  };
+}
+
+function ensureInterviewSaveHealth() {
+  const sessionId = state.erst.meta?.sessionId || '';
+  if (interviewSaveHealth.sessionId !== sessionId) resetInterviewSaveHealth(sessionId);
+  return interviewSaveHealth;
+}
+
+function markInterviewSaveIssue(type, detail = {}) {
+  const health = ensureInterviewSaveHealth();
+  if (type === 'slow') health.slowDetected = true;
+  if (type === 'error') health.errorDetected = true;
+  if (type === 'offline') health.offlineDetected = true;
+  if (detail.durationMs) health.maxDurationMs = Math.max(health.maxDurationMs, detail.durationMs);
+}
+
+function hadInterviewSaveIssues() {
+  const health = ensureInterviewSaveHealth();
+  return health.slowDetected || health.errorDetected || health.offlineDetected;
+}
+
+function describeInterviewSaveIssues() {
+  const health = ensureInterviewSaveHealth();
+  const issues = [];
+  if (health.offlineDetected) issues.push('eine unterbrochene Internetverbindung');
+  if (health.errorDetected) issues.push('Probleme bei der Supabase-Speicherung');
+  if (health.slowDetected) issues.push('ungewöhnlich langsame Speicherungen');
+  if (!issues.length) return 'Probleme mit Supabase oder mit der Internetverbindung';
+  if (issues.length === 1) return issues[0];
+  return `${issues.slice(0, -1).join(', ')} und ${issues[issues.length - 1]}`;
+}
+
 const setSaveStatus = (status, msg) => {
   const badge = document.getElementById('save-badge');
   const txt = document.getElementById('save-badge-text');
@@ -2828,17 +2894,21 @@ const setSaveStatus = (status, msg) => {
   badge.className = 'save-badge save-badge--' + status;
   txt.textContent = msg || (status === 'saving' ? 'Speichere…' : 'Gespeichert');
   badge.title = status === 'offline'
-    ? 'Supabase war nicht erreichbar. Das vollständige Gespräch liegt im Local Storage und wurde als Markdown heruntergeladen. Suche in deinen Downloads nach „ROOTS-Interview“.'
+    ? (String(msg || '').includes('MD')
+      ? 'Supabase war nicht erreichbar. Das vollständige Gespräch liegt im Local Storage und wurde als Markdown heruntergeladen. Suche in deinen Downloads nach „ROOTS-Interview“.'
+      : 'Supabase ist derzeit nicht zuverlässig erreichbar. Das vollständige Gespräch ist im Local Storage gesichert.')
     : '';
   if (status === 'saved') setTimeout(() => { badge.style.display = 'none'; }, 1800);
 };
 
 function persistLocalDraft() {
   try {
+    const health = ensureInterviewSaveHealth();
     localStorage.setItem('roots-recruit-last', JSON.stringify({
       erst: state.erst,
       zweit: state.zweit,
       _savedAt: new Date().toISOString(),
+      _saveHealth: health,
     }));
     return true;
   } catch (e) {
@@ -2856,6 +2926,9 @@ function localDraftCandidate() {
     if (!erst?.meta?.sessionId || !erst?.meta?.kandidat) return null;
     const zweit = parsed.zweit || deepClone(INITIAL_STATE);
     const activeSlice = erst.meta.runde === 'zweit' ? zweit : erst;
+    const snapshot = { erst, zweit };
+    const isVerified = parsed._saveHealth?.verifiedFingerprint
+      && parsed._saveHealth.verifiedFingerprint === interviewSnapshotFingerprint(snapshot);
     return {
       session_id: erst.meta.sessionId,
       kandidat: erst.meta.kandidat,
@@ -2866,13 +2939,71 @@ function localDraftCandidate() {
       zweit,
       recommendation: activeSlice.recommendation || null,
       weighted_overall: null,
-      _localOnly: true,
+      _localOnly: !isVerified,
       _localSavedAt: parsed._savedAt || null,
     };
   } catch (e) {
     console.error('localDraftCandidate', e);
     return null;
   }
+}
+
+function readLocalInterviewSnapshot() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem('roots-recruit-last') || 'null');
+    if (!parsed?.erst || parsed.erst.meta?.sessionId !== state.erst.meta?.sessionId) return null;
+    return { erst: parsed.erst, zweit: parsed.zweit || deepClone(INITIAL_STATE) };
+  } catch (e) {
+    console.error('readLocalInterviewSnapshot', e);
+    return null;
+  }
+}
+
+function restoreInterviewSaveHealth(sessionId) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem('roots-recruit-last') || 'null');
+    if (parsed?.erst?.meta?.sessionId === sessionId && parsed._saveHealth) {
+      interviewSaveHealth = {
+        ...interviewSaveHealth,
+        ...parsed._saveHealth,
+        sessionId,
+      };
+      return;
+    }
+  } catch (e) {
+    console.error('restoreInterviewSaveHealth', e);
+  }
+  resetInterviewSaveHealth(sessionId);
+}
+
+function stableInterviewValue(value) {
+  if (Array.isArray(value)) return value.map(stableInterviewValue);
+  if (value && typeof value === 'object') {
+    return Object.keys(value).sort().reduce((result, key) => {
+      if (value[key] !== undefined) result[key] = stableInterviewValue(value[key]);
+      return result;
+    }, {});
+  }
+  return value;
+}
+
+function interviewSlicesMatch(remote, local) {
+  if (!remote || !local) return false;
+  return JSON.stringify(stableInterviewValue(remote.erst || {})) === JSON.stringify(stableInterviewValue(local.erst || {}))
+    && JSON.stringify(stableInterviewValue(remote.zweit || {})) === JSON.stringify(stableInterviewValue(local.zweit || {}));
+}
+
+function interviewSnapshotFingerprint(snapshot) {
+  const serialized = JSON.stringify(stableInterviewValue({
+    erst: snapshot?.erst || {},
+    zweit: snapshot?.zweit || {},
+  }));
+  let hash = 2166136261;
+  for (let index = 0; index < serialized.length; index += 1) {
+    hash ^= serialized.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16);
 }
 
 function mergeLocalDraftIntoCandidates({ preferLocal = false } = {}) {
@@ -2885,7 +3016,7 @@ function mergeLocalDraftIntoCandidates({ preferLocal = false } = {}) {
   }
   const remoteUpdatedAt = Date.parse(state.candidates[index].updated_at || '');
   const localSavedAt = Date.parse(local._localSavedAt || '');
-  if (preferLocal || (Number.isFinite(localSavedAt) && (!Number.isFinite(remoteUpdatedAt) || localSavedAt > remoteUpdatedAt))) {
+  if (preferLocal || (local._localOnly && Number.isFinite(localSavedAt) && (!Number.isFinite(remoteUpdatedAt) || localSavedAt > remoteUpdatedAt))) {
     state.candidates[index] = { ...state.candidates[index], ...local };
   }
 }
@@ -2908,14 +3039,16 @@ function markdownMap(title, values = {}) {
   }).join('\n')}\n`;
 }
 
-function interviewMarkdown() {
+function interviewMarkdown({ verifiedInSupabase = false } = {}) {
   const meta = state.erst.meta || {};
   const rounds = [
     ['Erstgespräch', state.erst],
     ['Zweitgespräch', state.zweit],
   ];
   let md = `# ROOTS Interview · ${markdownValue(meta.kandidat)}\n\n`;
-  md += `> Automatische Offline-Sicherung, weil das Gespräch nicht erfolgreich in Supabase gespeichert werden konnte.\n\n`;
+  md += verifiedInSupabase
+    ? `> Zusätzliche Sicherheitskopie nach einem erkannten Speicherproblem. Die Gesprächsdaten wurden erfolgreich mit Supabase abgeglichen.\n\n`
+    : `> Automatische Offline-Sicherung, weil das Gespräch nicht erfolgreich mit Supabase abgeglichen werden konnte.\n\n`;
   md += `- **Exportiert:** ${new Date().toLocaleString('de-DE')}\n`;
   md += `- **Datum:** ${markdownValue(meta.datum)}\n`;
   md += `- **Interviewer:in:** ${markdownValue(meta.interviewer)}\n`;
@@ -2941,12 +3074,12 @@ function interviewMarkdown() {
   return md;
 }
 
-function downloadOfflineInterviewMarkdown() {
+function downloadOfflineInterviewMarkdown(options = {}) {
   const candidate = (state.erst.meta?.kandidat || 'Interview')
     .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'Interview';
   const date = state.erst.meta?.datum || new Date().toISOString().slice(0, 10);
-  const blob = new Blob([interviewMarkdown()], { type: 'text/markdown;charset=utf-8' });
+  const blob = new Blob([interviewMarkdown(options)], { type: 'text/markdown;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -2957,18 +3090,90 @@ function downloadOfflineInterviewMarkdown() {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function completeInterviewOffline(check, error) {
+function showSafetyDownloadConfirm(issueDescription) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('safety-download-overlay');
+    const message = document.getElementById('safety-download-message');
+    const confirm = document.getElementById('safety-download-confirm');
+    const cancel = document.getElementById('safety-download-cancel');
+    if (!overlay || !message || !confirm || !cancel) {
+      resolve(false);
+      return;
+    }
+    message.textContent = `Es gab im Gespräch ${issueDescription || 'Probleme mit Supabase oder mit der Internetverbindung'}. Alle Daten wurden allerdings erfolgreich in Supabase gespeichert und mit der lokalen Sicherung abgeglichen. Soll das Gespräch trotzdem jetzt heruntergeladen werden?`;
+    const close = result => {
+      overlay.classList.remove('visible');
+      confirm.removeEventListener('click', onConfirm);
+      cancel.removeEventListener('click', onCancel);
+      overlay.removeEventListener('click', onBackdrop);
+      resolve(result);
+    };
+    const onConfirm = () => close(true);
+    const onCancel = () => close(false);
+    const onBackdrop = event => { if (event.target === overlay) close(false); };
+    confirm.addEventListener('click', onConfirm);
+    cancel.addEventListener('click', onCancel);
+    overlay.addEventListener('click', onBackdrop);
+    overlay.classList.add('visible');
+  });
+}
+
+async function verifyInterviewAgainstLocalStorage({ quick = false } = {}) {
+  const local = readLocalInterviewSnapshot();
+  const sessionId = local?.erst?.meta?.sessionId;
+  if (!local || !sessionId || navigator.onLine === false) {
+    markInterviewSaveIssue('offline');
+    persistLocalDraft();
+    return false;
+  }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), quick ? 3000 : SUPABASE_SAVE_TIMEOUT_MS);
+  try {
+    const startedAt = Date.now();
+    const { data, error } = await recruitingDb().from('interviews')
+      .select('erst,zweit')
+      .eq('session_id', sessionId)
+      .maybeSingle()
+      .abortSignal(controller.signal);
+    const durationMs = Date.now() - startedAt;
+    if (durationMs >= SUPABASE_SLOW_SAVE_MS) markInterviewSaveIssue('slow', { durationMs });
+    if (error) throw error;
+    const matches = interviewSlicesMatch(data, local);
+    if (matches) ensureInterviewSaveHealth().verifiedFingerprint = interviewSnapshotFingerprint(local);
+    return matches;
+  } catch (error) {
+    markInterviewSaveIssue(navigator.onLine === false ? 'offline' : 'error');
+    console.error('verifyInterviewAgainstLocalStorage', error);
+    return false;
+  } finally {
+    clearTimeout(timeout);
+    persistLocalDraft();
+  }
+}
+
+async function finishInterviewStorageSafety(rundeLabel, { saveFailed = false } = {}) {
   persistLocalDraft();
-  downloadOfflineInterviewMarkdown();
-  setSaveStatus('offline', 'Nur lokal · MD-Download');
-  toast(`${check.rundeLabel} lokal gesichert · Markdown in Downloads`, 'error');
-  console.error('Offline-Abschluss nach Supabase-Fehler', error);
+  const verified = await verifyInterviewAgainstLocalStorage({ quick: saveFailed });
+  if (!verified) {
+    downloadOfflineInterviewMarkdown();
+    setSaveStatus('offline', 'Nur lokal · MD-Download');
+    toast(`${rundeLabel} lokal gesichert · Markdown automatisch heruntergeladen`, 'error');
+    return { verified: false, downloaded: true };
+  }
+  setSaveStatus('saved', 'Mit Supabase abgeglichen');
+  if (!hadInterviewSaveIssues()) return { verified: true, downloaded: false };
+  const shouldDownload = await showSafetyDownloadConfirm(describeInterviewSaveIssues());
+  if (shouldDownload) {
+    downloadOfflineInterviewMarkdown({ verifiedInSupabase: true });
+    toast('Markdown-Sicherheitskopie heruntergeladen', 'success');
+  }
+  return { verified: true, downloaded: shouldDownload };
 }
 
 function scheduleSave() {
+  persistLocalDraft();
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
-    persistLocalDraft();
     refreshLiveScores();
     updateInterviewSaveButtons();
   }, 120);
@@ -3157,6 +3362,40 @@ function resolveInterviewKandidat() {
   return bySession ? getApplicantDisplayName(bySession) : '';
 }
 
+async function performInterviewUpsert(row) {
+  if (navigator.onLine === false) {
+    markInterviewSaveIssue('offline');
+    persistLocalDraft();
+    throw new Error('Keine Internetverbindung');
+  }
+  const controller = new AbortController();
+  const startedAt = Date.now();
+  const slowTimer = setTimeout(() => {
+    markInterviewSaveIssue('slow', { durationMs: Date.now() - startedAt });
+    persistLocalDraft();
+    setSaveStatus('saving', 'Langsame Verbindung · lokal gesichert');
+  }, SUPABASE_SLOW_SAVE_MS);
+  const timeout = setTimeout(() => controller.abort(), SUPABASE_SAVE_TIMEOUT_MS);
+  try {
+    const result = await recruitingDb().from('interviews')
+      .upsert(row, { onConflict: 'session_id' })
+      .abortSignal(controller.signal);
+    const durationMs = Date.now() - startedAt;
+    if (durationMs >= SUPABASE_SLOW_SAVE_MS) markInterviewSaveIssue('slow', { durationMs });
+    if (result.error) throw result.error;
+    return result;
+  } catch (error) {
+    markInterviewSaveIssue(navigator.onLine === false ? 'offline' : 'error', {
+      durationMs: Date.now() - startedAt,
+    });
+    persistLocalDraft();
+    throw error;
+  } finally {
+    clearTimeout(slowTimer);
+    clearTimeout(timeout);
+  }
+}
+
 async function saveCurrent(opts = {}) {
   if (savingPromise) { try { await savingPromise; } catch {} }
   const meta = state.erst.meta;
@@ -3200,15 +3439,8 @@ async function saveCurrent(opts = {}) {
   if (!row.kandidat && !opts.allowEmptyKandidat) return;
   setSaveStatus('saving');
   try {
-    savingPromise = recruitingDb().from('interviews').upsert(row, { onConflict: 'session_id' });
-    let { error: _upsertErr } = await savingPromise;
-    if (_upsertErr) {
-      // one retry after 800ms — covers transient network blips
-      await new Promise(r => setTimeout(r, 800));
-      savingPromise = recruitingDb().from('interviews').upsert(row, { onConflict: 'session_id' });
-      ({ error: _upsertErr } = await savingPromise);
-      if (_upsertErr) throw _upsertErr;
-    }
+    savingPromise = performInterviewUpsert(row);
+    await savingPromise;
     if (row.kandidat) await syncApplicantFromInterview(row);
     setSaveStatus('saved');
     const idx = state.candidates.findIndex(c => c.session_id === row.session_id);
@@ -3218,6 +3450,7 @@ async function saveCurrent(opts = {}) {
     if (state.view === 'bewerber') renderBewerberDetail(state.selectedApplicantId);
   } catch (e) {
     console.error('saveCurrent', e);
+    markInterviewSaveIssue(navigator.onLine === false ? 'offline' : 'error');
     persistLocalDraft();
     setSaveStatus('offline', 'Nur lokal gespeichert');
     if (opts.throwOnError) throw e;
@@ -3275,40 +3508,42 @@ async function saveInterviewComplete() {
     const proceed = await showFinalizeConfirm(check.optionalMissing, check.rundeLabel);
     if (!proceed) return;
   }
+  check.slice.completed = true;
+  check.slice.completedAt = new Date().toISOString();
+  if (!isZweit() && state.erst.recommendation === ZWEIT_INVITE_RECO) {
+    ensureZweitInterviewCreated(state.erst, state.zweit);
+  }
+  persistLocalDraft();
+  let saveFailed = false;
   try {
-    check.slice.completed = true;
-    check.slice.completedAt = new Date().toISOString();
-    if (!isZweit() && state.erst.recommendation === ZWEIT_INVITE_RECO) {
-      ensureZweitInterviewCreated(state.erst, state.zweit);
-    }
     await saveCurrentImmediate({ throwOnError: true });
-    toast(`${check.rundeLabel} abgeschlossen und gespeichert`);
-    await loadAllCandidates();
-    exitInterviewFullscreenIfActive();
-    switchView('dashboard');
   } catch (e) {
+    saveFailed = true;
     console.error('saveInterviewComplete', e);
-    completeInterviewOffline(check, e);
-    await loadAllCandidates();
-    exitInterviewFullscreenIfActive();
-    switchView('dashboard');
   }
-}
-
-async function leaveInterviewToDashboard() {
-  let saveOk = false;
-  try {
-    await flushInterviewDraftToDb();
-    saveOk = true;
-  } catch (e) {
-    console.error('leaveInterviewToDashboard – save failed:', e);
-    toast('Entwurf konnte nicht gespeichert werden', 'error');
-  }
-  await loadAllCandidates();          // always refresh, regardless of save result
-  if (!saveOk) mergeLocalDraftIntoCandidates({ preferLocal: true });
-  if (saveOk) toast('Entwurf gespeichert');
+  const safety = await finishInterviewStorageSafety(check.rundeLabel, { saveFailed });
+  if (safety.verified) toast(`${check.rundeLabel} abgeschlossen und sicher gespeichert`);
+  await loadAllCandidates();
+  if (!safety.verified) mergeLocalDraftIntoCandidates({ preferLocal: true });
   exitInterviewFullscreenIfActive();
   switchView('dashboard');
+}
+
+async function leaveInterviewToDashboard(targetView = 'dashboard') {
+  let saveFailed = false;
+  try {
+    await flushInterviewDraftToDb();
+  } catch (e) {
+    saveFailed = true;
+    console.error('leaveInterviewToDashboard – save failed:', e);
+  }
+  const rundeLabel = isZweit() ? 'Zweitgespräch' : 'Erstgespräch';
+  const safety = await finishInterviewStorageSafety(rundeLabel, { saveFailed });
+  await loadAllCandidates();          // always refresh, regardless of save result
+  if (!safety.verified) mergeLocalDraftIntoCandidates({ preferLocal: true });
+  if (safety.verified) toast('Entwurf sicher gespeichert');
+  exitInterviewFullscreenIfActive();
+  switchView(targetView);
 }
 
 function isRoundCompletedInData(c, runde) {
@@ -3406,18 +3641,19 @@ async function finalizeInterview() {
   if (!isZweit() && state.erst.recommendation === ZWEIT_INVITE_RECO) {
     ensureZweitInterviewCreated(state.erst, state.zweit);
   }
+  persistLocalDraft();
+  let saveFailed = false;
   try {
     await saveCurrentImmediate({ throwOnError: true });
-    toast(`${check.rundeLabel} abgeschlossen und gespeichert`);
-    renderMain();
-    renderSidenav();
-    if (state.view === 'dashboard') renderDashboard();
   } catch (e) {
-    completeInterviewOffline(check, e);
-    renderMain();
-    renderSidenav();
-    if (state.view === 'dashboard') renderDashboard();
+    saveFailed = true;
+    console.error('finalizeInterview', e);
   }
+  const safety = await finishInterviewStorageSafety(check.rundeLabel, { saveFailed });
+  if (safety.verified) toast(`${check.rundeLabel} abgeschlossen und sicher gespeichert`);
+  renderMain();
+  renderSidenav();
+  if (state.view === 'dashboard') renderDashboard();
 }
 
 function reopenInterviewRound() {
@@ -3508,6 +3744,7 @@ function loadCandidateIntoInterview(c, opts = {}) {
   ensureZweitTeamMeta(state.erst, state.zweit);
   state.erst.meta.sessionId = c.session_id || state.erst.meta.sessionId;
   state.zweit.meta.sessionId = state.erst.meta.sessionId;
+  restoreInterviewSaveHealth(state.erst.meta.sessionId);
   const linked = state.applicants.find(a => a.session_id === c.session_id);
   if (linked) state.linkedApplicantId = linked.id;
   const linkedName = linked ? getApplicantDisplayName(linked) : '';
@@ -3545,6 +3782,7 @@ function newInterview(opts = {}) {
   state.zweit = deepClone(INITIAL_STATE);
   state.erst.meta.sessionId = sid;
   state.zweit.meta.sessionId = sid;
+  resetInterviewSaveHealth(sid);
   state.erst.meta.datum = new Date().toISOString().slice(0, 10);
   state.zweit.meta.datum = state.erst.meta.datum;
   if (opts.kandidat) {
@@ -4729,13 +4967,7 @@ document.querySelectorAll('.app-nav-btn[data-view]').forEach(btn => {
   btn.addEventListener('click', () => {
     const target = btn.dataset.view;
     if (state.view === 'interview' && target !== 'interview') {
-      if (target === 'dashboard') {
-        leaveInterviewToDashboard();
-      } else {
-        flushInterviewDraftToDb()
-          .then(() => switchView(target))
-          .catch(() => { persistLocalDraft(); switchView(target); });
-      }
+      leaveInterviewToDashboard(target);
       return;
     }
     switchView(target);
@@ -4806,8 +5038,25 @@ try {
     const parsed = JSON.parse(saved);
     if (parsed.erst) state.erst = Object.assign(deepClone(INITIAL_STATE), parsed.erst, { meta: Object.assign({}, INITIAL_STATE.meta, parsed.erst.meta||{}) });
     if (parsed.zweit) state.zweit = Object.assign(deepClone(INITIAL_STATE), parsed.zweit, { meta: Object.assign({}, INITIAL_STATE.meta, parsed.zweit.meta||{}) });
+    if (parsed._saveHealth && parsed.erst?.meta?.sessionId) {
+      interviewSaveHealth = {
+        ...interviewSaveHealth,
+        ...parsed._saveHealth,
+        sessionId: parsed.erst.meta.sessionId,
+      };
+    }
   }
 } catch {}
+
+window.addEventListener('offline', () => {
+  if (state.view !== 'interview') return;
+  markInterviewSaveIssue('offline');
+  persistLocalDraft();
+  setSaveStatus('offline', 'Offline · lokal gesichert');
+});
+window.addEventListener('pagehide', () => {
+  if (state.view === 'interview') persistLocalDraft();
+});
 
 bindInterviewFooterHandlers();
 try {
