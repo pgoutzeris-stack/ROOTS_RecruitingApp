@@ -2111,10 +2111,7 @@ function ensureInitialOwner(slice) {
 function canTransferInterviewOwner(slice) {
   const uid = window.RootsUser?._uid;
   if (!uid || !slice?.meta) return false;
-  ensureInitialOwner(slice);
-  return String(slice.meta.initialOwnerId || '') === uid
-    || String(slice.meta.ownerId || '') === uid
-    || window.RootsUser?.isAdmin?.() === true;
+  return String(slice.meta.ownerId || '') === String(uid);
 }
 
 function ensureZweitTeamMeta(erstSlice, zweitSlice) {
@@ -2134,36 +2131,26 @@ function canOpenTeamPanel(slice, context = {}) {
   const uid = window.RootsUser?._uid;
   if (!uid || !slice?.meta) return false;
   const erst = context.erstSlice || state.erst;
-  // FIX: when context.runde is explicitly given, trust it. Otherwise the slice
-  // meta could be polluted by stale 'zweit' on the erst slice (saved from
-  // loadCandidateIntoInterview which sets both metas), causing infinite
-  // recursion via the erst-fallback below.
   const isZweitCtx = context.runde
     ? context.runde === 'zweit'
     : slice?.meta?.runde === 'zweit';
   if (isZweitCtx) ensureZweitTeamMeta(erst, slice);
   else ensureInitialOwner(slice);
-  if (canTransferInterviewOwner(slice)) return true;
-  if (String(slice.meta.ownerId || '') === uid) return true;
-  if (getSliceParticipants(slice).some(p => p.userId === uid)) return true;
-  if (isZweitCtx && context.runde !== 'erst') {
-    const erstSlice = context.erstSlice || state.erst;
-    if (erstSlice && erstSlice !== slice && canOpenTeamPanel(erstSlice, { runde: 'erst', erstSlice })) return true;
-  }
-  return false;
+  return String(slice.meta.ownerId || '') === String(uid);
 }
 
 async function setRoundOwner(sessionId, runde, userId, opts = {}) {
   const c = state.candidates.find(x => x.session_id === sessionId);
-  if (!c) return;
+  if (!c) return false;
   const member = getTeamMember(userId);
   const slice = runde === 'zweit' ? (c.zweit = c.zweit || deepClone(INITIAL_STATE)) : (c.erst = c.erst || deepClone(INITIAL_STATE));
   ensureInitialOwner(slice);
   if (!opts.force && userId && userId !== slice.meta?.ownerId && !canTransferInterviewOwner(slice)) {
-    toast('Nur der aktuelle oder initiale Owner darf die Owner-Rolle übergeben', 'error');
-    return;
+    toast('Nur der aktuelle Owner darf die Owner-Rolle übergeben', 'error');
+    return false;
   }
   const prevOwner = slice.meta?.ownerId;
+  const prevOwnerName = slice.meta?.ownerName;
   setSliceOwner(slice, userId, member?.full_name || '');
   try {
     await persistCandidateSlices(c);
@@ -2183,9 +2170,12 @@ async function setRoundOwner(sessionId, runde, userId, opts = {}) {
     if (!opts.silent) {
       toast(notificationSent ? 'Team aktualisiert' : 'Team gespeichert · Benachrichtigung fehlgeschlagen', notificationSent ? 'info' : 'error');
     }
+    return true;
   } catch (e) {
+    setSliceOwner(slice, prevOwner, prevOwnerName);
     console.error('setRoundOwner', e);
     toast('Speichern fehlgeschlagen', 'error');
+    return false;
   }
 }
 
@@ -2312,7 +2302,7 @@ function renderTeamPanelBody() {
   const ownerSection = allowOwnerTransfer
     ? `<div class="team-panel-section">
       <h4>Owner übergeben</h4>
-      <p style="font-size:.8rem;color:var(--muted);margin:0 0 .6rem;line-height:1.45">Aktuelle und initiale Owner können die Verantwortung übergeben.</p>
+      <p style="font-size:.8rem;color:var(--muted);margin:0 0 .6rem;line-height:1.45">Nur der aktuelle Owner kann die Verantwortung übergeben.</p>
       <div class="team-member-grid" id="tp-owner-list">${state.teamMembers.map(m => memberRow(m, 'owner')).join('')}</div>
     </div>`
     : '';
@@ -2363,7 +2353,7 @@ async function saveTeamPanel() {
   if (!c) return;
   const slice = tp.runde === 'zweit' ? (c.zweit = c.zweit || deepClone(INITIAL_STATE)) : (c.erst = c.erst || deepClone(INITIAL_STATE));
   if (!canOpenTeamPanel(slice, { runde: tp.runde, erstSlice: c.erst })) {
-    toast('Keine Berechtigung für Interviewer-Einstellungen', 'error');
+    toast('Nur der aktuelle Owner darf Personen einladen oder die Ownership übertragen', 'error');
     return;
   }
   const previousInvitees = deepClone(getSliceParticipants(slice));
@@ -2372,10 +2362,11 @@ async function saveTeamPanel() {
 
   if (tp.ownerId && tp.ownerId !== prevOwner) {
     if (!canTransferInterviewOwner(slice)) {
-      toast('Nur der aktuelle oder initiale Owner darf die Owner-Rolle übergeben', 'error');
+      toast('Nur der aktuelle Owner darf die Owner-Rolle übergeben', 'error');
       return;
     }
-    await setRoundOwner(tp.sessionId, tp.runde, tp.ownerId, { notify: tp.ownerId !== prevOwner, silent: true });
+    const transferred = await setRoundOwner(tp.sessionId, tp.runde, tp.ownerId, { notify: tp.ownerId !== prevOwner, silent: true });
+    if (!transferred) return;
   }
 
   const participants = [...tp.participantIds]
