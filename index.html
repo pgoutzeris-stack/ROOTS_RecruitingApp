@@ -2071,7 +2071,7 @@ async function persistCandidateSlices(c) {
 async function notifyUsers(userIds, payload) {
   const inviter = window.RootsUser._p?.full_name || 'Team';
   const uniq = [...new Set(userIds.filter(id => id && id !== window.RootsUser._uid))];
-  if (!uniq.length) return;
+  if (!uniq.length) return true;
   const rows = uniq.map(uid => ({
     user_id: uid,
     type: payload.type || 'interview_invite',
@@ -2090,10 +2090,14 @@ async function notifyUsers(userIds, payload) {
     meta: { source: 'recruiting', runde: payload.runde, kandidat: payload.kandidat, type: payload.type },
   }));
   try {
-    await recruitingDb().from('notifications').insert(rows);
-    await recruitingDb().from('bulletin_posts').insert(board);
+    const { error: notificationError } = await recruitingDb().from('notifications').insert(rows);
+    if (notificationError) throw notificationError;
+    const { error: bulletinError } = await recruitingDb().from('bulletin_posts').insert(board);
+    if (bulletinError) throw bulletinError;
+    return true;
   } catch (e) {
     console.error('notifyUsers', e);
+    return false;
   }
 }
 
@@ -2163,8 +2167,9 @@ async function setRoundOwner(sessionId, runde, userId, opts = {}) {
   setSliceOwner(slice, userId, member?.full_name || '');
   try {
     await persistCandidateSlices(c);
+    let notificationSent = true;
     if (opts.notify !== false && userId && userId !== prevOwner) {
-      await notifyUsers([userId], {
+      notificationSent = await notifyUsers([userId], {
         type: 'interview_owner',
         title: `Interview: ${c.kandidat || 'Bewerber'}`,
         message: `Du bist jetzt Owner des ${runde === 'zweit' ? 'Zweit' : 'Erst'}gesprächs mit ${c.kandidat || 'Bewerber'}.`,
@@ -2175,7 +2180,9 @@ async function setRoundOwner(sessionId, runde, userId, opts = {}) {
     }
     if (state.view === 'dashboard') renderDashboard();
     if (state.view === 'interview' && state.erst.meta.sessionId === sessionId) renderSidenav();
-    if (!opts.silent) toast('Team aktualisiert');
+    if (!opts.silent) {
+      toast(notificationSent ? 'Team aktualisiert' : 'Team gespeichert · Benachrichtigung fehlgeschlagen', notificationSent ? 'info' : 'error');
+    }
   } catch (e) {
     console.error('setRoundOwner', e);
     toast('Speichern fehlgeschlagen', 'error');
@@ -2386,8 +2393,9 @@ async function saveTeamPanel() {
   const removedParticipants = [...prevParticipants].filter(uid => !tp.participantIds.has(uid));
   try {
     await persistCandidateSlices(c);
+    let notificationsSent = true;
     if (newInvites.length) {
-      await notifyUsers(newInvites, {
+      notificationsSent = await notifyUsers(newInvites, {
         type: 'interview_invite',
         title: `Einladung: ${c.kandidat || 'Interview'}`,
         message: `Du wurdest zum ${tp.runde === 'zweit' ? 'Zweit' : 'Erst'}gespräch mit ${c.kandidat || 'Bewerber'} eingeladen.`,
@@ -2400,7 +2408,8 @@ async function saveTeamPanel() {
     const changes = [];
     if (newInvites.length) changes.push(`${newInvites.length} eingeladen`);
     if (removedParticipants.length) changes.push(`${removedParticipants.length} entfernt`);
-    toast(`Team gespeichert${changes.length ? ` · ${changes.join(' · ')}` : ''}`);
+    if (!notificationsSent) changes.push('Benachrichtigung fehlgeschlagen');
+    toast(`Team gespeichert${changes.length ? ` · ${changes.join(' · ')}` : ''}`, notificationsSent ? 'info' : 'error');
     if (state.view === 'dashboard') renderDashboard();
     if (state.view === 'interview') renderSidenav();
     await loadNotifications();
@@ -3742,11 +3751,15 @@ function rootsConfirm(modalId) {
 async function deleteCandidate(sessionId) {
   if (!await rootsConfirm('rm-interview-delete')) return;
   try {
-    await recruitingDb().from('interviews').delete().eq('session_id', sessionId);
+    const { error } = await recruitingDb().from('interviews').delete().eq('session_id', sessionId);
+    if (error) throw error;
     state.candidates = state.candidates.filter(c => c.session_id !== sessionId);
     renderDashboard();
     toast('Interview gelöscht');
-  } catch (e) { toast('Fehler beim Löschen', 'error'); }
+  } catch (e) {
+    console.error('deleteCandidate', e);
+    toast('Interview konnte nicht gelöscht werden', 'error');
+  }
 }
 
 function loadCandidateIntoInterview(c, opts = {}) {
@@ -3865,7 +3878,12 @@ async function startInterviewForApplicant(a) {
   state.selectedApplicantId = a.id;
   state.linkedApplicantId = a.id;
   if (a.session_id) {
-    const { data } = await recruitingDb().from('interviews').select('*').eq('session_id', a.session_id).maybeSingle();
+    const { data, error } = await recruitingDb().from('interviews').select('*').eq('session_id', a.session_id).maybeSingle();
+    if (error) {
+      console.error('startInterviewForApplicant', error);
+      toast('Bestehendes Interview konnte nicht geladen werden', 'error');
+      return;
+    }
     if (data) {
       loadCandidateIntoInterview(data);
       return;
@@ -4872,11 +4890,17 @@ async function saveApplicantFromForm(id) {
 
 async function deleteApplicant(id) {
   if (!await rootsConfirm('rm-applicant-delete')) return;
-  await recruitingDb().from('applicants').delete().eq('id', id);
-  state.selectedApplicantId = null;
-  await loadAllApplicants();
-  document.getElementById('bew-detail').innerHTML = '<p style="color:var(--muted);text-align:center;padding:3rem 1rem">Bewerber gelöscht.</p>';
-  toast('Bewerber gelöscht');
+  try {
+    const { error } = await recruitingDb().from('applicants').delete().eq('id', id);
+    if (error) throw error;
+    state.selectedApplicantId = null;
+    await loadAllApplicants();
+    document.getElementById('bew-detail').innerHTML = '<p style="color:var(--muted);text-align:center;padding:3rem 1rem">Bewerber gelöscht.</p>';
+    toast('Bewerber gelöscht');
+  } catch (e) {
+    console.error('deleteApplicant', e);
+    toast('Bewerber konnte nicht gelöscht werden', 'error');
+  }
 }
 
 async function withdrawApplicant(id) {
@@ -4915,7 +4939,12 @@ async function uploadApplicantDocument(applicantId, file) {
   const path = `${applicantId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
   const { error: upErr } = await sb.storage.from('recruiting-documents').upload(path, file, { upsert: true });
   if (upErr) { toast('Upload fehlgeschlagen: ' + upErr.message, 'error'); return; }
-  const { data: urlData } = await sb.storage.from('recruiting-documents').createSignedUrl(path, 60 * 60 * 24 * 365);
+  const { data: urlData, error: urlErr } = await sb.storage.from('recruiting-documents').createSignedUrl(path, 60 * 60 * 24 * 365);
+  if (urlErr) {
+    await sb.storage.from('recruiting-documents').remove([path]);
+    toast('Dokument-Link konnte nicht erstellt werden', 'error');
+    return;
+  }
   const { error: docErr } = await recruitingDb().from('applicant_documents').insert({
     applicant_id: applicantId,
     doc_type: file.name.toLowerCase().includes('anschreiben') ? 'cover_letter' : 'cv',
@@ -4927,6 +4956,7 @@ async function uploadApplicantDocument(applicantId, file) {
     uploaded_by: window.RootsUser._uid || null,
   });
   if (docErr) {
+    await sb.storage.from('recruiting-documents').remove([path]);
     toast('Dokument-Metadaten konnten nicht gespeichert werden', 'error');
     console.error('uploadApplicantDocument insert:', docErr);
     return;
