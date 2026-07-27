@@ -2807,6 +2807,7 @@ function applyAction(s, a) {
 let saveTimer = null;
 let dbSaveTimer = null;
 let dbAutosaveInFlight = false;
+let dbAutosaveQueued = false;
 let savingPromise = null;
 const setSaveStatus = (status, msg) => {
   const badge = document.getElementById('save-badge');
@@ -2822,11 +2823,58 @@ const setSaveStatus = (status, msg) => {
 
 function persistLocalDraft() {
   try {
-    localStorage.setItem('roots-recruit-last', JSON.stringify({ erst: state.erst, zweit: state.zweit }));
+    localStorage.setItem('roots-recruit-last', JSON.stringify({
+      erst: state.erst,
+      zweit: state.zweit,
+      _savedAt: new Date().toISOString(),
+    }));
     return true;
   } catch (e) {
     console.error('persistLocalDraft', e);
     return false;
+  }
+}
+
+function localDraftCandidate() {
+  try {
+    const raw = localStorage.getItem('roots-recruit-last');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const erst = parsed?.erst;
+    if (!erst?.meta?.sessionId || !erst?.meta?.kandidat) return null;
+    const zweit = parsed.zweit || deepClone(INITIAL_STATE);
+    const activeSlice = erst.meta.runde === 'zweit' ? zweit : erst;
+    return {
+      session_id: erst.meta.sessionId,
+      kandidat: erst.meta.kandidat,
+      interviewer: erst.meta.interviewer || '',
+      datum: erst.meta.datum || '',
+      runde: erst.meta.runde || 'erst',
+      erst,
+      zweit,
+      recommendation: activeSlice.recommendation || null,
+      weighted_overall: null,
+      _localOnly: true,
+      _localSavedAt: parsed._savedAt || null,
+    };
+  } catch (e) {
+    console.error('localDraftCandidate', e);
+    return null;
+  }
+}
+
+function mergeLocalDraftIntoCandidates({ preferLocal = false } = {}) {
+  const local = localDraftCandidate();
+  if (!local) return;
+  const index = state.candidates.findIndex(candidate => candidate.session_id === local.session_id);
+  if (index < 0) {
+    state.candidates.unshift(local);
+    return;
+  }
+  const remoteUpdatedAt = Date.parse(state.candidates[index].updated_at || '');
+  const localSavedAt = Date.parse(local._localSavedAt || '');
+  if (preferLocal || (Number.isFinite(localSavedAt) && (!Number.isFinite(remoteUpdatedAt) || localSavedAt > remoteUpdatedAt))) {
+    state.candidates[index] = { ...state.candidates[index], ...local };
   }
 }
 
@@ -2944,7 +2992,11 @@ function updateInterviewSaveButtons() {
 }
 
 async function persistInterviewDraftToDb() {
-  if (state.view !== 'interview' || dbAutosaveInFlight) return;
+  if (state.view !== 'interview') return;
+  if (dbAutosaveInFlight) {
+    dbAutosaveQueued = true;
+    return;
+  }
   const slice = currentSlice();
   slice.completed = false;
   slice.completedAt = null;
@@ -2956,6 +3008,10 @@ async function persistInterviewDraftToDb() {
   } finally {
     dbAutosaveInFlight = false;
     updateInterviewSaveButtons();
+    if (dbAutosaveQueued && state.view === 'interview') {
+      dbAutosaveQueued = false;
+      scheduleDbAutosave();
+    }
   }
 }
 
@@ -3237,6 +3293,7 @@ async function leaveInterviewToDashboard() {
     toast('Entwurf konnte nicht gespeichert werden', 'error');
   }
   await loadAllCandidates();          // always refresh, regardless of save result
+  if (!saveOk) mergeLocalDraftIntoCandidates({ preferLocal: true });
   if (saveOk) toast('Entwurf gespeichert');
   exitInterviewFullscreenIfActive();
   switchView('dashboard');
@@ -3386,9 +3443,11 @@ async function loadAllCandidates() {
       try { await persistCandidateSlices(c); } catch (e) { console.error('zweit auto-create save', e); }
       delete c._zweitDirty;
     }
+    mergeLocalDraftIntoCandidates();
   } catch (e) {
     console.error('loadAllCandidates – Supabase error:', e);
     state.candidates = [];
+    mergeLocalDraftIntoCandidates({ preferLocal: true });
   }
   renderDashboard();
 }
@@ -3797,7 +3856,6 @@ function renderInterview(partial = false, opts = {}) {
       }
       refreshLiveScores();
       updateInterviewSaveButtons();
-      scheduleDbAutosave();
     });
   }
 }
