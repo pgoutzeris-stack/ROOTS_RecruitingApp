@@ -2338,6 +2338,11 @@ async function saveTeamPanel() {
   const c = state.candidates.find(x => x.session_id === tp.sessionId);
   if (!c) return;
   const slice = tp.runde === 'zweit' ? (c.zweit = c.zweit || deepClone(INITIAL_STATE)) : (c.erst = c.erst || deepClone(INITIAL_STATE));
+  if (!canOpenTeamPanel(slice, { runde: tp.runde, erstSlice: c.erst })) {
+    toast('Keine Berechtigung für Interviewer-Einstellungen', 'error');
+    return;
+  }
+  const previousInvitees = deepClone(getSliceParticipants(slice));
   const prevParticipants = new Set(getSliceParticipants(slice).filter(i => i.role === 'participant').map(i => i.userId));
   const prevOwner = slice.meta?.ownerId;
 
@@ -2361,6 +2366,7 @@ async function saveTeamPanel() {
   ];
 
   const newInvites = [...tp.participantIds].filter(uid => !prevParticipants.has(uid));
+  const removedParticipants = [...prevParticipants].filter(uid => !tp.participantIds.has(uid));
   try {
     await persistCandidateSlices(c);
     if (newInvites.length) {
@@ -2374,13 +2380,19 @@ async function saveTeamPanel() {
       });
     }
     closeTeamPanel();
-    toast('Team gespeichert' + (newInvites.length ? ' · Benachrichtigungen gesendet' : ''));
+    const changes = [];
+    if (newInvites.length) changes.push(`${newInvites.length} eingeladen`);
+    if (removedParticipants.length) changes.push(`${removedParticipants.length} entfernt`);
+    toast(`Team gespeichert${changes.length ? ` · ${changes.join(' · ')}` : ''}`);
     if (state.view === 'dashboard') renderDashboard();
     if (state.view === 'interview') renderSidenav();
     await loadNotifications();
   } catch (e) {
+    slice.meta.invitees = previousInvitees.filter(person => person.role === 'participant');
+    syncInviteesOwner(slice);
     console.error('saveTeamPanel', e);
     toast('Speichern fehlgeschlagen', 'error');
+    renderTeamPanelBody();
   }
 }
 
