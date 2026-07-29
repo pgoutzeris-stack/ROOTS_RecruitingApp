@@ -8,7 +8,7 @@
   <title>ROOTS Recruiting · Interview-Leitfaden</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8"></script>
-  <script defer src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260729-safari-v1"></script>
+  <script defer src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260730-lifecycle-v2"></script>
   <style>
     @import url('https://fonts.cdnfonts.com/css/circular-std');
 
@@ -5923,6 +5923,12 @@ window.addEventListener('offline', () => {
 });
 window.addEventListener('pagehide', () => {
   if (state.view === 'interview') persistLocalDraft();
+});
+window.addEventListener('roots-tool-before-hide', () => {
+  if (state.view === 'interview') persistLocalDraft();
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden' && state.view === 'interview') persistLocalDraft();
 });
 let recruitingResumeInFlight = null;
 window.addEventListener('pageshow', (event) => {
