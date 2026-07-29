@@ -1558,6 +1558,7 @@ async function onAuthReady() {
 
   // 5. Realtime-Subscriptions erst NACH initialem Load setzen
   setupRealtimeSubscriptions();
+  await restoreRecruitingHistoryState(history.state, { replaceInvalid: true });
 }
 
 function _setDashLoading(on) {
@@ -4527,14 +4528,48 @@ async function toggleInterviewFullscreen() {
 }
 
 const RECRUITING_HISTORY_KEY = 'rootsRecruiting';
+const RECRUITING_HISTORY_VERSION = 2;
+const RECRUITING_VIEWS = new Set(['dashboard', 'bewerber', 'interview']);
+let recruitingHistoryRestoreToken = 0;
 
-function recruitingHistorySnapshot(view = state.view) {
+function normalizeRecruitingView(view) {
+  return RECRUITING_VIEWS.has(view) ? view : 'dashboard';
+}
+
+function normalizeRecruitingHistoryState(value) {
+  if (!value?.[RECRUITING_HISTORY_KEY]) return null;
+  const view = normalizeRecruitingView(value.view);
+  const applicantId = typeof value.applicantId === 'string' && value.applicantId ? value.applicantId : null;
+  const sessionId = typeof value.sessionId === 'string' && value.sessionId ? value.sessionId : null;
+  const applicantMode = value.applicantMode === 'create'
+    ? 'create'
+    : (applicantId ? 'detail' : 'list');
   return {
     [RECRUITING_HISTORY_KEY]: true,
-    view,
-    applicantId: view === 'bewerber' ? (state.selectedApplicantId || null) : null,
-    sessionId: view === 'interview' ? (state.erst.meta?.sessionId || null) : null,
-    runde: view === 'interview' ? (state.erst.meta?.runde || 'erst') : null,
+    version: RECRUITING_HISTORY_VERSION,
+    view: view === 'interview' && !sessionId ? 'dashboard' : view,
+    applicantId,
+    applicantMode,
+    sessionId,
+    runde: value.runde === 'zweit' ? 'zweit' : 'erst',
+  };
+}
+
+function recruitingHistorySnapshot(view = state.view) {
+  const normalizedView = normalizeRecruitingView(view);
+  const applicantMode = normalizedView === 'bewerber'
+    ? (state.bewerberCreateMode && !state.bewerberCreateMode.editId
+      ? 'create'
+      : (state.selectedApplicantId ? 'detail' : 'list'))
+    : null;
+  return {
+    [RECRUITING_HISTORY_KEY]: true,
+    version: RECRUITING_HISTORY_VERSION,
+    view: normalizedView,
+    applicantId: normalizedView === 'bewerber' ? (state.selectedApplicantId || null) : null,
+    applicantMode,
+    sessionId: normalizedView === 'interview' ? (state.erst.meta?.sessionId || null) : null,
+    runde: normalizedView === 'interview' ? (state.erst.meta?.runde || 'erst') : null,
   };
 }
 
@@ -4545,15 +4580,122 @@ function syncRecruitingHistory(mode = 'push') {
   const unchanged = current
     && current.view === next.view
     && current.applicantId === next.applicantId
+    && current.applicantMode === next.applicantMode
     && current.sessionId === next.sessionId
     && current.runde === next.runde;
   if (unchanged && mode !== 'replace') return;
   const method = mode === 'replace' ? 'replaceState' : 'pushState';
-  history[method](next, '');
+  try {
+    history[method](next, '');
+  } catch (error) {
+    console.warn(`Recruiting-History konnte nicht per ${method} aktualisiert werden`, error);
+  }
+}
+
+function closeTransientNavigationLayers() {
+  closeInterviewPicker();
+  closePdfExportDialog();
+  if (state.teamPanel) closeTeamPanel();
+  document.getElementById('round-switch-overlay')?.classList.remove('visible');
+  document.getElementById('zweit-locked-overlay')?.classList.remove('visible');
+}
+
+function ensureRecruitingViewVisible(preferredView = state.view) {
+  const view = normalizeRecruitingView(preferredView);
+  const expected = document.getElementById(`view-${view}`);
+  const active = document.querySelector('.view.active');
+  if (expected && active === expected) return;
+  switchView(expected ? view : 'dashboard', { history: 'none' });
+}
+
+function currentInterviewAsHistoryCandidate(sessionId) {
+  if (!sessionId || state.erst.meta?.sessionId !== sessionId) return null;
+  return {
+    session_id: sessionId,
+    kandidat: state.erst.meta?.kandidat || state.zweit.meta?.kandidat || '',
+    interviewer: state.erst.meta?.interviewer || '',
+    datum: state.erst.meta?.datum || '',
+    erst: deepClone(state.erst),
+    zweit: deepClone(state.zweit),
+  };
+}
+
+async function restoreRecruitingHistoryState(rawTarget, options = {}) {
+  const token = ++recruitingHistoryRestoreToken;
+  const target = normalizeRecruitingHistoryState(rawTarget);
+  closeTransientNavigationLayers();
+
+  if (!target) {
+    switchView('dashboard', { history: options.replaceInvalid === false ? 'none' : 'replace' });
+    return;
+  }
+
+  state.bewerberCreateMode = null;
+  state.selectedApplicantId = null;
+
+  if (target.view === 'interview') {
+    let candidate = currentInterviewAsHistoryCandidate(target.sessionId)
+      || state.candidates.find(item => item.session_id === target.sessionId);
+    if (!candidate && _authReadyFired) {
+      ensureRecruitingViewVisible('dashboard');
+      await loadAllCandidates();
+      if (token !== recruitingHistoryRestoreToken) return;
+      candidate = currentInterviewAsHistoryCandidate(target.sessionId)
+        || state.candidates.find(item => item.session_id === target.sessionId);
+    }
+    if (candidate) {
+      loadCandidateIntoInterview(candidate, { runde: target.runde, history: 'none' });
+      return;
+    }
+    switchView('dashboard', { history: 'none' });
+    syncRecruitingHistory('replace');
+    if (_authReadyFired) toast('Die angeforderte Interviewansicht ist nicht mehr verfügbar', 'error');
+    return;
+  }
+
+  if (target.view === 'bewerber') {
+    if (target.applicantMode === 'create') {
+      state.bewerberCreateMode = { startInterviewAfterSave: false, editId: null };
+    } else if (target.applicantId) {
+      if (!state.applicants.some(item => item.id === target.applicantId) && _authReadyFired) {
+        await loadAllApplicants();
+        if (token !== recruitingHistoryRestoreToken) return;
+      }
+      if (state.applicants.some(item => item.id === target.applicantId)) {
+        state.selectedApplicantId = target.applicantId;
+      }
+    }
+    switchView('bewerber', { history: 'none' });
+    if (target.applicantId && !state.selectedApplicantId) syncRecruitingHistory('replace');
+    return;
+  }
+
+  switchView('dashboard', { history: 'none' });
+}
+
+function initializeRecruitingHistory() {
+  const target = normalizeRecruitingHistoryState(history.state);
+  if (!target) {
+    switchView('dashboard', { history: 'replace' });
+    return;
+  }
+  if (target.view === 'dashboard') {
+    switchView('dashboard', { history: 'none' });
+    return;
+  }
+  if (target.view === 'bewerber') {
+    if (target.applicantMode === 'create') {
+      state.bewerberCreateMode = { startInterviewAfterSave: false, editId: null };
+    }
+    switchView('bewerber', { history: 'none' });
+    return;
+  }
+  switchView('dashboard', { history: 'none' });
 }
 
 function switchView(v, options = {}) {
   const historyMode = options.history || 'push';
+  v = normalizeRecruitingView(v);
   const prevView = state.view;
   state.view = v;
   if (prevView === 'interview' && v !== 'interview') exitInterviewFullscreenIfActive();
@@ -5217,6 +5359,7 @@ function renderBewerberList() {
   }).join('');
   list.querySelectorAll('.bew-item').forEach(el => {
     el.addEventListener('click', () => {
+      state.bewerberCreateMode = null;
       state.selectedApplicantId = el.dataset.id;
       renderBewerberList();
       renderBewerberDetail(el.dataset.id);
@@ -5253,13 +5396,12 @@ function openBewerberCreateForm(opts = {}) {
     startInterviewAfterSave: !!opts.startInterviewAfterSave,
     editId: opts.editId || null,
   };
+  state.selectedApplicantId = opts.editId || null;
   switchView('bewerber');
   renderBewerberList();
   if (opts.editId) {
-    state.selectedApplicantId = opts.editId;
     renderBewerberDetail(opts.editId);
   } else {
-    state.selectedApplicantId = null;
     renderBewerberCreateForm();
   }
 }
@@ -5347,7 +5489,9 @@ function renderBewerberCreateForm() {
   document.getElementById('bew-save-btn').onclick = () => saveNewApplicantFromCreateForm();
   document.getElementById('bew-create-cancel').onclick = () => {
     state.bewerberCreateMode = null;
+    state.selectedApplicantId = null;
     detail.innerHTML = '<p style="color:var(--muted);text-align:center;padding:3rem 1rem">Wähle einen Bewerber aus der Liste oder lege einen neuen an.</p>';
+    syncRecruitingHistory('replace');
   };
   enhanceTextAssists(detail);
 }
@@ -5370,6 +5514,7 @@ async function saveNewApplicantFromCreateForm() {
       if (applicantHasValidName(a)) await startInterviewForApplicant(a);
       else { toast('Für das Interview Vorname und Nachname eintragen', 'error'); renderBewerberDetail(mode.editId); }
     } else renderBewerberDetail(mode.editId);
+    syncRecruitingHistory('replace');
     toast('Bewerber gespeichert');
     return;
   }
@@ -5392,6 +5537,7 @@ async function saveNewApplicantFromCreateForm() {
   } else {
     renderBewerberList();
     renderBewerberDetail(data.id);
+    syncRecruitingHistory('replace');
   }
   toast('Bewerber gespeichert');
 }
@@ -5507,6 +5653,7 @@ async function deleteApplicant(id) {
     state.selectedApplicantId = null;
     await loadAllApplicants();
     document.getElementById('bew-detail').innerHTML = '<p style="color:var(--muted);text-align:center;padding:3rem 1rem">Bewerber gelöscht.</p>';
+    syncRecruitingHistory('replace');
     toast('Bewerber gelöscht');
   } catch (e) {
     console.error('deleteApplicant', e);
@@ -5537,6 +5684,7 @@ async function withdrawApplicant(id) {
     renderBewerberList();
     renderDashboard();
     document.getElementById('bew-detail').innerHTML = '<p style="color:var(--muted);text-align:center;padding:3rem 1rem">Absage durch Bewerber erfasst. Daten wurden gesetzeskonform gelöscht.</p>';
+    syncRecruitingHistory('replace');
     toast(`Absage durch Bewerber verarbeitet${data?.deleted?.storage_objects != null ? ` · ${data.deleted.storage_objects} Datei(en) entfernt` : ''}`, 'success');
   } catch (e) {
     console.error('withdrawApplicant', e);
@@ -5694,6 +5842,7 @@ function bindRundeSelectHandler(sel) {
         dispatch({ type: 'SET_META', field: 'runde', value: 'zweit' });
         document.getElementById('round-switch-overlay').classList.remove('visible');
         renderInterview();
+        syncRecruitingHistory('push');
       };
       document.getElementById('round-switch-cancel').onclick = () => {
         e.target.value = prev;
@@ -5704,6 +5853,7 @@ function bindRundeSelectHandler(sel) {
     }
     dispatch({ type: 'SET_META', field: 'runde', value: newVal });
     renderInterview();
+    syncRecruitingHistory('push');
   });
 }
 document.getElementById('zweit-locked-close').addEventListener('click', () => {
@@ -5743,7 +5893,12 @@ window.addEventListener('pagehide', () => {
 });
 let recruitingResumeInFlight = null;
 window.addEventListener('pageshow', (event) => {
-  if (!event.persisted || recruitingResumeInFlight) return;
+  ensureRecruitingViewVisible(state.view);
+  if (recruitingResumeInFlight) return;
+  if (!event.persisted) {
+    if (_authReadyFired) void restoreRecruitingHistoryState(history.state, { replaceInvalid: true });
+    return;
+  }
   recruitingResumeInFlight = (async () => {
     if (state.view === 'interview') persistLocalDraft();
     try {
@@ -5755,33 +5910,24 @@ window.addEventListener('pageshow', (event) => {
       }
       await Promise.all([loadAllCandidates(), loadAllApplicants()]);
       setupRealtimeSubscriptions();
-      switchView(state.view, { history: 'replace' });
+      await restoreRecruitingHistoryState(history.state, { replaceInvalid: true });
     } catch (error) {
       console.warn('Recruiting nach Seitenwiederherstellung nicht vollständig synchronisiert', error);
+      ensureRecruitingViewVisible(state.view);
     }
   })().finally(() => {
     recruitingResumeInFlight = null;
   });
 });
 window.addEventListener('popstate', (event) => {
-  const target = event.state;
-  if (!target?.[RECRUITING_HISTORY_KEY]) return;
-  if (state.view === 'interview' && target.view !== 'interview') {
+  const target = normalizeRecruitingHistoryState(event.state);
+  if (state.view === 'interview' && (!target || target.view !== 'interview')) {
     persistLocalDraft();
     void flushInterviewDraftToDb().catch(error => {
       console.warn('Interview konnte beim Zurücknavigieren nicht sofort synchronisiert werden', error);
     });
   }
-  state.bewerberCreateMode = null;
-  state.selectedApplicantId = target.applicantId || null;
-  if (target.view === 'interview' && target.sessionId) {
-    const candidate = state.candidates.find(item => item.session_id === target.sessionId);
-    if (candidate) {
-      loadCandidateIntoInterview(candidate, { runde: target.runde || 'erst', history: 'none' });
-      return;
-    }
-  }
-  switchView(['dashboard', 'bewerber'].includes(target.view) ? target.view : 'dashboard', { history: 'none' });
+  void restoreRecruitingHistoryState(target, { replaceInvalid: true });
 });
 
 bindInterviewFooterHandlers();
@@ -5990,7 +6136,7 @@ document.addEventListener('click', () => {
   });
 });
 
-switchView('dashboard', { history: 'replace' });
+initializeRecruitingHistory();
 </script>
 
   <!-- Recruiting: Confirm Modals -->
