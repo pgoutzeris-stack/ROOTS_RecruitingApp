@@ -230,6 +230,34 @@
     .view { display: none; width: 100%; }
     .view.active { display: block; }
 
+    .recruiting-route-guard {
+      position: fixed;
+      inset: 0;
+      z-index: 8800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    .recruiting-route-guard[hidden] { display: none !important; }
+    .recruiting-route-guard__content {
+      display: grid;
+      justify-items: center;
+      gap: .75rem;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .recruiting-route-guard__spinner {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--line);
+      border-top-color: var(--brand);
+      border-radius: 50%;
+      animation: roots-spin .8s linear infinite;
+    }
+    .recruiting-route-guard__label { font-size: .88rem; font-weight: 650; color: var(--muted); }
+
     /* ─── Sidebar navigation ─── */
     .app-nav-main { display: flex; flex-direction: column; gap: 2px; }
     .app-nav-actions { display: flex; flex-direction: column; gap: 2px; }
@@ -977,6 +1005,13 @@
 </style>
 </head>
 <body>
+
+<div class="recruiting-route-guard" id="recruiting-route-guard" role="status" aria-live="polite" hidden>
+  <div class="recruiting-route-guard__content">
+    <span class="recruiting-route-guard__spinner" aria-hidden="true"></span>
+    <span class="recruiting-route-guard__label">Recruiting wird wiederhergestellt…</span>
+  </div>
+</div>
 
 <!-- ─── Login Overlay ─── -->
 <div id="roots-auth-overlay" class="roots-auth-overlay">
@@ -4532,6 +4567,24 @@ const RECRUITING_HISTORY_VERSION = 2;
 const RECRUITING_VIEWS = new Set(['dashboard', 'bewerber', 'interview']);
 let recruitingHistoryRestoreToken = 0;
 let pendingEmbeddedRecruitingHistory;
+let recruitingRouteGuardShownAt = 0;
+let recruitingRouteGuardHideTimer = null;
+
+function showRecruitingRouteGuard() {
+  const guard = document.getElementById('recruiting-route-guard');
+  if (!guard) return;
+  clearTimeout(recruitingRouteGuardHideTimer);
+  recruitingRouteGuardShownAt = Date.now();
+  guard.hidden = false;
+}
+
+function hideRecruitingRouteGuard() {
+  const guard = document.getElementById('recruiting-route-guard');
+  if (!guard) return;
+  const delay = Math.max(0, 180 - (Date.now() - recruitingRouteGuardShownAt));
+  clearTimeout(recruitingRouteGuardHideTimer);
+  recruitingRouteGuardHideTimer = setTimeout(() => { guard.hidden = true; }, delay);
+}
 
 function usesIntranetHistoryBridge() {
   if (window.parent === window) return false;
@@ -4656,54 +4709,63 @@ function currentInterviewAsHistoryCandidate(sessionId) {
 async function restoreRecruitingHistoryState(rawTarget, options = {}) {
   const token = ++recruitingHistoryRestoreToken;
   const target = normalizeRecruitingHistoryState(rawTarget);
-  closeTransientNavigationLayers();
+  showRecruitingRouteGuard();
+  try {
+    closeTransientNavigationLayers();
 
-  if (!target) {
-    switchView('dashboard', { history: options.replaceInvalid === false ? 'none' : 'replace' });
-    return;
-  }
-
-  state.bewerberCreateMode = null;
-  state.selectedApplicantId = null;
-
-  if (target.view === 'interview') {
-    let candidate = currentInterviewAsHistoryCandidate(target.sessionId)
-      || state.candidates.find(item => item.session_id === target.sessionId);
-    if (!candidate && _authReadyFired) {
-      ensureRecruitingViewVisible('dashboard');
-      await loadAllCandidates();
-      if (token !== recruitingHistoryRestoreToken) return;
-      candidate = currentInterviewAsHistoryCandidate(target.sessionId)
-        || state.candidates.find(item => item.session_id === target.sessionId);
-    }
-    if (candidate) {
-      loadCandidateIntoInterview(candidate, { runde: target.runde, history: 'none' });
+    if (!target) {
+      switchView('dashboard', { history: options.replaceInvalid === false ? 'none' : 'replace' });
       return;
     }
-    switchView('dashboard', { history: 'none' });
-    syncRecruitingHistory('replace');
-    if (_authReadyFired) toast('Die angeforderte Interviewansicht ist nicht mehr verfügbar', 'error');
-    return;
-  }
 
-  if (target.view === 'bewerber') {
-    if (target.applicantMode === 'create') {
-      state.bewerberCreateMode = { startInterviewAfterSave: false, editId: null };
-    } else if (target.applicantId) {
-      if (!state.applicants.some(item => item.id === target.applicantId) && _authReadyFired) {
-        await loadAllApplicants();
+    state.bewerberCreateMode = null;
+    state.selectedApplicantId = null;
+
+    if (target.view === 'interview') {
+      let candidate = currentInterviewAsHistoryCandidate(target.sessionId)
+        || state.candidates.find(item => item.session_id === target.sessionId);
+      if (!candidate && _authReadyFired) {
+        ensureRecruitingViewVisible('dashboard');
+        await loadAllCandidates();
         if (token !== recruitingHistoryRestoreToken) return;
+        candidate = currentInterviewAsHistoryCandidate(target.sessionId)
+          || state.candidates.find(item => item.session_id === target.sessionId);
       }
-      if (state.applicants.some(item => item.id === target.applicantId)) {
-        state.selectedApplicantId = target.applicantId;
+      if (candidate) {
+        loadCandidateIntoInterview(candidate, { runde: target.runde, history: 'none' });
+        return;
       }
+      switchView('dashboard', { history: 'none' });
+      syncRecruitingHistory('replace');
+      if (_authReadyFired) toast('Die angeforderte Interviewansicht ist nicht mehr verfügbar', 'error');
+      return;
     }
-    switchView('bewerber', { history: 'none' });
-    if (target.applicantId && !state.selectedApplicantId) syncRecruitingHistory('replace');
-    return;
-  }
 
-  switchView('dashboard', { history: 'none' });
+    if (target.view === 'bewerber') {
+      if (target.applicantMode === 'create') {
+        state.bewerberCreateMode = { startInterviewAfterSave: false, editId: null };
+      } else if (target.applicantId) {
+        if (!state.applicants.some(item => item.id === target.applicantId) && _authReadyFired) {
+          await loadAllApplicants();
+          if (token !== recruitingHistoryRestoreToken) return;
+        }
+        if (state.applicants.some(item => item.id === target.applicantId)) {
+          state.selectedApplicantId = target.applicantId;
+        }
+      }
+      switchView('bewerber', { history: 'none' });
+      if (target.applicantId && !state.selectedApplicantId) syncRecruitingHistory('replace');
+      return;
+    }
+
+    switchView('dashboard', { history: 'none' });
+  } catch (error) {
+    console.error('Recruiting-History konnte nicht wiederhergestellt werden', error);
+    switchView('dashboard', { history: 'replace' });
+    if (_authReadyFired) toast('Ansicht wurde sicher auf das Dashboard zurückgesetzt', 'error');
+  } finally {
+    if (token === recruitingHistoryRestoreToken) hideRecruitingRouteGuard();
+  }
 }
 
 function initializeRecruitingHistory() {
