@@ -8,7 +8,7 @@
   <title>ROOTS Recruiting · Interview-Leitfaden</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8"></script>
-  <script defer src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260728-identity-guard-v1"></script>
+  <script defer src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260729-safari-v1"></script>
   <style>
     @import url('https://fonts.cdnfonts.com/css/circular-std');
 
@@ -202,7 +202,7 @@
     @media (max-width: 600px) {
       .nav-hamburger { display: flex !important; }
       .dash-sidebar {
-        position: fixed; left: 0; top: 56px; height: calc(100dvh - 56px) !important; z-index: 9000;
+        position: fixed; left: 0; top: 56px; height: calc(100vh - 56px) !important; height: calc(100dvh - 56px) !important; z-index: 9000;
         transform: translateX(-110%);
         transition: transform .27s cubic-bezier(.4,0,.2,1), box-shadow .27s;
         width: 240px !important;
@@ -257,7 +257,7 @@
 
     /* ─── Bewerbermanagement ─── */
     .bew-layout { display: grid; grid-template-columns: 340px 1fr; gap: 1.25rem; align-items: start; }
-    .bew-list-panel { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; max-height: calc(100dvh - 320px); display: flex; flex-direction: column; }
+    .bew-list-panel { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; max-height: calc(100vh - 320px); max-height: calc(100dvh - 320px); display: flex; flex-direction: column; }
     .bew-list-head { padding: 1rem 1.1rem; border-bottom: 1px solid var(--line); }
     .bew-list-scroll { overflow-y: auto; flex: 1; }
     .bew-item { padding: .85rem 1.1rem; border-bottom: 1px solid var(--line); cursor: pointer; transition: background .15s; }
@@ -364,7 +364,7 @@
     .cand-badge--done { background: #ecfdf5; color: #047857; }
     .cand-badge--draft { background: #fff7ed; color: #b45309; }
     .dash-empty { text-align: center; padding: 4rem 2rem; color: var(--muted); }
-    .team-panel-overlay { position: fixed; inset: 0; z-index: 9500; background: rgba(15,23,42,.45); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 1.25rem; }
+    .team-panel-overlay { position: fixed; inset: 0; z-index: 9500; background: rgba(15,23,42,.45); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 1.25rem; }
     .team-panel-overlay.visible { display: flex; }
     .team-panel-card { background: var(--bg); border-radius: 20px; width: 100%; max-width: 480px; max-height: min(88vh, 720px); display: flex; flex-direction: column; box-shadow: var(--shadow-modal); overflow: hidden; }
     .team-panel-head { padding: 1.25rem 1.35rem 1rem; border-bottom: 1px solid var(--line); }
@@ -580,18 +580,98 @@
     .round-switch-card p { color: var(--muted); font-size: .95rem; line-height: 1.55; margin-bottom: 1.5rem; }
     .round-switch-actions { display: flex; gap: .65rem; justify-content: flex-end; }
 
+    /* ─── PDF export ─── */
+    .pdf-export-card { max-width: 560px; padding: 0; overflow: hidden; border-radius: 8px; }
+    .pdf-export-head { display: flex; align-items: flex-start; gap: .9rem; padding: 1.35rem 1.4rem 1rem; border-bottom: 1px solid var(--line); }
+    .pdf-export-icon { width: 40px; height: 40px; border-radius: 8px; background: var(--brand-light); color: var(--brand); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .pdf-export-head h3 { margin: 0 0 .25rem; }
+    .pdf-export-head p { margin: 0; font-size: .86rem; }
+    .pdf-export-body { padding: 1.15rem 1.4rem .55rem; }
+    .pdf-export-candidate { font-size: .78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: .75rem; }
+    .pdf-round-options { display: grid; gap: .55rem; }
+    .pdf-round-option { position: relative; display: flex; align-items: center; gap: .8rem; min-height: 64px; padding: .8rem .9rem; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; background: var(--bg); transition: border-color .15s, background .15s; }
+    .pdf-round-option:hover { border-color: var(--brand); background: var(--brand-light); }
+    .pdf-round-option.is-selected { border-color: var(--brand); background: var(--brand-light); }
+    .pdf-round-option.is-disabled { opacity: .5; cursor: not-allowed; background: var(--surface); }
+    .pdf-round-option input { width: 18px; height: 18px; accent-color: var(--brand); flex-shrink: 0; }
+    .pdf-round-option-copy { min-width: 0; flex: 1; }
+    .pdf-round-option-title { display: block; font-size: .92rem; font-weight: 700; color: var(--ink); }
+    .pdf-round-option-meta { display: block; margin-top: .18rem; font-size: .78rem; color: var(--muted); }
+    .pdf-export-error { min-height: 20px; margin-top: .55rem; font-size: .8rem; color: var(--danger); }
+    .pdf-export-foot { display: flex; justify-content: flex-end; gap: .65rem; padding: .85rem 1.4rem 1.25rem; }
+    #pdf-report-root { display: none; }
+
     /* ─── User settings modal (copy from SOP) ─── */
-    #roots-user-settings-modal { display:none; position:fixed; inset:0; z-index:10000; background:rgba(15,23,42,.6); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:1rem; }
+    #roots-user-settings-modal { display:none; position:fixed; inset:0; z-index:10000; background:rgba(15,23,42,.6); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:1rem; }
     #roots-user-settings-modal.visible { display: flex; }
 
     /* ─── Print ─── */
+    @page { size: A4; margin: 12mm 11mm 14mm; }
     @media print {
-      body { background: #fff; padding: 0; }
-      .sop-header, .iv-sidenav, .dash-toolbar, .save-badge, .btn-header-action, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger, .round-switch-overlay, .sec-timer-pill { display: none !important; }
-      .iv-layout { grid-template-columns: 1fr; }
-      .iv-main { overflow: visible; height: auto; scroll-snap-type: none; }
-      .iv-snap-section { min-height: auto; page-break-after: always; padding: 1rem; }
-      .panel, .q-block { box-shadow: none !important; break-inside: avoid; }
+      html, body { height: auto !important; overflow: visible !important; background: #fff !important; }
+      body.pdf-export-mode > *:not(#pdf-report-root) { display: none !important; }
+      body.pdf-export-mode #pdf-report-root { display: block !important; }
+      #pdf-report-root, #pdf-report-root * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .pdf-report { color: #0f172a; background: #fff; font-family: 'Circular Std', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 9.2pt; line-height: 1.42; }
+      .pdf-report-cover { min-height: 92mm; padding: 8mm 7mm; border: 1px solid #dbe4f0; border-top: 4px solid #206efb; }
+      .pdf-report-brand { color: #206efb; font-size: 8pt; font-weight: 700; text-transform: uppercase; margin-bottom: 13mm; }
+      .pdf-report h1 { margin: 0 0 2mm; font-size: 25pt; line-height: 1.08; font-weight: 800; }
+      .pdf-report-subtitle { color: #475569; font-size: 11pt; margin-bottom: 10mm; }
+      .pdf-cover-facts, .pdf-round-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3mm 7mm; }
+      .pdf-fact { border-top: 1px solid #e2e8f0; padding-top: 2mm; min-width: 0; }
+      .pdf-fact-label { display: block; color: #64748b; font-size: 7.2pt; font-weight: 700; text-transform: uppercase; margin-bottom: .8mm; }
+      .pdf-fact-value { display: block; overflow-wrap: anywhere; font-weight: 600; }
+      .pdf-exported-at { margin-top: 12mm; color: #64748b; font-size: 7.5pt; }
+      .pdf-round-report { break-before: page; }
+      .pdf-round-report:first-of-type { break-before: auto; }
+      .pdf-round-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 6mm; padding-bottom: 4mm; border-bottom: 2px solid #206efb; }
+      .pdf-round-kicker { color: #206efb; font-size: 7.5pt; font-weight: 700; text-transform: uppercase; }
+      .pdf-round-title { margin: 1mm 0 0; font-size: 19pt; line-height: 1.1; }
+      .pdf-status { display: inline-block; padding: 1.2mm 2.5mm; border-radius: 999px; background: #ecfdf5; color: #047857; font-size: 7.2pt; font-weight: 700; white-space: nowrap; }
+      .pdf-status.is-draft { background: #fff7ed; color: #9a3412; }
+      .pdf-round-facts { margin: 5mm 0; }
+      .pdf-completeness-note { margin: 4mm 0 5mm; padding: 3mm 3.5mm; border-left: 2px solid #94a3b8; background: #f8fafc; color: #475569; font-size: 8pt; }
+      .pdf-completeness-note.is-complete { border-left-color: #10b981; background: #f0fdf4; color: #166534; }
+      .pdf-score-summary { display: grid; grid-template-columns: 36mm 1fr; gap: 5mm; margin: 5mm 0 7mm; padding: 4mm; background: #f8fafc; border: 1px solid #e2e8f0; break-inside: avoid; }
+      .pdf-overall-score { font-size: 27pt; font-weight: 800; color: #206efb; line-height: 1; }
+      .pdf-overall-score small { font-size: 9pt; color: #64748b; }
+      .pdf-score-caption { margin-top: 1.5mm; color: #64748b; font-size: 7.5pt; }
+      .pdf-dimension-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2mm 5mm; }
+      .pdf-dimension { display: grid; grid-template-columns: 1fr auto; gap: 2mm; border-bottom: 1px solid #e2e8f0; padding-bottom: 1mm; }
+      .pdf-dimension-value { font-weight: 800; }
+      .pdf-section { margin-top: 6mm; break-before: auto; }
+      .pdf-section-head { display: flex; justify-content: space-between; gap: 4mm; align-items: baseline; padding-bottom: 1.7mm; border-bottom: 1px solid #94a3b8; }
+      .pdf-section-number { color: #206efb; font-weight: 800; margin-right: 2mm; }
+      .pdf-section-title { font-size: 12pt; font-weight: 800; }
+      .pdf-section-time { color: #64748b; font-size: 7.2pt; white-space: nowrap; }
+      .pdf-case-context { margin: 3mm 0; padding: 3mm; background: #eff6ff; color: #1e3a5f; white-space: pre-wrap; }
+      .pdf-question { margin-top: 3.5mm; padding: 3mm; border: 1px solid #e2e8f0; break-inside: avoid; }
+      .pdf-question-title { font-weight: 700; white-space: pre-wrap; }
+      .pdf-question-followup { margin-top: 1.5mm; color: #64748b; font-size: 7.5pt; white-space: pre-wrap; }
+      .pdf-answer { margin-top: 2.5mm; padding-top: 2mm; border-top: 1px solid #e2e8f0; white-space: pre-wrap; overflow-wrap: anywhere; }
+      .pdf-answer-label { display: block; color: #64748b; font-size: 7pt; font-weight: 700; text-transform: uppercase; margin-bottom: 1mm; }
+      .pdf-missing { color: #94a3b8; font-style: italic; }
+      .pdf-check-list { display: grid; gap: 1mm; margin-top: 2.2mm; }
+      .pdf-check { color: #475569; font-size: 7.7pt; }
+      .pdf-check.is-checked { color: #0f172a; font-weight: 600; }
+      .pdf-rating-list { display: grid; gap: 1.5mm; margin-top: 2.5mm; }
+      .pdf-rating { display: grid; grid-template-columns: 1fr auto; gap: 3mm; align-items: start; padding-top: 1.5mm; border-top: 1px solid #e2e8f0; }
+      .pdf-rating-label { font-weight: 600; }
+      .pdf-rating-dimension { display: block; color: #64748b; font-size: 7pt; font-weight: 400; }
+      .pdf-rating-value { min-width: 13mm; text-align: right; color: #206efb; font-weight: 800; }
+      .pdf-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2mm 4mm; margin-top: 3mm; }
+      .pdf-choice { padding: 2mm; border: 1px solid #e2e8f0; break-inside: avoid; }
+      .pdf-choice-answer { margin-top: .8mm; font-weight: 700; color: #206efb; }
+      .pdf-summary-block { margin-top: 6mm; padding: 4mm; border: 1px solid #cbd5e1; break-inside: avoid; }
+      .pdf-summary-title { font-size: 10pt; font-weight: 800; margin-bottom: 2mm; }
+      .pdf-summary-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+      .pdf-scoring-table { width: 100%; margin-top: 3mm; border-collapse: collapse; font-size: 7.4pt; }
+      .pdf-scoring-table th, .pdf-scoring-table td { padding: 1.5mm 1.8mm; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; }
+      .pdf-scoring-table th { color: #64748b; font-size: 6.8pt; text-transform: uppercase; }
+      .pdf-scoring-table td:last-child, .pdf-scoring-table th:last-child { text-align: right; }
+      .pdf-raw-list { display: grid; gap: 1.5mm; margin: 2mm 0 0; }
+      .pdf-raw-item { display: grid; grid-template-columns: 42mm 1fr; gap: 3mm; }
+      .pdf-report-footer { margin-top: 8mm; padding-top: 3mm; border-top: 1px solid #cbd5e1; color: #64748b; font-size: 7pt; }
     }
 
     @media (max-width: 880px) {
@@ -1167,6 +1247,47 @@
   </div>
 </div>
 
+<!-- ─── PDF-Auswahl ─── -->
+<div class="round-switch-overlay" id="pdf-export-overlay">
+  <div class="round-switch-card pdf-export-card" role="dialog" aria-modal="true" aria-labelledby="pdf-export-title">
+    <div class="pdf-export-head">
+      <span class="pdf-export-icon"><i class="fa-solid fa-file-pdf"></i></span>
+      <div>
+        <h3 id="pdf-export-title">Interview-PDF herunterladen</h3>
+        <p>Wähle aus, welche Gesprächsrunden im Bericht enthalten sein sollen.</p>
+      </div>
+    </div>
+    <form id="pdf-export-form">
+      <div class="pdf-export-body">
+        <div class="pdf-export-candidate" id="pdf-export-candidate"></div>
+        <div class="pdf-round-options">
+          <label class="pdf-round-option" id="pdf-option-erst">
+            <input type="checkbox" id="pdf-export-erst" value="erst">
+            <span class="pdf-round-option-copy">
+              <span class="pdf-round-option-title">Erstgespräch</span>
+              <span class="pdf-round-option-meta" id="pdf-export-erst-meta"></span>
+            </span>
+          </label>
+          <label class="pdf-round-option" id="pdf-option-zweit">
+            <input type="checkbox" id="pdf-export-zweit" value="zweit">
+            <span class="pdf-round-option-copy">
+              <span class="pdf-round-option-title">Zweitgespräch</span>
+              <span class="pdf-round-option-meta" id="pdf-export-zweit-meta"></span>
+            </span>
+          </label>
+        </div>
+        <div class="pdf-export-error" id="pdf-export-error" role="status"></div>
+      </div>
+      <div class="pdf-export-foot">
+        <button type="button" class="btn-secondary" id="pdf-export-cancel">Abbrechen</button>
+        <button type="submit" class="btn-primary" id="pdf-export-submit"><i class="fa-solid fa-download"></i> PDF erstellen</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="pdf-report-root" aria-hidden="true"></div>
+
 <!-- ─── Team Panel ─── -->
 <div class="team-panel-overlay" id="team-panel-overlay">
   <div class="team-panel-card" role="dialog" aria-labelledby="team-panel-title">
@@ -1231,11 +1352,55 @@ const SB_URL  = 'https://csmguwcvzreefluhahyu.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzbWd1d2N2enJlZWZsdWhhaHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NjM0ODcsImV4cCI6MjA5MjUzOTQ4N30.Fiafx7XBaQZXUX3bKQIBH7znBHx3B51yL-bftOHsL4Q';
 const { createClient } = window.supabase;
 const ROOTS_EMBEDDED_AUTH = window.parent !== window;
+function createResilientBrowserStorage() {
+  const memory = new Map();
+  const stores = [];
+  ['localStorage', 'sessionStorage'].forEach(name => {
+    try {
+      const store = window[name];
+      const probe = `__roots_storage_probe_${name}`;
+      store.setItem(probe, '1');
+      store.removeItem(probe);
+      stores.push(store);
+    } catch (_) {}
+  });
+  return {
+    getItem(key) {
+      for (const store of stores) {
+        try {
+          const value = store.getItem(key);
+          if (value != null) return value;
+        } catch (_) {}
+      }
+      return memory.has(key) ? memory.get(key) : null;
+    },
+    setItem(key, value) {
+      const serialized = String(value);
+      memory.set(key, serialized);
+      let stored = false;
+      for (const store of stores) {
+        try {
+          store.setItem(key, serialized);
+          stored = true;
+        } catch (_) {}
+      }
+      return stored;
+    },
+    removeItem(key) {
+      memory.delete(key);
+      for (const store of stores) {
+        try { store.removeItem(key); } catch (_) {}
+      }
+    },
+  };
+}
+const recruitingBrowserStorage = createResilientBrowserStorage();
 const sb = createClient(SB_URL, SB_ANON, {
   auth: {
     persistSession: !ROOTS_EMBEDDED_AUTH,
     autoRefreshToken: !ROOTS_EMBEDDED_AUTH,
     detectSessionInUrl: !ROOTS_EMBEDDED_AUTH,
+    storage: recruitingBrowserStorage,
   },
 });
 window.__rootsSupabaseClient = sb;
@@ -1414,7 +1579,20 @@ document.addEventListener('keydown', (e) => {
     });
   }
 });
+let recruitingRealtimeChannels = [];
+let recruitingRealtimeAuthSubscription = null;
+
+function teardownRealtimeSubscriptions() {
+  recruitingRealtimeChannels.forEach(channel => {
+    try { void sb.removeChannel(channel); } catch (_) {}
+  });
+  recruitingRealtimeChannels = [];
+  try { recruitingRealtimeAuthSubscription?.unsubscribe(); } catch (_) {}
+  recruitingRealtimeAuthSubscription = null;
+}
+
 function setupRealtimeSubscriptions() {
+  teardownRealtimeSubscriptions();
   // ── Interviews: payload-based instant update (kein Re-Fetch) ──────────────
   const interviewsCh = sb.channel('recruiting-interviews')
     .on('postgres_changes', {
@@ -1489,14 +1667,15 @@ function setupRealtimeSubscriptions() {
       }
     })
     .subscribe();
+  recruitingRealtimeChannels = [interviewsCh, applicantsCh];
 
   // Cleanup bei Sign-Out
-  sb.auth.onAuthStateChange((event) => {
+  const { data } = sb.auth.onAuthStateChange((event) => {
     if (event === 'SIGNED_OUT') {
-      sb.removeChannel(interviewsCh);
-      sb.removeChannel(applicantsCh);
+      teardownRealtimeSubscriptions();
     }
   });
+  recruitingRealtimeAuthSubscription = data?.subscription || null;
 }
 </script>
 
@@ -2927,13 +3106,12 @@ const setSaveStatus = (status, msg) => {
 function persistLocalDraft() {
   try {
     const health = ensureInterviewSaveHealth();
-    localStorage.setItem('roots-recruit-last', JSON.stringify({
+    return recruitingBrowserStorage.setItem('roots-recruit-last', JSON.stringify({
       erst: state.erst,
       zweit: state.zweit,
       _savedAt: new Date().toISOString(),
       _saveHealth: health,
     }));
-    return true;
   } catch (e) {
     console.error('persistLocalDraft', e);
     return false;
@@ -2942,7 +3120,7 @@ function persistLocalDraft() {
 
 function localDraftCandidate() {
   try {
-    const raw = localStorage.getItem('roots-recruit-last');
+    const raw = recruitingBrowserStorage.getItem('roots-recruit-last');
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     const erst = parsed?.erst;
@@ -2973,7 +3151,7 @@ function localDraftCandidate() {
 
 function readLocalInterviewSnapshot() {
   try {
-    const parsed = JSON.parse(localStorage.getItem('roots-recruit-last') || 'null');
+    const parsed = JSON.parse(recruitingBrowserStorage.getItem('roots-recruit-last') || 'null');
     if (!parsed?.erst || parsed.erst.meta?.sessionId !== state.erst.meta?.sessionId) return null;
     return { erst: parsed.erst, zweit: parsed.zweit || deepClone(INITIAL_STATE) };
   } catch (e) {
@@ -2984,7 +3162,7 @@ function readLocalInterviewSnapshot() {
 
 function restoreInterviewSaveHealth(sessionId) {
   try {
-    const parsed = JSON.parse(localStorage.getItem('roots-recruit-last') || 'null');
+    const parsed = JSON.parse(recruitingBrowserStorage.getItem('roots-recruit-last') || 'null');
     if (parsed?.erst?.meta?.sessionId === sessionId && parsed._saveHealth) {
       interviewSaveHealth = {
         ...interviewSaveHealth,
@@ -3703,15 +3881,390 @@ function reopenInterviewRound() {
   renderSidenav();
 }
 
+let pendingPdfExport = null;
+let activePdfCleanup = null;
+
+function normalizePdfSlice(candidate, runde) {
+  const raw = deepClone((runde === 'zweit' ? candidate.zweit : candidate.erst) || {});
+  const fallbackMeta = {
+    kandidat: candidate.kandidat || '',
+    interviewer: candidate.interviewer || '',
+    datum: candidate.datum || '',
+    sessionId: candidate.session_id || '',
+    runde,
+  };
+  return {
+    ...deepClone(INITIAL_STATE),
+    ...raw,
+    checks: { ...(raw.checks || {}) },
+    notes: { ...(raw.notes || {}) },
+    observations: { ...(raw.observations || {}) },
+    ratings: { ...(raw.ratings || {}) },
+    abschlussNotes: { ...(raw.abschlussNotes || {}) },
+    caseChecks: { ...(raw.caseChecks || {}) },
+    cultureFitAnswers: { ...(raw.cultureFitAnswers || {}) },
+    weights: { ...DEFAULT_DIMENSION_WEIGHTS, ...(raw.weights || {}) },
+    meta: { ...INITIAL_STATE.meta, ...fallbackMeta, ...(raw.meta || {}), runde },
+  };
+}
+
+function withPdfCandidateState(candidate, runde, callback) {
+  const previous = { erst: state.erst, zweit: state.zweit };
+  const erst = normalizePdfSlice(candidate, 'erst');
+  const zweit = normalizePdfSlice(candidate, 'zweit');
+  state.erst = erst;
+  state.zweit = zweit;
+  state.erst.meta.runde = runde;
+  try {
+    return callback({ erst, zweit, slice: runde === 'zweit' ? zweit : erst });
+  } finally {
+    state.erst = previous.erst;
+    state.zweit = previous.zweit;
+  }
+}
+
+function formatPdfDate(value, includeTime = false) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return new Intl.DateTimeFormat('de-DE', includeTime
+    ? { dateStyle: 'medium', timeStyle: 'short' }
+    : { dateStyle: 'medium' }).format(date);
+}
+
+function pdfValue(value, fallback = 'Nicht eingetragen') {
+  if (value == null || String(value).trim() === '') return `<span class="pdf-missing">${escapeHtml(fallback)}</span>`;
+  return escapeHtml(String(value));
+}
+
+function pdfUnique(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function analyzePdfCompleteness(slice, sections) {
+  const missingAnswers = [];
+  const missingScores = [];
+  const noteQuestion = q => {
+    if (!(slice.notes?.[q.id] || '').trim()) missingAnswers.push(q.text || q.id);
+    (q.evaluations || []).forEach((evaluation, index) => {
+      if ((slice.ratings?.[q.id] || {})[index] == null) missingScores.push(evaluation.label || q.text || q.id);
+    });
+  };
+  sections.forEach(section => {
+    (section.questions || []).forEach(noteQuestion);
+    if (section.outroQuestion) noteQuestion(section.outroQuestion);
+    (section.cultureFitQuestions || []).forEach(question => {
+      if (!slice.cultureFitAnswers?.[question.id]) {
+        missingAnswers.push(`${question.optionA} oder ${question.optionB}`);
+      }
+    });
+    const scoreBlock = block => (block?.evaluations || []).forEach((evaluation, index) => {
+      if ((slice.ratings?.[block.id] || {})[index] == null) missingScores.push(evaluation.label || block.id);
+    });
+    scoreBlock(section.blockEvaluation);
+    scoreBlock(section.outroEvaluation);
+    (section.outroFields || []).forEach(field => {
+      if (!(slice.abschlussNotes?.[field] || '').trim()) missingAnswers.push(field);
+    });
+  });
+  if (!(slice.gesamtNote || '').trim()) missingAnswers.push('Gesamteindruck / Fazit');
+  if (!slice.recommendation) missingAnswers.push('Empfehlung');
+  return {
+    missingAnswers: pdfUnique(missingAnswers),
+    missingScores: pdfUnique(missingScores),
+  };
+}
+
+function getPdfRoundContext(candidate, runde) {
+  return withPdfCandidateState(candidate, runde, ({ erst, zweit, slice }) => {
+    const sections = runde === 'zweit' ? SECTIONS_ZWEIT : SECTIONS_ERST;
+    return {
+      runde,
+      label: runde === 'zweit' ? 'Zweitgespräch' : 'Erstgespräch',
+      erst,
+      zweit,
+      slice,
+      sections,
+      scores: calculateScores(),
+      completeness: analyzePdfCompleteness(slice, sections),
+    };
+  });
+}
+
+function renderPdfRatings(questionId, evaluations, context) {
+  if (!evaluations?.length) return '';
+  return `<div class="pdf-rating-list">${evaluations.map((evaluation, index) => {
+    const value = (context.slice.ratings?.[questionId] || {})[index];
+    const erstValue = context.runde === 'zweit' ? (context.erst.ratings?.[questionId] || {})[index] : null;
+    const reference = context.runde === 'zweit' && erstValue != null
+      ? `<span class="pdf-rating-dimension">Erstgespräch: ${escapeHtml(String(erstValue))}/5</span>`
+      : '';
+    return `<div class="pdf-rating">
+      <div class="pdf-rating-label">${escapeHtml(evaluation.label || 'Bewertung')}
+        <span class="pdf-rating-dimension">${escapeHtml(DIMENSIONS[evaluation.dimension] || evaluation.dimension || 'Ohne Dimension')}</span>
+        ${reference}
+      </div>
+      <div class="pdf-rating-value">${value != null ? `${escapeHtml(String(value))}/5` : '<span class="pdf-missing">Nicht vergeben</span>'}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function renderPdfQuestion(question, context) {
+  const note = context.slice.notes?.[question.id] || '';
+  const checks = (question.checks || []).map((label, index) => {
+    const checked = !!context.slice.checks?.[`${question.id}_c${index}`];
+    return `<div class="pdf-check ${checked ? 'is-checked' : ''}">${checked ? '✓' : '○'} ${escapeHtml(label)}</div>`;
+  }).join('');
+  return `<div class="pdf-question">
+    <div class="pdf-question-title">${escapeHtml(question.text || question.id)}</div>
+    ${question.followUp ? `<div class="pdf-question-followup">${escapeHtml(question.followUp)}</div>` : ''}
+    ${checks ? `<div class="pdf-check-list">${checks}</div>` : ''}
+    <div class="pdf-answer"><span class="pdf-answer-label">Notiz / Antwort</span>${pdfValue(note)}</div>
+    ${renderPdfRatings(question.id, question.evaluations, context)}
+  </div>`;
+}
+
+function renderPdfSection(section, index, context) {
+  const slice = context.slice;
+  const timerValue = slice.timerMinutes?.[`sec-${section.id}`] ?? slice.timerMinutes?.[section.id];
+  const timeLabel = timerValue != null
+    ? `Geplant ${section.time || '—'} · Erfasst ${escapeHtml(String(timerValue))}`
+    : `Geplant ${escapeHtml(section.time || '—')}`;
+  let content = '';
+  if (section.caseText) content += `<div class="pdf-case-context">${escapeHtml(section.caseText)}</div>`;
+  if (section.type === 'rti') {
+    content += `<div class="pdf-summary-block"><div class="pdf-summary-title">Realistische Tätigkeitsinformationen</div>
+      <div>${slice.rtiDone ? 'Als kommuniziert bestätigt.' : '<span class="pdf-missing">Noch nicht als kommuniziert bestätigt.</span>'}</div></div>`;
+  }
+  if (section.cultureFitQuestions?.length) {
+    content += `<div class="pdf-choice-grid">${section.cultureFitQuestions.map(question => {
+      const answer = slice.cultureFitAnswers?.[question.id];
+      const selected = answer === 'A' ? question.optionA : answer === 'B' ? question.optionB : '';
+      return `<div class="pdf-choice"><div>${escapeHtml(question.optionA)} <span class="pdf-missing">vs.</span> ${escapeHtml(question.optionB)}</div>
+        <div class="pdf-choice-answer">${selected ? escapeHtml(selected) : '<span class="pdf-missing">Nicht ausgewählt</span>'}</div></div>`;
+    }).join('')}</div>`;
+  }
+  content += (section.questions || []).map(question => renderPdfQuestion(question, context)).join('');
+  if (section.blockEvaluation) {
+    content += `<div class="pdf-summary-block"><div class="pdf-summary-title">Gesamtbewertung des Abschnitts</div>
+      ${renderPdfRatings(section.blockEvaluation.id, section.blockEvaluation.evaluations, context)}</div>`;
+  }
+  if (section.type === 'outro') {
+    if (section.outroFields?.length) {
+      content += `<div class="pdf-summary-block"><div class="pdf-summary-title">Abschlussangaben</div>
+        <div class="pdf-raw-list">${section.outroFields.map(field => `<div class="pdf-raw-item"><strong>${escapeHtml(field)}</strong><span>${pdfValue(slice.abschlussNotes?.[field])}</span></div>`).join('')}</div></div>`;
+    }
+    if (section.outroQuestion) content += renderPdfQuestion(section.outroQuestion, context);
+    if (section.outroEvaluation) {
+      content += `<div class="pdf-summary-block"><div class="pdf-summary-title">Bewertung der Rückfragen</div>
+        ${renderPdfRatings(section.outroEvaluation.id, section.outroEvaluation.evaluations, context)}</div>`;
+    }
+  }
+  return `<section class="pdf-section">
+    <div class="pdf-section-head">
+      <div><span class="pdf-section-number">${index + 1}.</span><span class="pdf-section-title">${escapeHtml(section.main || 'Abschnitt')}${section.sub ? ` · ${escapeHtml(section.sub)}` : ''}</span></div>
+      <span class="pdf-section-time">${timeLabel}</span>
+    </div>
+    ${content || '<div class="pdf-answer"><span class="pdf-missing">Keine gesprächsspezifischen Angaben in diesem Abschnitt.</span></div>'}
+  </section>`;
+}
+
+function pdfEvaluationCatalog() {
+  const catalog = new Map();
+  [SECTIONS_ERST, SECTIONS_ZWEIT].forEach(sections => sections.forEach(section => {
+    const add = block => (block?.evaluations || []).forEach((evaluation, index) => {
+      catalog.set(`${block.id}:${index}`, evaluation);
+    });
+    add(section.blockEvaluation);
+    add(section.outroEvaluation);
+    (section.questions || []).forEach(question => add(question));
+    if (section.outroQuestion) add(section.outroQuestion);
+  }));
+  return catalog;
+}
+
+function renderPdfEffectiveScoring(context) {
+  if (context.runde !== 'zweit') return '';
+  const catalog = pdfEvaluationCatalog();
+  const rows = [];
+  const allIds = new Set([...Object.keys(context.erst.ratings || {}), ...Object.keys(context.zweit.ratings || {})]);
+  allIds.forEach(questionId => {
+    const indexes = new Set([
+      ...Object.keys(context.erst.ratings?.[questionId] || {}),
+      ...Object.keys(context.zweit.ratings?.[questionId] || {}),
+    ]);
+    indexes.forEach(index => {
+      const zweitValue = context.zweit.ratings?.[questionId]?.[index];
+      const erstValue = context.erst.ratings?.[questionId]?.[index];
+      const value = zweitValue != null ? zweitValue : erstValue;
+      if (value == null) return;
+      const evaluation = catalog.get(`${questionId}:${index}`) || {};
+      rows.push({
+        label: evaluation.label || questionId,
+        dimension: DIMENSIONS[evaluation.dimension] || evaluation.dimension || '—',
+        source: zweitValue != null ? 'Zweitgespräch' : 'Erstgespräch',
+        value,
+      });
+    });
+  });
+  if (!rows.length) return '';
+  return `<div class="pdf-summary-block">
+    <div class="pdf-summary-title">Bewertungsgrundlage des Gesamtscores</div>
+    <div class="pdf-question-followup">Bewertungen aus beiden Runden werden zusammengeführt. Bei identischen Frage-IDs ersetzt die Bewertung des Zweitgesprächs die Erstbewertung.</div>
+    <table class="pdf-scoring-table"><thead><tr><th>Bewertung</th><th>Dimension</th><th>Quelle</th><th>Score</th></tr></thead>
+      <tbody>${rows.map(row => `<tr><td>${escapeHtml(row.label)}</td><td>${escapeHtml(row.dimension)}</td><td>${row.source}</td><td>${escapeHtml(String(row.value))}/5</td></tr>`).join('')}</tbody></table>
+  </div>`;
+}
+
+function renderPdfSupplementalData(context) {
+  const groups = [
+    ['Weitere Beobachtungen', context.slice.observations],
+    ['Weitere Case-Angaben', context.slice.caseChecks],
+  ].filter(([, values]) => values && Object.keys(values).length);
+  return groups.map(([title, values]) => `<div class="pdf-summary-block">
+    <div class="pdf-summary-title">${title}</div>
+    <div class="pdf-raw-list">${Object.entries(values).map(([key, value]) => `<div class="pdf-raw-item"><strong>${escapeHtml(key.replace(/_/g, ' '))}</strong><span>${pdfValue(typeof value === 'boolean' ? (value ? 'Ja' : 'Nein') : value)}</span></div>`).join('')}</div>
+  </div>`).join('');
+}
+
+function renderPdfRound(candidate, runde) {
+  const context = getPdfRoundContext(candidate, runde);
+  const { slice, scores, completeness } = context;
+  const participants = getSliceParticipants(slice).map(person =>
+    person.name || getTeamMember(person.userId)?.full_name || person.userId
+  ).filter(Boolean);
+  const missingAnswers = completeness.missingAnswers.length;
+  const missingScores = completeness.missingScores.length;
+  const complete = missingAnswers === 0 && missingScores === 0;
+  const scoreCount = Object.values(scores.perDim).reduce((sum, item) => sum + item.count, 0);
+  const completenessText = complete
+    ? 'Alle vorgesehenen Antworten und Bewertungen dieser Runde sind enthalten.'
+    : `Subtiler Vollständigkeitshinweis: ${missingAnswers} Antwort${missingAnswers === 1 ? '' : 'en'} bzw. Notiz${missingAnswers === 1 ? '' : 'en'} ${missingAnswers === 1 ? 'ist' : 'sind'} nicht eingetragen und ${missingScores} Score${missingScores === 1 ? '' : 's'} ${missingScores === 1 ? 'ist' : 'sind'} nicht vergeben. Dieser Bericht kann daher einen Zwischenstand darstellen.`;
+  const dimensions = Object.entries(DIMENSIONS).map(([key, label]) => {
+    const value = scores.averages[key];
+    return `<div class="pdf-dimension"><span>${escapeHtml(label)}</span><span class="pdf-dimension-value">${value != null ? value.toFixed(1) : '—'}</span></div>`;
+  }).join('');
+  return `<article class="pdf-round-report">
+    <div class="pdf-round-heading">
+      <div><div class="pdf-round-kicker">ROOTS Recruiting · Gesprächsbericht</div><h2 class="pdf-round-title">${context.label}</h2></div>
+      <span class="pdf-status ${slice.completed ? '' : 'is-draft'}">${slice.completed ? 'Abgeschlossen' : 'Entwurf'}</span>
+    </div>
+    <div class="pdf-round-facts">
+      <div class="pdf-fact"><span class="pdf-fact-label">Datum</span><span class="pdf-fact-value">${pdfValue(slice.meta?.datum || candidate.datum)}</span></div>
+      <div class="pdf-fact"><span class="pdf-fact-label">Owner / Interviewer:in</span><span class="pdf-fact-value">${pdfValue(slice.meta?.ownerName || slice.meta?.interviewer || candidate.interviewer)}</span></div>
+      <div class="pdf-fact"><span class="pdf-fact-label">Gesprächspersonen</span><span class="pdf-fact-value">${pdfValue(participants.join(', '))}</span></div>
+      <div class="pdf-fact"><span class="pdf-fact-label">Empfehlung</span><span class="pdf-fact-value">${pdfValue(slice.recommendation)}</span></div>
+      <div class="pdf-fact"><span class="pdf-fact-label">Abgeschlossen am</span><span class="pdf-fact-value">${slice.completedAt ? escapeHtml(formatPdfDate(slice.completedAt, true)) : '<span class="pdf-missing">Noch nicht abgeschlossen</span>'}</span></div>
+      <div class="pdf-fact"><span class="pdf-fact-label">Bewertungsbasis</span><span class="pdf-fact-value">${scoreCount} Einzelbewertungen</span></div>
+    </div>
+    <div class="pdf-completeness-note ${complete ? 'is-complete' : ''}">${completenessText}</div>
+    <div class="pdf-score-summary">
+      <div><div class="pdf-overall-score">${scores.overall != null ? scores.overall.toFixed(1) : '—'}<small>/5</small></div>
+        <div class="pdf-score-caption">${runde === 'zweit' ? 'Gesamtscore aus beiden Runden' : 'Gesamtscore Erstgespräch'}</div></div>
+      <div class="pdf-dimension-grid">${dimensions}</div>
+    </div>
+    ${context.sections.map((section, index) => renderPdfSection(section, index, context)).join('')}
+    <div class="pdf-summary-block"><div class="pdf-summary-title">Gesamteindruck / Fazit</div>
+      <div class="pdf-summary-text">${pdfValue(slice.gesamtNote)}</div></div>
+    ${runde === 'erst' ? `<div class="pdf-summary-block"><div class="pdf-summary-title">Anmerkungen für das Zweitgespräch</div><div class="pdf-summary-text">${pdfValue(slice.zweitAnmerkung)}</div></div>` : ''}
+    ${renderPdfEffectiveScoring(context)}
+    ${renderPdfSupplementalData(context)}
+  </article>`;
+}
+
+function buildPdfReport(candidate, rounds) {
+  const applicant = state.applicants.find(item => item.session_id === candidate.session_id);
+  const roundLabel = rounds.length === 2
+    ? 'Erst- und Zweitgespräch'
+    : (rounds[0] === 'zweit' ? 'Zweitgespräch' : 'Erstgespräch');
+  const candidateName = candidate.kandidat || (applicant ? getApplicantDisplayName(applicant) : '') || 'Unbenannte Bewerbung';
+  return `<div class="pdf-report">
+    <header class="pdf-report-cover">
+      <div class="pdf-report-brand">ROOTS Consultants · Recruiting</div>
+      <h1>${escapeHtml(candidateName)}</h1>
+      <div class="pdf-report-subtitle">Strukturierter Interviewbericht · ${roundLabel}</div>
+      <div class="pdf-cover-facts">
+        <div class="pdf-fact"><span class="pdf-fact-label">Position</span><span class="pdf-fact-value">${pdfValue(applicant?.position_applied || applicant?.role_title)}</span></div>
+        <div class="pdf-fact"><span class="pdf-fact-label">E-Mail</span><span class="pdf-fact-value">${pdfValue(applicant?.email)}</span></div>
+        <div class="pdf-fact"><span class="pdf-fact-label">Telefon</span><span class="pdf-fact-value">${pdfValue(applicant?.phone)}</span></div>
+        <div class="pdf-fact"><span class="pdf-fact-label">Verfügbarkeit</span><span class="pdf-fact-value">${pdfValue(applicant?.availability_start ? formatPdfDate(applicant.availability_start) : '')}</span></div>
+        <div class="pdf-fact"><span class="pdf-fact-label">Session-ID</span><span class="pdf-fact-value">${pdfValue(candidate.session_id)}</span></div>
+        <div class="pdf-fact"><span class="pdf-fact-label">Enthaltene Runden</span><span class="pdf-fact-value">${roundLabel}</span></div>
+      </div>
+      <div class="pdf-exported-at">Erstellt am ${escapeHtml(formatPdfDate(new Date().toISOString(), true))}. Vertraulich · nur für den internen Recruiting-Prozess.</div>
+    </header>
+    ${rounds.map(runde => renderPdfRound(candidate, runde)).join('')}
+    <footer class="pdf-report-footer">ROOTS Consultants · Vertraulicher Interviewbericht · Automatisch aus dem aktuellen gespeicherten Gesprächsstand erzeugt.</footer>
+  </div>`;
+}
+
+function syncPdfRoundOptions() {
+  ['erst', 'zweit'].forEach(runde => {
+    const input = document.getElementById(`pdf-export-${runde}`);
+    document.getElementById(`pdf-option-${runde}`)?.classList.toggle('is-selected', !!input?.checked);
+  });
+  const selected = document.querySelectorAll('#pdf-export-form input[type="checkbox"]:checked:not(:disabled)').length;
+  const submit = document.getElementById('pdf-export-submit');
+  if (submit) submit.disabled = selected === 0;
+  const error = document.getElementById('pdf-export-error');
+  if (error) error.textContent = selected ? '' : 'Wähle mindestens eine Gesprächsrunde aus.';
+}
+
+function closePdfExportDialog() {
+  document.getElementById('pdf-export-overlay')?.classList.remove('visible');
+  pendingPdfExport = null;
+}
+
 function printInterviewById(sessionId, runde = 'erst') {
-  const c = state.candidates.find(x => x.session_id === sessionId);
-  if (!c) return;
-  const prevView = state.view;
-  loadCandidateIntoInterview(c, { runde });
-  setTimeout(() => {
-    window.print();
-    if (prevView !== 'interview') switchView(prevView);
-  }, 700);
+  const candidate = state.candidates.find(item => item.session_id === sessionId);
+  if (!candidate) return;
+  const secondAvailable = canStartZweitgespraech(candidate);
+  pendingPdfExport = { candidate, defaultRound: runde };
+  document.getElementById('pdf-export-candidate').textContent = candidate.kandidat || 'Unbenannte Bewerbung';
+  const erst = document.getElementById('pdf-export-erst');
+  const zweit = document.getElementById('pdf-export-zweit');
+  erst.checked = runde !== 'zweit';
+  zweit.checked = runde === 'zweit' && secondAvailable;
+  zweit.disabled = !secondAvailable;
+  document.getElementById('pdf-option-zweit')?.classList.toggle('is-disabled', !secondAvailable);
+  const erstSlice = candidate.erst || {};
+  const zweitSlice = candidate.zweit || {};
+  document.getElementById('pdf-export-erst-meta').textContent = `${erstSlice.completed ? 'Abgeschlossen' : 'Entwurf'} · ${formatPdfDate(erstSlice.meta?.datum || candidate.datum) || 'Kein Datum'}`;
+  document.getElementById('pdf-export-zweit-meta').textContent = secondAvailable
+    ? `${zweitSlice.completed ? 'Abgeschlossen' : 'Entwurf'} · ${formatPdfDate(zweitSlice.meta?.datum || candidate.datum) || 'Kein Datum'}`
+    : 'Noch nicht vorhanden';
+  syncPdfRoundOptions();
+  document.getElementById('pdf-export-overlay')?.classList.add('visible');
+  setTimeout(() => document.getElementById(runde === 'zweit' && secondAvailable ? 'pdf-export-zweit' : 'pdf-export-erst')?.focus(), 0);
+}
+
+function startPdfPrint(candidate, rounds) {
+  const root = document.getElementById('pdf-report-root');
+  if (!root) return;
+  activePdfCleanup?.();
+  root.innerHTML = buildPdfReport(candidate, rounds);
+  root.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('pdf-export-mode');
+  let cleaned = false;
+  const cleanup = () => {
+    if (cleaned) return;
+    cleaned = true;
+    window.removeEventListener('afterprint', cleanup);
+    document.body.classList.remove('pdf-export-mode');
+    root.setAttribute('aria-hidden', 'true');
+    root.replaceChildren();
+    activePdfCleanup = null;
+  };
+  activePdfCleanup = cleanup;
+  window.addEventListener('afterprint', cleanup, { once: true });
+  const ready = document.fonts?.ready || Promise.resolve();
+  ready.catch(() => {}).then(() => requestAnimationFrame(() => {
+    try {
+      window.print();
+    } finally {
+      setTimeout(cleanup, 60000);
+    }
+  }));
 }
 
 async function loadAllCandidates() {
@@ -3813,7 +4366,7 @@ function loadCandidateIntoInterview(c, opts = {}) {
     state.zweit.meta.runde = state.erst.meta.runde;
   }
   updateInterviewSubtitle();
-  switchView('interview');
+  switchView('interview', { history: opts.history || 'push' });
   loadAllApplicants().then(() => { if (state.view === 'interview') renderSidenav(); });
 }
 
@@ -3934,7 +4487,7 @@ function syncFullscreenNavButton() {
   const btn = document.getElementById('nav-fullscreen');
   const icon = btn?.querySelector('i');
   if (!btn || !icon) return;
-  if (document.fullscreenElement) {
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
     icon.className = 'fa-solid fa-compress';
     btn.setAttribute('title', 'Vollbild beenden');
   } else {
@@ -3944,7 +4497,7 @@ function syncFullscreenNavButton() {
 }
 
 function exitInterviewFullscreenIfActive() {
-  if (document.fullscreenElement) {
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
     (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
   }
   syncFullscreenNavButton();
@@ -3953,7 +4506,7 @@ function exitInterviewFullscreenIfActive() {
 async function toggleInterviewFullscreen() {
   const btn = document.getElementById('nav-fullscreen');
   const icon = btn?.querySelector('i');
-  if (!document.fullscreenElement) {
+  if (!(document.fullscreenElement || document.webkitFullscreenElement)) {
     const request = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
     if (!request) {
       toast('Vollbild wird von diesem Browser nicht unterstützt', 'error');
@@ -3973,7 +4526,34 @@ async function toggleInterviewFullscreen() {
   }
 }
 
-function switchView(v) {
+const RECRUITING_HISTORY_KEY = 'rootsRecruiting';
+
+function recruitingHistorySnapshot(view = state.view) {
+  return {
+    [RECRUITING_HISTORY_KEY]: true,
+    view,
+    applicantId: view === 'bewerber' ? (state.selectedApplicantId || null) : null,
+    sessionId: view === 'interview' ? (state.erst.meta?.sessionId || null) : null,
+    runde: view === 'interview' ? (state.erst.meta?.runde || 'erst') : null,
+  };
+}
+
+function syncRecruitingHistory(mode = 'push') {
+  if (mode === 'none') return;
+  const next = recruitingHistorySnapshot();
+  const current = history.state?.[RECRUITING_HISTORY_KEY] ? history.state : null;
+  const unchanged = current
+    && current.view === next.view
+    && current.applicantId === next.applicantId
+    && current.sessionId === next.sessionId
+    && current.runde === next.runde;
+  if (unchanged && mode !== 'replace') return;
+  const method = mode === 'replace' ? 'replaceState' : 'pushState';
+  history[method](next, '');
+}
+
+function switchView(v, options = {}) {
+  const historyMode = options.history || 'push';
   const prevView = state.view;
   state.view = v;
   if (prevView === 'interview' && v !== 'interview') exitInterviewFullscreenIfActive();
@@ -3993,9 +4573,14 @@ function switchView(v) {
     renderBewerberList();
     if (state.bewerberCreateMode && !state.bewerberCreateMode.editId) renderBewerberCreateForm();
     else if (state.selectedApplicantId) renderBewerberDetail(state.selectedApplicantId);
+    else {
+      const detail = document.getElementById('bew-detail');
+      if (detail) detail.innerHTML = '<p style="color:var(--muted);text-align:center;padding:3rem 1rem">Wähle einen Bewerber aus der Liste oder lege einen neuen an.</p>';
+    }
   }
   const dashContent = document.querySelector('.dash-content');
   if (dashContent) dashContent.scrollTop = 0;
+  syncRecruitingHistory(historyMode);
 }
 
 /* ──────────────────────────────────────────────
@@ -4046,7 +4631,7 @@ function renderDashboardLane(entry) {
     <div class="dash-reco cand-reco cand-reco--${recoCat}" title="${escapeHtml(recoDisplay || 'Keine Empfehlung')}">${recoDisplay ? escapeHtml(recoDisplay) : '—'}</div>
     <div class="dash-lane-actions">
       <button type="button" class="dash-icon-btn" data-act="open" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="${completed ? 'Ansehen' : 'Bearbeiten'}"><i class="fa-solid fa-pen"></i></button>
-      <button type="button" class="dash-icon-btn" data-act="print" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="PDF"><i class="fa-solid fa-file-pdf"></i></button>
+      <button type="button" class="dash-icon-btn" data-act="print" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="PDF herunterladen"><i class="fa-solid fa-file-pdf"></i></button>
       ${entry.runde === 'erst' ? `<button type="button" class="dash-icon-btn dash-icon-btn--danger" data-act="delete" data-id="${escapeHtml(c.session_id)}" title="Löschen"><i class="fa-solid fa-trash"></i></button>` : ''}
     </div>
   </div>`;
@@ -4635,6 +5220,7 @@ function renderBewerberList() {
       state.selectedApplicantId = el.dataset.id;
       renderBewerberList();
       renderBewerberDetail(el.dataset.id);
+      syncRecruitingHistory('push');
     });
   });
 }
@@ -4861,6 +5447,7 @@ function renderBewerberDetail(id) {
           <span><i class="fa-solid fa-file"></i> ${escapeHtml(d.file_name)} <small style="color:var(--muted)">(${escapeHtml(d.doc_type)})</small></span>
           <a href="${escapeHtml(d.file_url||'#')}" target="_blank" class="btn-ghost" style="font-size:.8rem">Öffnen</a>
         </div>`).join('') : '<p style="color:var(--muted);font-size:.88rem">Noch keine Dokumente hochgeladen.</p>'}
+      </div>
       <div class="bew-upload-zone" id="bew-upload-zone"><i class="fa-solid fa-cloud-arrow-up"></i> CV / Dokument hochladen (PDF, DOC, max. 10 MB)</div>
       <input type="file" id="bew-file-input" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display:none">
     </div>`;
@@ -5047,11 +5634,39 @@ document.getElementById('nav-new-applicant').addEventListener('click', () => ope
 document.getElementById('nav-back-dashboard').addEventListener('click', () => leaveInterviewToDashboard());
 document.getElementById('nav-fullscreen').addEventListener('click', toggleInterviewFullscreen);
 document.addEventListener('fullscreenchange', syncFullscreenNavButton);
+document.addEventListener('webkitfullscreenchange', syncFullscreenNavButton);
 document.getElementById('bew-sort').addEventListener('change', (e) => { state.bewSortBy = e.target.value; renderBewerberList(); });
 document.getElementById('picker-cancel').addEventListener('click', closeInterviewPicker);
 document.getElementById('picker-new-applicant').addEventListener('click', () => openBewerberCreateForm({ startInterviewAfterSave: true }));
 document.getElementById('interview-picker-overlay').addEventListener('click', (e) => {
   if (e.target.id === 'interview-picker-overlay') closeInterviewPicker();
+});
+['pdf-export-erst', 'pdf-export-zweit'].forEach(id => {
+  document.getElementById(id)?.addEventListener('change', syncPdfRoundOptions);
+});
+document.getElementById('pdf-export-cancel')?.addEventListener('click', closePdfExportDialog);
+document.getElementById('pdf-export-overlay')?.addEventListener('click', event => {
+  if (event.target.id === 'pdf-export-overlay') closePdfExportDialog();
+});
+document.getElementById('pdf-export-form')?.addEventListener('submit', event => {
+  event.preventDefault();
+  if (!pendingPdfExport?.candidate) return;
+  const rounds = ['erst', 'zweit'].filter(runde => {
+    const input = document.getElementById(`pdf-export-${runde}`);
+    return input?.checked && !input.disabled;
+  });
+  if (!rounds.length) {
+    syncPdfRoundOptions();
+    return;
+  }
+  const candidate = pendingPdfExport.candidate;
+  closePdfExportDialog();
+  startPdfPrint(candidate, rounds);
+});
+window.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && document.getElementById('pdf-export-overlay')?.classList.contains('visible')) {
+    closePdfExportDialog();
+  }
 });
 document.getElementById('bew-search').addEventListener('input', (e) => { state.bewFilterText = e.target.value; renderBewerberList(); });
 document.getElementById('bew-filter-status').addEventListener('change', (e) => { state.bewFilterStatus = e.target.value; renderBewerberList(); });
@@ -5102,7 +5717,7 @@ document.getElementById('dash-sort').addEventListener('change', (e) => { state.s
 
 // Initial: try to restore local session
 try {
-  const saved = localStorage.getItem('roots-recruit-last');
+  const saved = recruitingBrowserStorage.getItem('roots-recruit-last');
   if (saved) {
     const parsed = JSON.parse(saved);
     if (parsed.erst) state.erst = Object.assign(deepClone(INITIAL_STATE), parsed.erst, { meta: Object.assign({}, INITIAL_STATE.meta, parsed.erst.meta||{}) });
@@ -5125,6 +5740,48 @@ window.addEventListener('offline', () => {
 });
 window.addEventListener('pagehide', () => {
   if (state.view === 'interview') persistLocalDraft();
+});
+let recruitingResumeInFlight = null;
+window.addEventListener('pageshow', (event) => {
+  if (!event.persisted || recruitingResumeInFlight) return;
+  recruitingResumeInFlight = (async () => {
+    if (state.view === 'interview') persistLocalDraft();
+    try {
+      await window.RootsUserBridge?.syncAuthFromParentStorage?.();
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        if (!isIntranetEmbedded()) showAuthOverlay();
+        return;
+      }
+      await Promise.all([loadAllCandidates(), loadAllApplicants()]);
+      setupRealtimeSubscriptions();
+      switchView(state.view, { history: 'replace' });
+    } catch (error) {
+      console.warn('Recruiting nach Seitenwiederherstellung nicht vollständig synchronisiert', error);
+    }
+  })().finally(() => {
+    recruitingResumeInFlight = null;
+  });
+});
+window.addEventListener('popstate', (event) => {
+  const target = event.state;
+  if (!target?.[RECRUITING_HISTORY_KEY]) return;
+  if (state.view === 'interview' && target.view !== 'interview') {
+    persistLocalDraft();
+    void flushInterviewDraftToDb().catch(error => {
+      console.warn('Interview konnte beim Zurücknavigieren nicht sofort synchronisiert werden', error);
+    });
+  }
+  state.bewerberCreateMode = null;
+  state.selectedApplicantId = target.applicantId || null;
+  if (target.view === 'interview' && target.sessionId) {
+    const candidate = state.candidates.find(item => item.session_id === target.sessionId);
+    if (candidate) {
+      loadCandidateIntoInterview(candidate, { runde: target.runde || 'erst', history: 'none' });
+      return;
+    }
+  }
+  switchView(['dashboard', 'bewerber'].includes(target.view) ? target.view : 'dashboard', { history: 'none' });
 });
 
 bindInterviewFooterHandlers();
@@ -5333,7 +5990,7 @@ document.addEventListener('click', () => {
   });
 });
 
-switchView('dashboard');
+switchView('dashboard', { history: 'replace' });
 </script>
 
   <!-- Recruiting: Confirm Modals -->
