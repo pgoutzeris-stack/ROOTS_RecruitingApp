@@ -1558,7 +1558,7 @@ async function onAuthReady() {
 
   // 5. Realtime-Subscriptions erst NACH initialem Load setzen
   setupRealtimeSubscriptions();
-  await restoreRecruitingHistoryState(history.state, { replaceInvalid: true });
+  await restoreRecruitingHistoryState(consumeRecruitingHistoryTarget(), { replaceInvalid: true });
 }
 
 function _setDashLoading(on) {
@@ -4531,6 +4531,25 @@ const RECRUITING_HISTORY_KEY = 'rootsRecruiting';
 const RECRUITING_HISTORY_VERSION = 2;
 const RECRUITING_VIEWS = new Set(['dashboard', 'bewerber', 'interview']);
 let recruitingHistoryRestoreToken = 0;
+let pendingEmbeddedRecruitingHistory;
+
+function usesIntranetHistoryBridge() {
+  if (window.parent === window) return false;
+  try {
+    return window.parent.location.origin === window.location.origin;
+  } catch (_) {
+    return false;
+  }
+}
+
+function consumeRecruitingHistoryTarget() {
+  if (pendingEmbeddedRecruitingHistory !== undefined) {
+    const target = pendingEmbeddedRecruitingHistory;
+    pendingEmbeddedRecruitingHistory = undefined;
+    return target;
+  }
+  return history.state;
+}
 
 function normalizeRecruitingView(view) {
   return RECRUITING_VIEWS.has(view) ? view : 'dashboard';
@@ -4585,6 +4604,20 @@ function syncRecruitingHistory(mode = 'push') {
     && current.runde === next.runde;
   if (unchanged && mode !== 'replace') return;
   const method = mode === 'replace' ? 'replaceState' : 'pushState';
+  if (usesIntranetHistoryBridge()) {
+    try {
+      history.replaceState(next, '');
+      window.parent.postMessage({
+        type: 'roots-tool-history',
+        tool: 'recruiting',
+        mode: mode === 'replace' ? 'replace' : 'push',
+        state: next,
+      }, window.location.origin);
+    } catch (error) {
+      console.warn('Recruiting-History konnte nicht an das Intranet übergeben werden', error);
+    }
+    return;
+  }
   try {
     history[method](next, '');
   } catch (error) {
@@ -5896,7 +5929,7 @@ window.addEventListener('pageshow', (event) => {
   ensureRecruitingViewVisible(state.view);
   if (recruitingResumeInFlight) return;
   if (!event.persisted) {
-    if (_authReadyFired) void restoreRecruitingHistoryState(history.state, { replaceInvalid: true });
+    if (_authReadyFired) void restoreRecruitingHistoryState(consumeRecruitingHistoryTarget(), { replaceInvalid: true });
     return;
   }
   recruitingResumeInFlight = (async () => {
@@ -5910,7 +5943,7 @@ window.addEventListener('pageshow', (event) => {
       }
       await Promise.all([loadAllCandidates(), loadAllApplicants()]);
       setupRealtimeSubscriptions();
-      await restoreRecruitingHistoryState(history.state, { replaceInvalid: true });
+      await restoreRecruitingHistoryState(consumeRecruitingHistoryTarget(), { replaceInvalid: true });
     } catch (error) {
       console.warn('Recruiting nach Seitenwiederherstellung nicht vollständig synchronisiert', error);
       ensureRecruitingViewVisible(state.view);
@@ -5920,6 +5953,7 @@ window.addEventListener('pageshow', (event) => {
   });
 });
 window.addEventListener('popstate', (event) => {
+  if (usesIntranetHistoryBridge()) return;
   const target = normalizeRecruitingHistoryState(event.state);
   if (state.view === 'interview' && (!target || target.view !== 'interview')) {
     persistLocalDraft();
@@ -5928,6 +5962,31 @@ window.addEventListener('popstate', (event) => {
     });
   }
   void restoreRecruitingHistoryState(target, { replaceInvalid: true });
+});
+window.addEventListener('message', event => {
+  if (!usesIntranetHistoryBridge()
+      || event.source !== window.parent
+      || event.origin !== window.location.origin
+      || event.data?.type !== 'roots-tool-history-restore'
+      || event.data?.tool !== 'recruiting') return;
+  const target = normalizeRecruitingHistoryState(event.data.state);
+  if (state.view === 'interview' && (!target || target.view !== 'interview')) {
+    persistLocalDraft();
+    void flushInterviewDraftToDb().catch(error => {
+      console.warn('Interview konnte beim eingebetteten Zurücknavigieren nicht sofort synchronisiert werden', error);
+    });
+  }
+  try {
+    history.replaceState(target || recruitingHistorySnapshot('dashboard'), '');
+  } catch (error) {
+    console.warn('Eingebetteter Recruiting-Zustand konnte lokal nicht aktualisiert werden', error);
+  }
+  pendingEmbeddedRecruitingHistory = event.data.state || null;
+  if (_authReadyFired) {
+    void restoreRecruitingHistoryState(consumeRecruitingHistoryTarget(), { replaceInvalid: true });
+  } else {
+    ensureRecruitingViewVisible('dashboard');
+  }
 });
 
 bindInterviewFooterHandlers();
