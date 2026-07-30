@@ -8,7 +8,8 @@
   <title>ROOTS Recruiting · Interview-Leitfaden</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8"></script>
-  <script defer src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260730-history-auth-v3"></script>
+  <script src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-auth-client.js?v=20260730-access-broker-v5"></script>
+  <script defer src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260730-access-broker-v5"></script>
   <style>
     @import url('https://fonts.cdnfonts.com/css/circular-std');
 
@@ -1443,6 +1444,10 @@ window.__rootsSupabaseClient = sb;
 const overlay = document.getElementById('roots-auth-overlay');
 const vLogin  = document.getElementById('roots-view-login');
 const vForgot = document.getElementById('roots-view-forgot');
+const loginTitle = vLogin?.querySelector('.roots-card-title');
+const loginSubtitle = vLogin?.querySelector('.roots-card-sub');
+const loginForm = document.getElementById('roots-login-form');
+const loginFooter = vLogin?.querySelector('.roots-card-footer');
 const LOGIN_BTN_HTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Anmelden';
 const RESET_BTN_HTML = '<i class="fa-solid fa-paper-plane"></i> Link senden';
 function resetLoginUi() {
@@ -1450,9 +1455,35 @@ function resetLoginUi() {
   if (btn) { btn.disabled = false; btn.innerHTML = LOGIN_BTN_HTML; }
   const rb = document.getElementById('roots-reset-btn');
   if (rb) { rb.disabled = false; rb.innerHTML = RESET_BTN_HTML; }
+  if (loginTitle) loginTitle.textContent = 'Willkommen zurück';
+  if (loginSubtitle) loginSubtitle.textContent = 'Melde dich bei deinem ROOTS-Konto an.';
+  if (loginForm) loginForm.style.display = '';
+  if (loginFooter) loginFooter.style.display = '';
+  document.getElementById('roots-embedded-auth-pending')?.remove();
+}
+function showEmbeddedAuthPending() {
+  if (!ROOTS_EMBEDDED_AUTH || !overlay || !vLogin) return;
+  overlay.style.display = 'flex';
+  vLogin.style.display = 'block';
+  if (vForgot) vForgot.style.display = 'none';
+  if (loginTitle) loginTitle.textContent = 'Sitzung wird verbunden';
+  if (loginSubtitle) loginSubtitle.textContent = 'Die sichere Intranet-Anmeldung wird übernommen.';
+  if (loginForm) loginForm.style.display = 'none';
+  if (loginFooter) loginFooter.style.display = 'none';
+  if (!document.getElementById('roots-embedded-auth-pending')) {
+    const pending = document.createElement('div');
+    pending.id = 'roots-embedded-auth-pending';
+    pending.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:.6rem;color:var(--brand);font-size:.9rem;padding:.75rem 0';
+    pending.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i><span>Verbindung wird hergestellt…</span>';
+    vLogin.appendChild(pending);
+  }
 }
 function showAuthOverlay() {
   if (!overlay) return;
+  if (ROOTS_EMBEDDED_AUTH) {
+    showEmbeddedAuthPending();
+    return;
+  }
   overlay.style.display = 'flex';
   if (vLogin) vLogin.style.display = 'block';
   if (vForgot) vForgot.style.display = 'none';
@@ -1466,6 +1497,7 @@ let _authReadyFired = false;
 function _triggerAuthReady() {
   if (_authReadyFired) return;
   _authReadyFired = true;
+  resetLoginUi();
   hideAuthOverlay();
   onAuthReady();
 }
@@ -1483,6 +1515,7 @@ window.addEventListener('roots-auth-ready', (e) => {
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('[ROOTS Auth] DOMContentLoaded – starte Auth-Init');
+  if (ROOTS_EMBEDDED_AUTH) showEmbeddedAuthPending();
 
   // onAuthStateChange: fängt INITIAL_SESSION auf (wenn Bridge Session bereits gesetzt hat)
   sb.auth.onAuthStateChange((event, session) => {
@@ -1506,19 +1539,16 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('[ROOTS Auth] kein Login, standalone → zeige Login');
       resetLoginUi();
     } else {
-      console.log('[ROOTS Auth] kein Login, Iframe → warte 1s auf Bridge');
-      setTimeout(() => {
-        if (!_authReadyFired) {
-          sb.auth.getSession().then(({ data: { session: s2 } }) => {
-            console.log('[ROOTS Auth] Retry getSession:', !!s2);
-            if (s2) _triggerAuthReady(); else resetLoginUi();
-          });
-        }
-      }, 1000);
+      console.log('[ROOTS Auth] kein Login, Iframe → fordere Intranet-Sitzung an');
+      showEmbeddedAuthPending();
+      window.dispatchEvent(new CustomEvent('roots-auth-reconnect'));
     }
   }).catch((err) => {
     console.error('[ROOTS Auth] getSession Fehler:', err);
-    if (!_authReadyFired) resetLoginUi();
+    if (!_authReadyFired) {
+      if (ROOTS_EMBEDDED_AUTH) showEmbeddedAuthPending();
+      else resetLoginUi();
+    }
   });
 
 });
