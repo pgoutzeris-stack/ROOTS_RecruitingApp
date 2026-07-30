@@ -8,8 +8,7 @@
   <title>ROOTS Recruiting · Interview-Leitfaden</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8"></script>
-  <script src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-auth-client.js?v=20260730-access-broker-v5"></script>
-  <script defer src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260730-access-broker-v5"></script>
+  <script defer src="https://pgoutzeris-stack.github.io/ROOTS_Intranet/roots-user-bridge.js?v=20260729-safari-v1"></script>
   <style>
     @import url('https://fonts.cdnfonts.com/css/circular-std');
 
@@ -230,34 +229,6 @@
     .app-container { width: 100%; max-width: none; margin: 0; box-sizing: border-box; }
     .view { display: none; width: 100%; }
     .view.active { display: block; }
-
-    .recruiting-route-guard {
-      position: fixed;
-      inset: 0;
-      z-index: 8800;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--bg);
-      color: var(--ink);
-    }
-    .recruiting-route-guard[hidden] { display: none !important; }
-    .recruiting-route-guard__content {
-      display: grid;
-      justify-items: center;
-      gap: .75rem;
-      padding: 1.5rem;
-      text-align: center;
-    }
-    .recruiting-route-guard__spinner {
-      width: 28px;
-      height: 28px;
-      border: 2px solid var(--line);
-      border-top-color: var(--brand);
-      border-radius: 50%;
-      animation: roots-spin .8s linear infinite;
-    }
-    .recruiting-route-guard__label { font-size: .88rem; font-weight: 650; color: var(--muted); }
 
     /* ─── Sidebar navigation ─── */
     .app-nav-main { display: flex; flex-direction: column; gap: 2px; }
@@ -1007,13 +978,6 @@
 </head>
 <body>
 
-<div class="recruiting-route-guard" id="recruiting-route-guard" role="status" aria-live="polite" hidden>
-  <div class="recruiting-route-guard__content">
-    <span class="recruiting-route-guard__spinner" aria-hidden="true"></span>
-    <span class="recruiting-route-guard__label">Recruiting wird wiederhergestellt…</span>
-  </div>
-</div>
-
 <!-- ─── Login Overlay ─── -->
 <div id="roots-auth-overlay" class="roots-auth-overlay">
   <div class="roots-login-card">
@@ -1444,10 +1408,6 @@ window.__rootsSupabaseClient = sb;
 const overlay = document.getElementById('roots-auth-overlay');
 const vLogin  = document.getElementById('roots-view-login');
 const vForgot = document.getElementById('roots-view-forgot');
-const loginTitle = vLogin?.querySelector('.roots-card-title');
-const loginSubtitle = vLogin?.querySelector('.roots-card-sub');
-const loginForm = document.getElementById('roots-login-form');
-const loginFooter = vLogin?.querySelector('.roots-card-footer');
 const LOGIN_BTN_HTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Anmelden';
 const RESET_BTN_HTML = '<i class="fa-solid fa-paper-plane"></i> Link senden';
 function resetLoginUi() {
@@ -1455,35 +1415,9 @@ function resetLoginUi() {
   if (btn) { btn.disabled = false; btn.innerHTML = LOGIN_BTN_HTML; }
   const rb = document.getElementById('roots-reset-btn');
   if (rb) { rb.disabled = false; rb.innerHTML = RESET_BTN_HTML; }
-  if (loginTitle) loginTitle.textContent = 'Willkommen zurück';
-  if (loginSubtitle) loginSubtitle.textContent = 'Melde dich bei deinem ROOTS-Konto an.';
-  if (loginForm) loginForm.style.display = '';
-  if (loginFooter) loginFooter.style.display = '';
-  document.getElementById('roots-embedded-auth-pending')?.remove();
-}
-function showEmbeddedAuthPending() {
-  if (!ROOTS_EMBEDDED_AUTH || !overlay || !vLogin) return;
-  overlay.style.display = 'flex';
-  vLogin.style.display = 'block';
-  if (vForgot) vForgot.style.display = 'none';
-  if (loginTitle) loginTitle.textContent = 'Sitzung wird verbunden';
-  if (loginSubtitle) loginSubtitle.textContent = 'Die sichere Intranet-Anmeldung wird übernommen.';
-  if (loginForm) loginForm.style.display = 'none';
-  if (loginFooter) loginFooter.style.display = 'none';
-  if (!document.getElementById('roots-embedded-auth-pending')) {
-    const pending = document.createElement('div');
-    pending.id = 'roots-embedded-auth-pending';
-    pending.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:.6rem;color:var(--brand);font-size:.9rem;padding:.75rem 0';
-    pending.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i><span>Verbindung wird hergestellt…</span>';
-    vLogin.appendChild(pending);
-  }
 }
 function showAuthOverlay() {
   if (!overlay) return;
-  if (ROOTS_EMBEDDED_AUTH) {
-    showEmbeddedAuthPending();
-    return;
-  }
   overlay.style.display = 'flex';
   if (vLogin) vLogin.style.display = 'block';
   if (vForgot) vForgot.style.display = 'none';
@@ -1497,7 +1431,6 @@ let _authReadyFired = false;
 function _triggerAuthReady() {
   if (_authReadyFired) return;
   _authReadyFired = true;
-  resetLoginUi();
   hideAuthOverlay();
   onAuthReady();
 }
@@ -1515,7 +1448,6 @@ window.addEventListener('roots-auth-ready', (e) => {
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('[ROOTS Auth] DOMContentLoaded – starte Auth-Init');
-  if (ROOTS_EMBEDDED_AUTH) showEmbeddedAuthPending();
 
   // onAuthStateChange: fängt INITIAL_SESSION auf (wenn Bridge Session bereits gesetzt hat)
   sb.auth.onAuthStateChange((event, session) => {
@@ -1539,16 +1471,19 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('[ROOTS Auth] kein Login, standalone → zeige Login');
       resetLoginUi();
     } else {
-      console.log('[ROOTS Auth] kein Login, Iframe → fordere Intranet-Sitzung an');
-      showEmbeddedAuthPending();
-      window.dispatchEvent(new CustomEvent('roots-auth-reconnect'));
+      console.log('[ROOTS Auth] kein Login, Iframe → warte 1s auf Bridge');
+      setTimeout(() => {
+        if (!_authReadyFired) {
+          sb.auth.getSession().then(({ data: { session: s2 } }) => {
+            console.log('[ROOTS Auth] Retry getSession:', !!s2);
+            if (s2) _triggerAuthReady(); else resetLoginUi();
+          });
+        }
+      }, 1000);
     }
   }).catch((err) => {
     console.error('[ROOTS Auth] getSession Fehler:', err);
-    if (!_authReadyFired) {
-      if (ROOTS_EMBEDDED_AUTH) showEmbeddedAuthPending();
-      else resetLoginUi();
-    }
+    if (!_authReadyFired) resetLoginUi();
   });
 
 });
@@ -1623,7 +1558,7 @@ async function onAuthReady() {
 
   // 5. Realtime-Subscriptions erst NACH initialem Load setzen
   setupRealtimeSubscriptions();
-  await restoreRecruitingHistoryState(consumeRecruitingHistoryTarget(), { replaceInvalid: true });
+  await restoreRecruitingHistoryState(history.state, { replaceInvalid: true });
 }
 
 function _setDashLoading(on) {
@@ -4596,43 +4531,6 @@ const RECRUITING_HISTORY_KEY = 'rootsRecruiting';
 const RECRUITING_HISTORY_VERSION = 2;
 const RECRUITING_VIEWS = new Set(['dashboard', 'bewerber', 'interview']);
 let recruitingHistoryRestoreToken = 0;
-let pendingEmbeddedRecruitingHistory;
-let recruitingRouteGuardShownAt = 0;
-let recruitingRouteGuardHideTimer = null;
-
-function showRecruitingRouteGuard() {
-  const guard = document.getElementById('recruiting-route-guard');
-  if (!guard) return;
-  clearTimeout(recruitingRouteGuardHideTimer);
-  recruitingRouteGuardShownAt = Date.now();
-  guard.hidden = false;
-}
-
-function hideRecruitingRouteGuard() {
-  const guard = document.getElementById('recruiting-route-guard');
-  if (!guard) return;
-  const delay = Math.max(0, 180 - (Date.now() - recruitingRouteGuardShownAt));
-  clearTimeout(recruitingRouteGuardHideTimer);
-  recruitingRouteGuardHideTimer = setTimeout(() => { guard.hidden = true; }, delay);
-}
-
-function usesIntranetHistoryBridge() {
-  if (window.parent === window) return false;
-  try {
-    return window.parent.location.origin === window.location.origin;
-  } catch (_) {
-    return false;
-  }
-}
-
-function consumeRecruitingHistoryTarget() {
-  if (pendingEmbeddedRecruitingHistory !== undefined) {
-    const target = pendingEmbeddedRecruitingHistory;
-    pendingEmbeddedRecruitingHistory = undefined;
-    return target;
-  }
-  return history.state;
-}
 
 function normalizeRecruitingView(view) {
   return RECRUITING_VIEWS.has(view) ? view : 'dashboard';
@@ -4687,20 +4585,6 @@ function syncRecruitingHistory(mode = 'push') {
     && current.runde === next.runde;
   if (unchanged && mode !== 'replace') return;
   const method = mode === 'replace' ? 'replaceState' : 'pushState';
-  if (usesIntranetHistoryBridge()) {
-    try {
-      history.replaceState(next, '');
-      window.parent.postMessage({
-        type: 'roots-tool-history',
-        tool: 'recruiting',
-        mode: mode === 'replace' ? 'replace' : 'push',
-        state: next,
-      }, window.location.origin);
-    } catch (error) {
-      console.warn('Recruiting-History konnte nicht an das Intranet übergeben werden', error);
-    }
-    return;
-  }
   try {
     history[method](next, '');
   } catch (error) {
@@ -4739,63 +4623,54 @@ function currentInterviewAsHistoryCandidate(sessionId) {
 async function restoreRecruitingHistoryState(rawTarget, options = {}) {
   const token = ++recruitingHistoryRestoreToken;
   const target = normalizeRecruitingHistoryState(rawTarget);
-  showRecruitingRouteGuard();
-  try {
-    closeTransientNavigationLayers();
+  closeTransientNavigationLayers();
 
-    if (!target) {
-      switchView('dashboard', { history: options.replaceInvalid === false ? 'none' : 'replace' });
-      return;
-    }
-
-    state.bewerberCreateMode = null;
-    state.selectedApplicantId = null;
-
-    if (target.view === 'interview') {
-      let candidate = currentInterviewAsHistoryCandidate(target.sessionId)
-        || state.candidates.find(item => item.session_id === target.sessionId);
-      if (!candidate && _authReadyFired) {
-        ensureRecruitingViewVisible('dashboard');
-        await loadAllCandidates();
-        if (token !== recruitingHistoryRestoreToken) return;
-        candidate = currentInterviewAsHistoryCandidate(target.sessionId)
-          || state.candidates.find(item => item.session_id === target.sessionId);
-      }
-      if (candidate) {
-        loadCandidateIntoInterview(candidate, { runde: target.runde, history: 'none' });
-        return;
-      }
-      switchView('dashboard', { history: 'none' });
-      syncRecruitingHistory('replace');
-      if (_authReadyFired) toast('Die angeforderte Interviewansicht ist nicht mehr verfügbar', 'error');
-      return;
-    }
-
-    if (target.view === 'bewerber') {
-      if (target.applicantMode === 'create') {
-        state.bewerberCreateMode = { startInterviewAfterSave: false, editId: null };
-      } else if (target.applicantId) {
-        if (!state.applicants.some(item => item.id === target.applicantId) && _authReadyFired) {
-          await loadAllApplicants();
-          if (token !== recruitingHistoryRestoreToken) return;
-        }
-        if (state.applicants.some(item => item.id === target.applicantId)) {
-          state.selectedApplicantId = target.applicantId;
-        }
-      }
-      switchView('bewerber', { history: 'none' });
-      if (target.applicantId && !state.selectedApplicantId) syncRecruitingHistory('replace');
-      return;
-    }
-
-    switchView('dashboard', { history: 'none' });
-  } catch (error) {
-    console.error('Recruiting-History konnte nicht wiederhergestellt werden', error);
-    switchView('dashboard', { history: 'replace' });
-    if (_authReadyFired) toast('Ansicht wurde sicher auf das Dashboard zurückgesetzt', 'error');
-  } finally {
-    if (token === recruitingHistoryRestoreToken) hideRecruitingRouteGuard();
+  if (!target) {
+    switchView('dashboard', { history: options.replaceInvalid === false ? 'none' : 'replace' });
+    return;
   }
+
+  state.bewerberCreateMode = null;
+  state.selectedApplicantId = null;
+
+  if (target.view === 'interview') {
+    let candidate = currentInterviewAsHistoryCandidate(target.sessionId)
+      || state.candidates.find(item => item.session_id === target.sessionId);
+    if (!candidate && _authReadyFired) {
+      ensureRecruitingViewVisible('dashboard');
+      await loadAllCandidates();
+      if (token !== recruitingHistoryRestoreToken) return;
+      candidate = currentInterviewAsHistoryCandidate(target.sessionId)
+        || state.candidates.find(item => item.session_id === target.sessionId);
+    }
+    if (candidate) {
+      loadCandidateIntoInterview(candidate, { runde: target.runde, history: 'none' });
+      return;
+    }
+    switchView('dashboard', { history: 'none' });
+    syncRecruitingHistory('replace');
+    if (_authReadyFired) toast('Die angeforderte Interviewansicht ist nicht mehr verfügbar', 'error');
+    return;
+  }
+
+  if (target.view === 'bewerber') {
+    if (target.applicantMode === 'create') {
+      state.bewerberCreateMode = { startInterviewAfterSave: false, editId: null };
+    } else if (target.applicantId) {
+      if (!state.applicants.some(item => item.id === target.applicantId) && _authReadyFired) {
+        await loadAllApplicants();
+        if (token !== recruitingHistoryRestoreToken) return;
+      }
+      if (state.applicants.some(item => item.id === target.applicantId)) {
+        state.selectedApplicantId = target.applicantId;
+      }
+    }
+    switchView('bewerber', { history: 'none' });
+    if (target.applicantId && !state.selectedApplicantId) syncRecruitingHistory('replace');
+    return;
+  }
+
+  switchView('dashboard', { history: 'none' });
 }
 
 function initializeRecruitingHistory() {
@@ -6016,18 +5891,12 @@ window.addEventListener('offline', () => {
 window.addEventListener('pagehide', () => {
   if (state.view === 'interview') persistLocalDraft();
 });
-window.addEventListener('roots-tool-before-hide', () => {
-  if (state.view === 'interview') persistLocalDraft();
-});
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden' && state.view === 'interview') persistLocalDraft();
-});
 let recruitingResumeInFlight = null;
 window.addEventListener('pageshow', (event) => {
   ensureRecruitingViewVisible(state.view);
   if (recruitingResumeInFlight) return;
   if (!event.persisted) {
-    if (_authReadyFired) void restoreRecruitingHistoryState(consumeRecruitingHistoryTarget(), { replaceInvalid: true });
+    if (_authReadyFired) void restoreRecruitingHistoryState(history.state, { replaceInvalid: true });
     return;
   }
   recruitingResumeInFlight = (async () => {
@@ -6041,7 +5910,7 @@ window.addEventListener('pageshow', (event) => {
       }
       await Promise.all([loadAllCandidates(), loadAllApplicants()]);
       setupRealtimeSubscriptions();
-      await restoreRecruitingHistoryState(consumeRecruitingHistoryTarget(), { replaceInvalid: true });
+      await restoreRecruitingHistoryState(history.state, { replaceInvalid: true });
     } catch (error) {
       console.warn('Recruiting nach Seitenwiederherstellung nicht vollständig synchronisiert', error);
       ensureRecruitingViewVisible(state.view);
@@ -6051,7 +5920,6 @@ window.addEventListener('pageshow', (event) => {
   });
 });
 window.addEventListener('popstate', (event) => {
-  if (usesIntranetHistoryBridge()) return;
   const target = normalizeRecruitingHistoryState(event.state);
   if (state.view === 'interview' && (!target || target.view !== 'interview')) {
     persistLocalDraft();
@@ -6060,31 +5928,6 @@ window.addEventListener('popstate', (event) => {
     });
   }
   void restoreRecruitingHistoryState(target, { replaceInvalid: true });
-});
-window.addEventListener('message', event => {
-  if (!usesIntranetHistoryBridge()
-      || event.source !== window.parent
-      || event.origin !== window.location.origin
-      || event.data?.type !== 'roots-tool-history-restore'
-      || event.data?.tool !== 'recruiting') return;
-  const target = normalizeRecruitingHistoryState(event.data.state);
-  if (state.view === 'interview' && (!target || target.view !== 'interview')) {
-    persistLocalDraft();
-    void flushInterviewDraftToDb().catch(error => {
-      console.warn('Interview konnte beim eingebetteten Zurücknavigieren nicht sofort synchronisiert werden', error);
-    });
-  }
-  try {
-    history.replaceState(target || recruitingHistorySnapshot('dashboard'), '');
-  } catch (error) {
-    console.warn('Eingebetteter Recruiting-Zustand konnte lokal nicht aktualisiert werden', error);
-  }
-  pendingEmbeddedRecruitingHistory = event.data.state || null;
-  if (_authReadyFired) {
-    void restoreRecruitingHistoryState(consumeRecruitingHistoryTarget(), { replaceInvalid: true });
-  } else {
-    ensureRecruitingViewVisible('dashboard');
-  }
 });
 
 bindInterviewFooterHandlers();
