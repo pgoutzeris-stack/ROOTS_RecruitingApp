@@ -1020,9 +1020,12 @@
       <img src="https://roots-consultants.de/wp-content/uploads/2025/04/Roots-Brand-Strategy-Consultants-Logo.svg" alt="ROOTS" />
     </div>
     <div id="roots-view-embedded-auth" style="display:none;text-align:center">
-      <h1 class="roots-card-title">Sitzung wird verbunden</h1>
-      <p class="roots-card-sub">Deine sichere Intranet-Anmeldung wird für das Recruiting Tool übernommen.</p>
-      <i class="fa-solid fa-circle-notch roots-spin" aria-hidden="true" style="font-size:1.35rem;color:var(--brand);margin-top:.75rem"></i>
+      <h1 class="roots-card-title" id="roots-embedded-auth-title">Sitzung wird verbunden</h1>
+      <p class="roots-card-sub" id="roots-embedded-auth-copy">Deine sichere Intranet-Anmeldung wird für das Recruiting Tool übernommen.</p>
+      <i class="fa-solid fa-circle-notch roots-spin" id="roots-embedded-auth-spinner" aria-hidden="true" style="font-size:1.35rem;color:var(--brand);margin-top:.75rem"></i>
+      <button type="button" class="roots-btn-primary" id="roots-embedded-auth-retry" style="display:none;margin-top:1.25rem">
+        <i class="fa-solid fa-rotate-right"></i> Erneut verbinden
+      </button>
     </div>
     <div id="roots-view-login">
       <h1 class="roots-card-title">Willkommen zurück</h1>
@@ -1471,9 +1474,22 @@ function hideAuthOverlay() {
 
 let _authReadyFired = false;
 let embeddedAuthRetryTimer = null;
+let embeddedAuthStartedAt = 0;
 function requestEmbeddedAuth() {
   if (!ROOTS_EMBEDDED_AUTH || _authReadyFired) return;
+  if (!embeddedAuthStartedAt) embeddedAuthStartedAt = Date.now();
   showAuthOverlay();
+  const waitingTooLong = Date.now() - embeddedAuthStartedAt >= 12000;
+  const title = document.getElementById('roots-embedded-auth-title');
+  const copy = document.getElementById('roots-embedded-auth-copy');
+  const spinner = document.getElementById('roots-embedded-auth-spinner');
+  const retry = document.getElementById('roots-embedded-auth-retry');
+  if (title) title.textContent = waitingTooLong ? 'Intranet-Sitzung nicht verfügbar' : 'Sitzung wird verbunden';
+  if (copy) copy.textContent = waitingTooLong
+    ? 'Die Anmeldung konnte noch nicht bestätigt werden. Lade das Intranet neu oder versuche die Verbindung erneut.'
+    : 'Deine sichere Intranet-Anmeldung wird für das Recruiting Tool übernommen.';
+  if (spinner) spinner.style.display = waitingTooLong ? 'none' : 'inline-block';
+  if (retry) retry.style.display = waitingTooLong ? 'inline-flex' : 'none';
   void window.RootsUserBridge?.syncAuthFromParentStorage?.();
   clearTimeout(embeddedAuthRetryTimer);
   embeddedAuthRetryTimer = setTimeout(requestEmbeddedAuth, 1500);
@@ -1482,9 +1498,14 @@ function _triggerAuthReady() {
   if (_authReadyFired) return;
   _authReadyFired = true;
   clearTimeout(embeddedAuthRetryTimer);
+  embeddedAuthStartedAt = 0;
   hideAuthOverlay();
   onAuthReady();
 }
+document.getElementById('roots-embedded-auth-retry')?.addEventListener('click', () => {
+  embeddedAuthStartedAt = Date.now();
+  requestEmbeddedAuth();
+});
 
 // ── Auth-Init in DOMContentLoaded ─────────────────────────────────────────
 // Microtasks zwischen Script-Blöcken würden auf noch-undefinierte Funktionen
