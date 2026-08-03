@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ROOTS Recruiting · Notbetrieb</title>
+<!--
+  ERZEUGTE DATEI - nicht direkt bearbeiten.
+  Quelle: index.html, Generator: tools/build-notfall.mjs
+  Zweck: Gespraech fuehren, wenn Intranet, Supabase oder GitHub nicht erreichbar
+  sind. Keine Netzwerkaufrufe, keine Datenbank, kein Login. Zwischenstand liegt
+  im Local Storage, das Ergebnis wird als Markdown heruntergeladen.
+-->
+<style>
+  :root { --ink:#111827; --muted:#6b7280; --line:#e5e7eb; --bg:#f9fafb; --card:#fff; --accent:#1d4ed8; --warn:#b45309; --warnbg:#fffbeb; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:1.5rem 1.25rem 5rem; }
+  .banner { background:var(--warnbg); border:1px solid #fcd34d; color:var(--warn); border-radius:10px; padding:.85rem 1rem; margin-bottom:1.25rem; font-size:.9rem; }
+  .banner b { display:block; font-size:1rem; margin-bottom:.15rem; }
+  h1 { font-size:1.35rem; margin:0 0 .35rem; }
+  .sub { color:var(--muted); font-size:.9rem; margin:0 0 1.5rem; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:1.1rem 1.2rem; margin-bottom:1rem; }
+  .card h2 { font-size:1.05rem; margin:0 0 .2rem; }
+  .card .time { color:var(--muted); font-size:.82rem; margin:0 0 .9rem; }
+  label { display:block; font-size:.82rem; color:var(--muted); margin:.7rem 0 .25rem; }
+  input[type=text], input[type=date], select, textarea { width:100%; padding:.55rem .7rem; border:1px solid var(--line); border-radius:8px; font:inherit; background:#fff; color:var(--ink); }
+  textarea { min-height:76px; resize:vertical; }
+  .meta-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:.5rem 1rem; }
+  .q { border-top:1px solid var(--line); padding-top:.9rem; margin-top:.9rem; }
+  .q:first-of-type { border-top:0; padding-top:0; margin-top:0; }
+  .q-text { font-weight:600; margin:0 0 .3rem; }
+  .q-follow { color:var(--muted); font-size:.85rem; margin:0 0 .4rem; }
+  .checks { margin:.4rem 0 0; padding:0; list-style:none; }
+  .checks li { display:flex; gap:.45rem; align-items:flex-start; font-size:.88rem; margin:.2rem 0; }
+  .eval { background:var(--bg); border-radius:8px; padding:.6rem .7rem; margin-top:.6rem; }
+  .eval-label { font-size:.85rem; font-weight:600; margin:0 0 .35rem; }
+  .scale { display:flex; gap:.3rem; flex-wrap:wrap; }
+  .scale button { min-width:2.2rem; padding:.35rem .5rem; border:1px solid var(--line); background:#fff; border-radius:6px; cursor:pointer; font:inherit; }
+  .scale button[aria-pressed=true] { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .anchors { font-size:.78rem; color:var(--muted); margin:.35rem 0 0; }
+  .bar { position:fixed; left:0; right:0; bottom:0; background:#fff; border-top:1px solid var(--line); padding:.7rem 1rem; display:flex; gap:.6rem; align-items:center; justify-content:space-between; }
+  .bar-status { font-size:.83rem; color:var(--muted); }
+  .btn { padding:.55rem .9rem; border-radius:8px; border:1px solid var(--line); background:#fff; font:inherit; cursor:pointer; }
+  .btn-primary { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600; }
+  .hidden { display:none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="banner">
+    <b>Notbetrieb</b>
+    Diese Seite arbeitet vollständig offline. Es werden keine Daten geladen oder gesendet. Der Zwischenstand bleibt in diesem Browser, das Ergebnis lädst du am Ende als Markdown herunter und trägst es später im Tool nach.
+  </div>
+
+  <h1>Gespräch im Notbetrieb</h1>
+  <p class="sub">Kein Login, keine Datenbank, kein Internet nötig.</p>
+
+  <div class="card" id="setup">
+    <h2>Gespräch anlegen</h2>
+    <p class="time">Name und Runde festlegen, dann starten.</p>
+    <div class="meta-grid">
+      <div><label for="m-kandidat">Bewerber</label><input type="text" id="m-kandidat" placeholder="Vor- und Nachname"></div>
+      <div><label for="m-interviewer">Interviewer</label><input type="text" id="m-interviewer" placeholder="Dein Name"></div>
+      <div><label for="m-datum">Datum</label><input type="date" id="m-datum"></div>
+      <div><label for="m-runde">Runde</label><select id="m-runde"><option value="erst">Erstgespräch</option><option value="zweit">Zweitgespräch</option></select></div>
+    </div>
+    <p style="margin:1rem 0 0"><button class="btn btn-primary" id="btn-start">Gespräch starten</button>
+    <button class="btn hidden" id="btn-resume">Gespeicherten Stand fortsetzen</button></p>
+  </div>
+
+  <div id="sections"></div>
+
+  <div class="card hidden" id="closing">
+    <h2>Abschluss</h2>
+    <p class="time">Bewertung und Empfehlung.</p>
+    <label for="c-note">Gesamtnote</label>
+    <input type="text" id="c-note" placeholder="z. B. 4 von 5">
+    <label for="c-reco">Empfehlung</label>
+    <select id="c-reco"></select>
+    <label for="c-remark">Freie Anmerkung</label>
+    <textarea id="c-remark" placeholder="Alles, was sonst nirgends passt"></textarea>
+  </div>
+</div>
+
+<div class="bar hidden" id="bar">
+  <span class="bar-status" id="status">Nicht gespeichert</span>
+  <span>
+    <button class="btn" id="btn-md">Markdown jetzt herunterladen</button>
+    <button class="btn btn-primary" id="btn-finish">Abschließen &amp; herunterladen</button>
+  </span>
+</div>
+
+<script>
+// ─── Fragenkatalog, kopiert aus index.html durch tools/build-notfall.mjs ───
+const SELBSTVORSTELLUNG_CHECKS = [
+  'Beschränkt sich auf rollenrelevante Informationen',
+  'Präsentiert strukturiert und logisch aufgebaut',
+  'Formuliert eine klare persönliche Value Proposition / ein erkennbares Profil',
+  'Belegt Fähigkeiten mit konkreten Beispielen statt Floskeln',
+  'Stellt Bezug zur Position und ROOTS her',
+  'Tritt sicher und authentisch auf – weder überheblich noch zu selbstkritisch',
+  'Kommuniziert klar und verständlich, angemessenes Tempo und Sprache',
+];
+
+const DIMENSIONS = {
+  ownership: 'Ownership & Drive',
+  analytik: 'Analytisches & strukturiertes Denken',
+  kommunikation: 'Sicheres Auftreten & Kommunikation',
+  projektmgmt: 'Projektmanagement',
+  qualitat: 'Qualitätsanspruch',
+  resilienz: 'Resilienz',
+  marketing: 'Marketingfachwissen',
+  team: 'Teamfähigkeit',
+};
+
+const CASE_A = `Ein etablierter Konsumgüterhersteller in Deutschland bemerkt, dass der Absatz ihrer Kernmarke in den letzten 2 Jahren um 15 % gesunken ist – trotz nach wie vor starker Markenposition (Top-3 in Zielgruppe). Das Management ist ratlos und fragt uns um Rat.\n\nWas würdest Du als ersten Schritt empfehlen, um das Problem zu diagnostizieren und welche zwei strategischen Optionen würdest Du in einer Kurzanalyse prüfen wollen?`;
+const CASE_B = `Ein großer deutscher Lebensmitteleinzelhändler betreibt eine Fashion-Eigenmarke. Die Marke ist stark mit Damenmode assoziiert, günstig positioniert und in Filialen präsent. Der Abverkauf erfolgt über Wühltische und Aktionsständer, die sich strukturell nicht ändern werden.\n\nOnline ist die Marke ausschließlich über die Händlerseite vertreten. Dort herrscht wenig Markenpräsenz und reine Commerce-Orientierung.\n\nDer Retailer möchte die Marke stärken. Das Wettbewerbsumfeld ist intensiv. Digitale Kanäle gewinnen an Bedeutung.\n\nDein Auftrag: Entwickle eine Kanal- und Touchpointstrategie.`;
+
+const SECTIONS_ERST = [
+  { id:'s1', main:'Begrüßung', time:'3 Min.', type:'script' },
+  { id:'s2', main:'ROOTS-Intro', time:'6 Min.', type:'roots' },
+  { id:'s3', main:'Selbstvorstellung', time:'6 Min.', questions:[
+    { id:'s3_q1', text:'„Bitte stelle dich kurz vor."', checks:SELBSTVORSTELLUNG_CHECKS,
+      evaluations:[{label:'Selbstvorstellung Gesamt', dimension:'kommunikation',
+        anchor1:'Unstrukturiert; kein Bezug zur Rolle; unsicher',
+        anchor3:'Strukturiert, rollenrelevant, solides Auftreten',
+        anchor5:'Klares Profil; konkrete Beispiele; überzeugend und authentisch'}]
+    }
+  ]},
+  { id:'s4', main:'Motivation & Organisationswahl', time:'8 Min.',
+    blockEvaluation: { id:'s4_block', evaluations:[
+      {label:'Motivation & Organisationswahl Gesamt', dimension:'ownership',
+       anchor1:'Keine klare Vorstellung; generische Motivation; kein Firmenbezug; kann eigenen Mehrwert nicht benennen',
+       anchor3:'Grundvorstellungen vorhanden; Motivation erkennbar; oberflächlicher Bezug zu ROOTS; kennt eigene Stärken ansatzweise',
+       anchor5:'Klare, reflektierte Vorstellungen; differenzierte Motivation mit spezifischem Firmenbezug; konkreter Mehrwert mit Beispielen; zeigt Selbstkenntnis'}]},
+    questions:[
+      { id:'s4_q0a', text:'„Die Auswahl deines ersten Jobs ist eine wichtige Entscheidung und ein Meilenstein in deiner beruflichen Laufbahn. Stell dir vor, du hast ein weißes Blatt Papier – wie soll dein Job aussehen?"', followUp:'Optionale Nachfrage zur Klärung: „Was möchtest du machen? Was ist dir wichtig?"' },
+      { id:'s4_q0b', text:'„Was bringst du mit, wenn du zu uns kommst?"' },
+      { id:'s4_q2', text:'„Warum hast Du dich gezielt für eine kleinere Beratung entschieden?"', followUp:'STAR-Prompt bei Bedarf: „Kannst Du ein konkretes Erlebnis nennen, das diese Entscheidung geprägt hat?"' },
+    ]},
+  { id:'s5_erst', main:'Erfahrungen & Fit', time:'5 Min.', questions:[
+    { id:'s8_q1', text:'„Was bedeutet für Dich \u2018exzellente Arbeit\u2019 und woran merkst Du selbst, dass eine Arbeit wirklich gut ist?"',
+      followUp:'Nachfragen: „Kannst Du ein Beispiel nennen, auf das Du besonders stolz bist?" / „Better done than perfect – oder umgekehrt?"',
+      evaluations:[{label:'Qualitätsanspruch & Standards', dimension:'qualitat',
+        anchor1:'Definiert Exzellenz vage; Beispiel fehlt oder nicht überzeugend; Standard wirkt niedrig',
+        anchor3:'Erkennbarer Qualitätsanspruch; Beispiel vorhanden; Messkriterien bleiben eher subjektiv',
+        anchor5:'Klare, hohe eigene Standards; definiert Qualität aus Kundenperspektive und Wirksamkeit; Beispiel konkret, messbar, mit Stolz erzählt'}]},
+    { id:'s7_q1', text:'„Welches war das bislang größte und komplexeste Projekt, das Du geführt hast? Wie bist Du dabei vorgegangen? Gab es Probleme und wie hast Du diese gelöst?"',
+      evaluations:[{label:'Projektkomplexität & Problemlösung', dimension:'projektmgmt',
+        anchor1:'Beispiel wenig komplex; Probleme nicht proaktiv gelöst; kein strukturiertes Vorgehen',
+        anchor3:'Solides Beispiel; Probleme erkannt und adressiert; Vorgehen nachvollziehbar',
+        anchor5:'Komplexes Projekt überzeugend gemanagt; Probleme proaktiv antizipiert und gelöst; klare Struktur und Kommunikation'}]},
+    { id:'s5_q_strat1', text:'„Erzähl doch mal von einem Projekt, bei dem du für die Entwicklung einer größeren Strategie verantwortlich warst. Wie bist du dabei vorgegangen?"',
+      evaluations:[{label:'Strategisches Denken', dimension:'analytik',
+        anchor1:'Beispiel fehlt oder ist operativ; kein strategischer Rahmen erkennbar',
+        anchor3:'Solides Beispiel; erkennbarer strategischer Ansatz; Umsetzung bleibt vage',
+        anchor5:'Klarer strategischer Rahmen; strukturiertes Vorgehen; überzeugender Impact'}]},
+    { id:'s5_q_strat2', text:'„Erzähl doch mal von einem Projekt, bei dem du wirklich neue Insights entdeckt hast. Wie bist du dabei vorgegangen, und wie wurden sie im weiteren Projekt genutzt?"',
+      evaluations:[{label:'Analytische Tiefe & Insights', dimension:'analytik',
+        anchor1:'Beschreibt nur Datensammlung ohne echte Insights; kein analytischer Prozess erkennbar',
+        anchor3:'Nennt relevante Insights; Analyseprozess nachvollziehbar; Nutzung im Projekt ansatzweise beschrieben',
+        anchor5:'Differenzierte, überraschende Insights; klarer analytischer Prozess; konkrete Wirkung im Projekt'}]},
+  ]},
+  { id:'s12', main:'Mini Case A', time:'8 Min.', caseText:CASE_A, isCase:true,
+    hint:'Erwartet: Problemdiagnose VOR Lösungsvorschlag. Bsp. intern (4Ps), extern (veränderte Bedürfnisse, Mediakonsum), Wettbewerb (Newcomer, Substitute).',
+    questions:[
+      { id:'s12_q1', text:'Diagnose & strategische Optionen (siehe Case oben)',
+        evaluations:[
+          {label:'Strukturiertheit der Analyse', dimension:'analytik',
+           anchor1:'Springt sofort zu Lösungen ohne Diagnose; Antwort unstrukturiert; keine Priorisierung erkennbar',
+           anchor3:'Stellt Diagnose-Schritte in Aussicht; Struktur vorhanden, aber nicht konsequent durchgehalten; Optionen eher generisch',
+           anchor5:'Klarer Dreiklang: Diagnose → Hypothesen → Optionen; priorisiert begründet; zeigt Consulting-Logik (MECE, Hypothesendenken)'},
+          {label:'Fachliche Qualität', dimension:'marketing',
+           anchor1:'Optionen trivial oder rein operativ; kein strategischer Hebel erkennbar',
+           anchor3:'Solide Optionen; bleibt auf Konzeptebene ohne Priorisierungslogik',
+           anchor5:'Strategisch differenzierte Optionen mit klarer Kausallogik; bezieht Markenwert, Zielgruppe und Wettbewerb ein'},
+          {label:'Kommunikation im Case', dimension:'kommunikation',
+           anchor1:'Ergebnis schwer nachvollziehbar; springt; wirkt unsicher',
+           anchor3:'Argumentationslinie erkennbar, aber mit Lücken',
+           anchor5:'Argumentationskette nachvollziehbar; erklärt Annahmen; präsentiert Ergebnis prägnant und selbstsicher'},
+        ]},
+      { id:'s12_q2', text:'„Stell dir vor: Du präsentierst als Junior Consultant deine Ergebnisse in einem Kundentermin. Dein Ansprechpartner beim Kunden widerspricht deiner Empfehlung und wird dabei zunehmend emotional. Der Senior Consultant ist kurzfristig verhindert. Wie verhältst du dich?"',
+        followUp:'Nachfragen: „Was würdest Du konkret sagen?" / „Was würdest Du danach intern kommunizieren?"',
+        evaluations:[
+          {label:'Belastbarkeit in Kundensituation', dimension:'resilienz',
+           anchor1:'Würde sofort nachgeben, eskaliert unkontrolliert oder zieht sich zurück',
+           anchor3:'Bleibt sachlich; leitet Situation an Vorgesetzte weiter; Haltung erkennbar',
+           anchor5:'Bleibt ruhig und professionell; validiert Kundenperspektive; hält eigene Position; denkt in Lösungen'},
+          {label:'Kommunikationsstärke', dimension:'kommunikation',
+           anchor1:'Weicht aus, antwortet vage; keine klare Positionierung',
+           anchor3:'Äußert sich verständlich; angemessene Sprache, ohne Überzeugungskraft',
+           anchor5:'Strukturiert, klar und überzeugend; passt Kommunikation an Kontext an; aktives Zuhören'},
+        ]},
+    ]},
+  { id:'s_cf', main:'Culture-Fit', time:'2 Min.', type:'culturefit',
+    hint:'Schnellfragerunde: Forced Choice – Kandidat muss sich spontan entscheiden, kein Mittelweg erlaubt.',
+    cultureFitQuestions:[
+      { id:'cf_1', optionA:'Rampensau', optionB:'Backoffice' },
+      { id:'cf_2', optionA:'Better done than perfect', optionB:'Better perfect than done' },
+      { id:'cf_4', optionA:'Durchdenken', optionB:'Schnell testen' },
+      { id:'cf_6', optionA:'Kundenanspruch', optionB:'Eigenanspruch' },
+      { id:'cf_8', optionA:'Nachfragen', optionB:'Selbst erarbeiten' },
+    ],
+    questions:[{ id:'s_cf_q1', text:'ROOTS-Fit Gesamteindruck',
+      evaluations:[{label:'ROOTS-Fit', dimension:'team', anchor1:null, anchor3:null, anchor5:null}]}]},
+  { id:'s11', main:'Realistische Tätigkeitsinformationen', time:'5 Min.', type:'rti' },
+  { id:'s15', main:'Nachfragen & Abschluss', time:'5 Min.', type:'outro',
+    outroFields:['Arbeitsaufwand','Home Office','Reisetätigkeit','Einstiegsdatum','Aktuelles Gehalt','Gehaltswunsch'],
+    outroEvaluation: { id:'s15_eval_erst', evaluations:[{label:'Qualität der Rückfragen', dimension:'kommunikation',
+      anchor1:'Stellt keine Fragen oder nur Fragen zu Konditionen ohne Rollenbezug',
+      anchor3:'Stellt 1–2 sinnvolle Fragen zu Rolle oder Team; zeigt grundlegendes Interesse',
+      anchor5:'Stellt differenzierte Fragen zu Rolle, Lernmöglichkeiten, Kundenbasis oder Firmenstrategie; zeigt echte Vorbereitung'}]}},
+];
+
+const SECTIONS_ZWEIT = [
+  { id:'s1', main:'Begrüßung', time:'3 Min.', type:'script' },
+  { id:'s3', main:'Selbstvorstellung', time:'6 Min.', questions:[
+    { id:'s3_q1', text:'„Bitte stelle dich kurz vor."', checks:SELBSTVORSTELLUNG_CHECKS,
+      evaluations:[{label:'Selbstvorstellung Gesamt', dimension:'kommunikation',
+        anchor1:'Unstrukturiert; kein Bezug zur Rolle; unsicher',
+        anchor3:'Strukturiert, rollenrelevant, solides Auftreten',
+        anchor5:'Klares Profil; konkrete Beispiele; überzeugend und authentisch'}]}
+  ]},
+  { id:'s4_zweit', main:'Motivation & Organisationswahl', time:'3 Min.', questions:[
+    { id:'s4_q1', text:'„Wo möchtest Du dich fachlich und persönlich in den nächsten 3–5 Jahren hin entwickeln – hast du bereits einen konkreten Plan?"',
+      followUp:'Nachfrage: „Wie passt ROOTS konkret in diesen Plan?"',
+      evaluations:[{label:'Entwicklungsziele & Planungsfähigkeit', dimension:'ownership',
+        anchor1:'Unkonkrete oder überzogene Erwartungen; lässt Entwicklung auf sich zukommen',
+        anchor3:'Anspruchsvolle Ziele; ansatzweise Vorstellungen, aber unklarer Weg',
+        anchor5:'Anspruchsvolle, realistische, differenzierte Ziele; klare Verbindung zu eigenen Anstrengungen'}]},
+  ]},
+  { id:'s5_zweit', main:'Erfahrungen & Fit', time:'6 Min.',
+    hint:'STAR: Situation → Task → Action → Result.', questions:[
+    { id:'s7_q2_merged', text:'„Gab es mal eine Phase, in der Du mehrere anspruchsvolle Aufgaben gleichzeitig bewältigen musstest und dabei unter erheblichem Zeitdruck standest? Wie hast Du priorisiert – und bist Du dabei an Deine Grenzen gekommen? Wie bist Du damit umgegangen?"',
+      evaluations:[
+        {label:'Priorisierung & Stressresilienz', dimension:'projektmgmt',
+         anchor1:'Schildert hauptsächlich Stress-Reaktion; keine aktive Bewältigungsstrategie',
+         anchor3:'Bewältigt die Situation; zeigt Priorisierungsansatz; eher reaktiv',
+         anchor5:'Zeigt aktive Stressregulation; priorisiert klar; reflektiert Lessons Learned'},
+        {label:'Belastungsgrenze & Selbstregulation', dimension:'resilienz',
+         anchor1:'Vermeidet das Thema; keine Reflexion',
+         anchor3:'Nennt ein Beispiel; zeigt Bewältigungsansatz',
+         anchor5:'Ehrliches, glaubwürdiges Beispiel; aktive Bewältigungsstrategie; reflektiert Grenzen'},
+      ]},
+    { id:'s9_q1', text:'„Woran bist Du zuletzt gescheitert und was hast Du dann konkret getan?"',
+      evaluations:[{label:'Fehlerkultur & Eigeninitiative', dimension:'resilienz',
+        anchor1:'Beispiel fällt schwer; Reaktion war reaktiv oder Schuld externalisiert',
+        anchor3:'Nennt konkretes Beispiel; korrekte Reaktion, ohne Verbesserungsschritt',
+        anchor5:'Nennt glaubwürdiges Beispiel; korrigiert Fehler eigeninitiativ; leitet direkte Verbesserung ab'}]},
+  ]},
+  { id:'s10', main:'Marketingfachwissen & Strategisches Denken', time:'8 Min.', questions:[
+    { id:'s10_q0', text:'„Welche Themen im Marketing- und Branding-Umfeld beschäftigen Dich aktuell besonders? Wie bleibst Du fachlich am Ball?"',
+      evaluations:[{label:'Wissensdurst', dimension:'marketing',
+        anchor1:'Nennt nur Buzzwords; Wissen oberflächlich; kein intrinsisches Interesse',
+        anchor3:'Basiswissen vorhanden; informiert sich sporadisch',
+        anchor5:'Aktuelle, fundierte Fachkenntnisse; differenzierte Einordnung; nutzt hochwertige Quellen'}]},
+    { id:'s10_q1', text:'„Was macht aus Deiner Sicht eine Marke langfristig erfolgreich – unabhängig von kurzfristigen Kampagnen?"',
+      followUp:'Nachfrage: „Hast du ein Beispiel dafür?"',
+      evaluations:[{label:'Strategisches Markenverständnis', dimension:'marketing',
+        anchor1:'Nennt nur operative/taktische Maßnahmen ohne strategische Einordnung',
+        anchor3:'Versteht Marke als mehr als Werbung; kennt Grundkonzepte',
+        anchor5:'Denkt in strategischen Markendimensionen; verknüpft Konzepte; illustriert mit Beispiel'}]},
+    { id:'s10_q3', text:'„Welche Rolle spielt KI Deiner Einschätzung nach im Marketing der nächsten 3–5 Jahre und wo siehst Du die größten Chancen und Risiken?"',
+      evaluations:[{label:'KI-Kompetenz im Marketing', dimension:'marketing',
+        anchor1:'Allgemeine Aussagen ohne konkreten Bezug; nur Buzzwords',
+        anchor3:'Versteht KI-Anwendungsfelder; benennt Chancen oder Risiken; bleibt allgemein',
+        anchor5:'Differenzierte Einschätzung mit konkreten Use Cases; eigene Auseinandersetzung; bezieht Risiken ein'}]},
+  ]},
+  { id:'s13', main:'Case', sub:'Case B – Fashion-Eigenmarke', time:'15 Min.', caseText:CASE_B, isCase:true, questions:[
+    { id:'s13_q1', text:'„Welche Kanäle und Touchpoints würdest Du priorisieren?"',
+      evaluations:[{label:'Kanal-Priorisierung', dimension:'analytik',
+        anchor1:'Listet Kanäle ohne Begründung; ignoriert Spannungsfeld',
+        anchor3:'Nennt relevante Kanäle; Priorisierung vorhanden, nicht am Verhalten ausgerichtet',
+        anchor5:'Hypothesenbasierte Priorisierung entlang der Customer Journey; löst Spannungsfeld'}]},
+    { id:'s13_q2', text:'„Wie zahlen die digitalen Kanäle auf den stationären Handel ein?"',
+      followUp:'Nachfrage: „Welche 3 KPIs würdest du tracken?"',
+      evaluations:[{label:'Digital-to-Store-Logik & KPIs', dimension:'marketing',
+        anchor1:'Betrachtet isoliert; KPIs ausschließlich abverkaufsorientiert',
+        anchor3:'Erkennt Verbindung; Brand-KPIs ansatzweise',
+        anchor5:'Klare Logik entlang der Journey; Markenkennzahlen UND nachlaufende Abverkaufs-KPIs'}]},
+    { id:'s13_q3', text:'ⓘ Interviewer-Hinweis: Wechsle jetzt unvermittelt ins Englische.\n\n"The CMO asks you directly: \'We sell T-shirts next to yoghurt and washing powder – why would anyone believe we can do fashion?\' Convince me this channel strategy is worth the investment."',
+      evaluations:[
+        {label:'Überzeugungskraft & Argumentation', dimension:'kommunikation',
+         anchor1:'Weicht aus; listet Maßnahmen ohne Wirkungslogik',
+         anchor3:'Nimmt Herausforderung an; Grundargument vorhanden; eher beschreibend',
+         anchor5:'Greift skeptische Prämisse auf; klare Wirkungslogik; CMO-tauglich'},
+        {label:'English Proficiency', dimension:'kommunikation',
+         anchor1:'Wechsel stark verzögert; Sprachqualität bricht ein',
+         anchor3:'Wechsel erfolgt; verständlich, aber Flüssigkeit eingeschränkt',
+         anchor5:'Nahtloser Switch; Prägnanz und Überzeugungskraft erhalten; souverän'},
+      ]},
+  ]},
+  { id:'s15', main:'Nachfragen & Abschluss', time:'5 Min.', type:'outro',
+    outroFields:['Erwartungen 12 Mon.'],
+    outroQuestion: { id:'s15_zweit_q1', text:'„Was müsste in den ersten 12 Monaten konkret passiert sein, damit Du sagst: \u2018Das war genau der richtige Schritt für mich\u2019?"' },
+    outroEvaluation: { id:'s15_eval_zweit', evaluations:[{label:'Qualität der Rückfragen', dimension:'kommunikation',
+      anchor1:'Stellt keine Fragen oder nur Fragen zu Konditionen ohne Rollenbezug',
+      anchor3:'Stellt 1–2 sinnvolle Fragen zu Rolle oder Team',
+      anchor5:'Stellt differenzierte Fragen zu Rolle, Lernmöglichkeiten, Kundenbasis; zeigt echte Vorbereitung'}]}},
+];
+
+const RECO_OPTIONS_ERST = ['Zum Zweitgespräch einladen', 'Nicht passend'];
+const RECO_OPTIONS_ZWEIT = ['Einstellen', 'Vielleicht – weitere Diskussion', 'Nicht einstellen'];
+</script>
+
+<script>
+/* ──────────────────────────────────────────────
+   State + Reducer + Persistence
+   ────────────────────────────────────────────── */
+const DEFAULT_DIMENSION_WEIGHTS = Object.fromEntries(
+  Object.keys(DIMENSIONS).map(dimension => [dimension, 1])
+);
+
+const INITIAL_STATE = {
+  checks: {}, notes: {}, observations: {}, ratings: {},
+  meta: { kandidat: '', interviewer: '', datum: '', runde: 'erst', sessionId: '', ownerId: '', ownerName: '', initialOwnerId: '', zweitCreated: false, invitees: [] },
+  gesamtNote: '', recommendation: '',
+  abschlussNotes: {}, rtiDone: false, caseChecks: {}, zweitAnmerkung: '',
+  cultureFitAnswers: {},
+  weights: { ...DEFAULT_DIMENSION_WEIGHTS },
+  completed: false, completedAt: null,
+};
+
+// ─── Notbetrieb: Zustand, Speichern, Rendern, Markdown ───
+const STORE_KEY = 'roots-notfall-interview';
+const RECO = { erst: RECO_OPTIONS_ERST, zweit: RECO_OPTIONS_ZWEIT };
+let data = null;
+
+const esc = (v) => String(v == null ? '' : v);
+const el = (id) => document.getElementById(id);
+
+function blank() {
+  return {
+    meta: { kandidat: '', interviewer: '', datum: '', runde: 'erst' },
+    notes: {}, ratings: {}, checks: {},
+    gesamtNote: '', recommendation: '', anmerkung: '',
+    startedAt: new Date().toISOString(),
+  };
+}
+
+function save(label) {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+    el('status').textContent = label || ('Lokal gesichert · ' + new Date().toLocaleTimeString('de-DE'));
+  } catch (e) {
+    el('status').textContent = 'Lokales Speichern fehlgeschlagen – bitte Markdown herunterladen';
+  }
+}
+
+function sectionsFor(runde) {
+  return runde === 'zweit' ? SECTIONS_ZWEIT : SECTIONS_ERST;
+}
+
+function renderSections() {
+  const host = el('sections');
+  host.innerHTML = sectionsFor(data.meta.runde).map((s) => {
+    const questions = Array.isArray(s.questions) ? s.questions : [];
+    const blockEvals = s.blockEvaluation?.evaluations || [];
+    const body = questions.map((q) => {
+      const checks = Array.isArray(q.checks) ? q.checks : [];
+      return '<div class="q">'
+        + '<p class="q-text">' + esc(q.text) + '</p>'
+        + (q.followUp ? '<p class="q-follow">' + esc(q.followUp) + '</p>' : '')
+        + (checks.length ? '<ul class="checks">' + checks.map((c, i) => {
+            const key = q.id + '::' + i;
+            const text = typeof c === 'string' ? c : (c.text || c.label || '');
+            return '<li><input type="checkbox" data-check="' + key + '"' + (data.checks[key] ? ' checked' : '') + '><span>' + esc(text) + '</span></li>';
+          }).join('') + '</ul>' : '')
+        + '<label>Notizen</label><textarea data-note="' + q.id + '">' + esc(data.notes[q.id]) + '</textarea>'
+        + (q.evaluations || []).map((ev) => evalHtml(q.id, ev)).join('')
+        + '</div>';
+    }).join('');
+    return '<div class="card">'
+      + '<h2>' + esc(s.main) + '</h2>'
+      + '<p class="time">' + esc(s.time || '') + '</p>'
+      + (s.type === 'roots' ? '<p class="q-follow">ROOTS-Intro frei halten.</p>' : '')
+      + body
+      + blockEvals.map((ev) => evalHtml(s.blockEvaluation.id, ev)).join('')
+      + '</div>';
+  }).join('');
+  bindSections();
+}
+
+function evalHtml(ownerId, ev) {
+  const key = ownerId + '::' + (ev.dimension || ev.label);
+  const current = data.ratings[key];
+  const buttons = [1, 2, 3, 4, 5].map((n) =>
+    '<button type="button" data-rate="' + key + '" data-value="' + n + '" aria-pressed="' + (current === n ? 'true' : 'false') + '">' + n + '</button>'
+  ).join('');
+  return '<div class="eval">'
+    + '<p class="eval-label">' + esc(ev.label) + (ev.dimension && DIMENSIONS[ev.dimension] ? ' · ' + esc(DIMENSIONS[ev.dimension]) : '') + '</p>'
+    + '<div class="scale">' + buttons + '</div>'
+    + '<p class="anchors"><b>1</b> ' + esc(ev.anchor1) + ' &nbsp;·&nbsp; <b>3</b> ' + esc(ev.anchor3) + ' &nbsp;·&nbsp; <b>5</b> ' + esc(ev.anchor5) + '</p>'
+    + '</div>';
+}
+
+function bindSections() {
+  document.querySelectorAll('[data-note]').forEach((box) => {
+    box.addEventListener('input', () => { data.notes[box.dataset.note] = box.value; save(); });
+  });
+  document.querySelectorAll('[data-check]').forEach((box) => {
+    box.addEventListener('change', () => { data.checks[box.dataset.check] = box.checked; save(); });
+  });
+  document.querySelectorAll('[data-rate]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.rate;
+      const value = Number(btn.dataset.value);
+      data.ratings[key] = data.ratings[key] === value ? null : value;
+      document.querySelectorAll('[data-rate="' + key + '"]').forEach((b) => {
+        b.setAttribute('aria-pressed', Number(b.dataset.value) === data.ratings[key] ? 'true' : 'false');
+      });
+      save();
+    });
+  });
+}
+
+function renderClosing() {
+  const sel = el('c-reco');
+  const options = RECO[data.meta.runde] || [];
+  sel.innerHTML = '<option value="">– bitte wählen –</option>' + options.map((o) =>
+    '<option value="' + esc(o) + '"' + (data.recommendation === o ? ' selected' : '') + '>' + esc(o) + '</option>').join('');
+  el('c-note').value = data.gesamtNote || '';
+  el('c-remark').value = data.anmerkung || '';
+}
+
+function markdown() {
+  const m = data.meta;
+  const lines = [];
+  lines.push('# Interview ' + (m.kandidat || 'ohne Namen'));
+  lines.push('');
+  lines.push('- Runde: ' + (m.runde === 'zweit' ? 'Zweitgespräch' : 'Erstgespräch'));
+  lines.push('- Interviewer: ' + (m.interviewer || '–'));
+  lines.push('- Datum: ' + (m.datum || '–'));
+  lines.push('- Erfasst im Notbetrieb: ' + new Date().toLocaleString('de-DE'));
+  lines.push('');
+  for (const s of sectionsFor(m.runde)) {
+    lines.push('## ' + s.main + (s.time ? ' (' + s.time + ')' : ''));
+    lines.push('');
+    for (const q of (s.questions || [])) {
+      lines.push('### ' + q.text);
+      const checks = Array.isArray(q.checks) ? q.checks : [];
+      checks.forEach((c, i) => {
+        const text = typeof c === 'string' ? c : (c.text || c.label || '');
+        lines.push('- [' + (data.checks[q.id + '::' + i] ? 'x' : ' ') + '] ' + text);
+      });
+      const note = data.notes[q.id];
+      lines.push('');
+      lines.push(note ? note : '_keine Notiz_');
+      for (const ev of (q.evaluations || [])) {
+        const key = q.id + '::' + (ev.dimension || ev.label);
+        lines.push('');
+        lines.push('**' + ev.label + ':** ' + (data.ratings[key] ? data.ratings[key] + ' von 5' : 'nicht bewertet'));
+      }
+      lines.push('');
+    }
+    for (const ev of (s.blockEvaluation?.evaluations || [])) {
+      const key = s.blockEvaluation.id + '::' + (ev.dimension || ev.label);
+      lines.push('**' + ev.label + ':** ' + (data.ratings[key] ? data.ratings[key] + ' von 5' : 'nicht bewertet'));
+      lines.push('');
+    }
+  }
+  lines.push('## Abschluss');
+  lines.push('');
+  lines.push('- Gesamtnote: ' + (data.gesamtNote || '–'));
+  lines.push('- Empfehlung: ' + (data.recommendation || '–'));
+  lines.push('');
+  lines.push(data.anmerkung || '_keine Anmerkung_');
+  return lines.join('\n');
+}
+
+function download() {
+  const m = data.meta;
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+  const name = 'ROOTS-Interview-Notbetrieb-' + (m.kandidat || 'ohne-Namen').replace(/[^\wÀ-ž -]/g, '').trim().replace(/\s+/g, '-') + '-' + stamp + '.md';
+  const blob = new Blob([markdown()], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  return name;
+}
+
+function begin(existing) {
+  data = existing || blank();
+  if (!existing) {
+    data.meta = {
+      kandidat: el('m-kandidat').value.trim(),
+      interviewer: el('m-interviewer').value.trim(),
+      datum: el('m-datum').value,
+      runde: el('m-runde').value,
+    };
+  } else {
+    el('m-kandidat').value = data.meta.kandidat || '';
+    el('m-interviewer').value = data.meta.interviewer || '';
+    el('m-datum').value = data.meta.datum || '';
+    el('m-runde').value = data.meta.runde || 'erst';
+  }
+  el('closing').classList.remove('hidden');
+  el('bar').classList.remove('hidden');
+  renderSections();
+  renderClosing();
+  save('Gespräch gestartet · lokal gesichert');
+}
+
+el('btn-start').addEventListener('click', () => {
+  if (!el('m-kandidat').value.trim()) { alert('Bitte den Namen des Bewerbers eintragen.'); return; }
+  begin(null);
+});
+
+el('btn-resume').addEventListener('click', () => {
+  try { begin(JSON.parse(localStorage.getItem(STORE_KEY))); }
+  catch (e) { alert('Gespeicherter Stand konnte nicht gelesen werden.'); }
+});
+
+['m-kandidat', 'm-interviewer', 'm-datum'].forEach((id) => {
+  el(id).addEventListener('input', () => {
+    if (!data) return;
+    data.meta.kandidat = el('m-kandidat').value.trim();
+    data.meta.interviewer = el('m-interviewer').value.trim();
+    data.meta.datum = el('m-datum').value;
+    save();
+  });
+});
+
+el('m-runde').addEventListener('change', () => {
+  if (!data) return;
+  data.meta.runde = el('m-runde').value;
+  renderSections(); renderClosing(); save();
+});
+
+['c-note', 'c-remark'].forEach((id) => {
+  el(id).addEventListener('input', () => {
+    if (!data) return;
+    data.gesamtNote = el('c-note').value;
+    data.anmerkung = el('c-remark').value;
+    save();
+  });
+});
+
+el('c-reco').addEventListener('change', () => {
+  if (!data) return;
+  data.recommendation = el('c-reco').value;
+  save();
+});
+
+el('btn-md').addEventListener('click', () => {
+  if (!data) { alert('Erst ein Gespräch starten.'); return; }
+  save('Markdown heruntergeladen: ' + download());
+});
+
+el('btn-finish').addEventListener('click', () => {
+  if (!data) { alert('Erst ein Gespräch starten.'); return; }
+  data.finishedAt = new Date().toISOString();
+  const name = download();
+  save('Abgeschlossen · ' + name + ' liegt in deinen Downloads');
+  alert('Fertig. ' + name + ' wurde heruntergeladen.\n\nDer Stand bleibt zusätzlich in diesem Browser, bis du ihn im Tool nachträgst.');
+});
+
+// Vorhandenen Stand anbieten, ohne ihn ungefragt zu überschreiben.
+(function () {
+  el('m-datum').value = new Date().toISOString().slice(0, 10);
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { saved = null; }
+  if (saved?.meta) {
+    el('btn-resume').classList.remove('hidden');
+    el('btn-resume').textContent = 'Stand fortsetzen: ' + (saved.meta.kandidat || 'ohne Namen');
+  }
+})();
+</script>
+</body>
+</html>
