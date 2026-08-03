@@ -367,7 +367,10 @@
     .team-panel-overlay { position: fixed; inset: 0; z-index: 9500; background: rgba(15,23,42,.45); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 1.25rem; }
     .team-panel-overlay.visible { display: flex; }
     .team-panel-card { background: var(--bg); border-radius: 20px; width: 100%; max-width: 480px; max-height: min(88vh, 720px); display: flex; flex-direction: column; box-shadow: var(--shadow-modal); overflow: hidden; }
-    .team-panel-head { padding: 1.25rem 1.35rem 1rem; border-bottom: 1px solid var(--line); }
+    .team-panel-head { padding: 1.25rem 1.35rem 1rem; border-bottom: 1px solid var(--line); position: relative; }
+    .team-panel-x { position: absolute; top: .8rem; right: .8rem; width: 2rem; height: 2rem; border: 0; border-radius: 50%; background: transparent; color: var(--muted); font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .15s, color .15s; }
+    .team-panel-x:hover { background: rgba(0,0,0,.06); color: var(--ink); }
+    .team-panel-head h3 { padding-right: 2.2rem; }
     .team-panel-head h3 { font-size: 1.1rem; font-weight: 800; margin: 0 0 .35rem; color: var(--ink); }
     .team-panel-head p { margin: 0; font-size: .86rem; color: var(--muted); line-height: 1.45; }
     .team-panel-body { padding: 1rem 1.35rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; }
@@ -1297,11 +1300,12 @@
 <div class="team-panel-overlay" id="team-panel-overlay">
   <div class="team-panel-card" role="dialog" aria-labelledby="team-panel-title">
     <div class="team-panel-head">
+      <button type="button" class="team-panel-x" id="team-panel-x" title="Schließen" aria-label="Schließen"><i class="fa-solid fa-xmark"></i></button>
       <h3 id="team-panel-title">Interviewer &amp; Einladungen</h3>
       <p id="team-panel-subtitle"></p>
     </div>
     <div class="team-panel-body" id="team-panel-body"></div>
-    <div class="team-panel-foot">
+    <div class="team-panel-foot" id="team-panel-foot">
       <button type="button" class="btn-secondary" id="team-panel-cancel">Abbrechen</button>
       <button type="button" class="btn-primary" id="team-panel-save"><i class="fa-solid fa-check"></i> Speichern &amp; benachrichtigen</button>
     </div>
@@ -2654,11 +2658,12 @@ function renderTeamPanelBody() {
     </div>`
     : '';
   body.innerHTML = requestInbox + ownerSection + requestSection + inviteSection;
-  // Ein Nicht-Owner kann hier nichts speichern - der Anfrage-Knopf schickt sofort.
-  const saveBtn = document.getElementById('team-panel-save');
-  const cancelBtn = document.getElementById('team-panel-cancel');
-  if (saveBtn) saveBtn.hidden = !allowOwnerTransfer;
-  if (cancelBtn) cancelBtn.textContent = allowOwnerTransfer ? 'Abbrechen' : 'Schließen';
+  // Ein Nicht-Owner hat hier nichts zu speichern: der Anfrage-Knopf schickt
+  // sofort. Also kein Fuss mit Abbrechen und Speichern, nur das Kreuz oben.
+  const foot = document.getElementById('team-panel-foot');
+  if (foot) foot.hidden = !allowOwnerTransfer;
+  const title = document.getElementById('team-panel-title');
+  if (title) title.textContent = allowOwnerTransfer ? 'Interviewer & Einladungen' : 'Ownerschaft anfragen';
   body.querySelectorAll('#tp-owner-list .team-member-opt').forEach(label => {
     label.addEventListener('click', () => {
       tp.ownerId = label.dataset.uid;
@@ -6013,6 +6018,7 @@ document.getElementById('bew-filter-status').addEventListener('change', (e) => {
 
 document.getElementById('team-panel-cancel').addEventListener('click', closeTeamPanel);
 document.getElementById('team-panel-save').addEventListener('click', saveTeamPanel);
+document.getElementById('team-panel-x').addEventListener('click', closeTeamPanel);
 document.getElementById('team-panel-overlay').addEventListener('click', (e) => {
   if (e.target.id === 'team-panel-overlay') closeTeamPanel();
 });
