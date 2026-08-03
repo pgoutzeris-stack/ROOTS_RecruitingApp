@@ -566,6 +566,11 @@
     .save-badge--idle { background: var(--status-bg); color: var(--muted); }
     .save-badge--saving { background: var(--warning-bg); color: var(--warning-text); }
     .save-badge--saved { background: #d0f4ee; color: #0f6b57; }
+    .owner-request-row { align-items: center; cursor: default; }
+    .owner-request-actions { display: flex; gap: .4rem; margin-left: auto; }
+    .owner-request-btn { padding: .35rem .7rem; font-size: .78rem; }
+    .owner-request-count { display: inline-flex; align-items: center; justify-content: center; min-width: 1.25rem; height: 1.25rem; padding: 0 .3rem; border-radius: 999px; background: #1d4ed8; color: #fff; font-size: .72rem; font-weight: 600; margin-left: .35rem; }
+    .owner-request-pending { display: flex; align-items: center; gap: .45rem; margin: 0; font-size: .82rem; color: var(--muted); }
     .save-badge--offline { background: #fff7ed; color: #9a3412; border: 1px solid #fdba74; cursor: help; }
     .team-member-remove { margin-left: auto; width: 34px; height: 34px; border: 0; border-radius: 8px; background: #fff1f2; color: #be123c; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
     .team-member-remove:hover, .team-member-remove:focus-visible { background: #ffe4e6; outline: 2px solid #fb7185; outline-offset: 1px; }
@@ -2301,6 +2306,104 @@ function canTransferInterviewOwner(slice) {
   return String(slice.meta.ownerId || '') === String(uid);
 }
 
+// Owner-Anfragen. Wer Zugriff auf das Recruiting-Tool hat, aber nicht Owner
+// eines Gesprächs ist, kann die Rolle beim aktuellen Owner anfragen statt sie
+// zu nehmen. Die Anfrage liegt im meta-Block der Runde, damit sie denselben
+// Speicher- und Sicherungsweg nimmt wie die Ownerschaft selbst.
+function pendingOwnerRequests(slice) {
+  const list = slice?.meta?.ownerRequests;
+  return Array.isArray(list) ? list.filter(r => r && r.userId) : [];
+}
+
+function hasOwnOwnerRequest(slice) {
+  const uid = String(window.RootsUser?._uid || '');
+  return !!uid && pendingOwnerRequests(slice).some(r => String(r.userId) === uid);
+}
+
+function sliceOf(candidate, runde) {
+  return runde === 'zweit' ? (candidate.zweit = candidate.zweit || deepClone(INITIAL_STATE))
+                           : (candidate.erst = candidate.erst || deepClone(INITIAL_STATE));
+}
+
+async function requestInterviewOwnership(sessionId, runde) {
+  const c = state.candidates.find(x => x.session_id === sessionId);
+  if (!c) return false;
+  const slice = sliceOf(c, runde);
+  ensureInitialOwner(slice);
+  const uid = String(window.RootsUser?._uid || '');
+  const ownerId = String(slice.meta?.ownerId || '');
+  if (!uid) { toast('Nicht angemeldet', 'error'); return false; }
+  if (uid === ownerId) { toast('Du bist bereits Owner', 'info'); return false; }
+  if (!ownerId) { toast('Dieses Gespräch hat keinen Owner', 'error'); return false; }
+  if (hasOwnOwnerRequest(slice)) { toast('Anfrage läuft bereits', 'info'); return false; }
+
+  const before = pendingOwnerRequests(slice);
+  const myName = window.RootsUser._p?.full_name || 'Teammitglied';
+  slice.meta.ownerRequests = [...before, { userId: uid, name: myName, requestedAt: new Date().toISOString() }];
+  try {
+    await persistCandidateSlices(c);
+  } catch (e) {
+    slice.meta.ownerRequests = before;
+    console.error('requestInterviewOwnership', e);
+    toast('Anfrage konnte nicht gespeichert werden', 'error');
+    return false;
+  }
+  const sent = await notifyUsers([ownerId], {
+    type: 'interview_owner_request',
+    title: `Owner-Anfrage: ${c.kandidat || 'Bewerber'}`,
+    message: `${myName} möchte Owner des ${runde === 'zweit' ? 'Zweit' : 'Erst'}gesprächs werden. Öffne die Interviewer-Einstellungen, um zu entscheiden.`,
+    sessionId, runde, kandidat: c.kandidat,
+    meta: { requesterId: uid, requesterName: myName },
+  });
+  toast(sent ? 'Anfrage an den Owner gesendet' : 'Anfrage gespeichert · Benachrichtigung fehlgeschlagen', sent ? 'info' : 'error');
+  if (state.teamPanel) renderTeamPanelBody();
+  return true;
+}
+
+async function resolveOwnerRequest(sessionId, runde, requesterId, accept) {
+  const c = state.candidates.find(x => x.session_id === sessionId);
+  if (!c) return false;
+  const slice = sliceOf(c, runde);
+  if (!canTransferInterviewOwner(slice)) {
+    toast('Nur der aktuelle Owner darf darüber entscheiden', 'error');
+    return false;
+  }
+  const before = pendingOwnerRequests(slice);
+  const request = before.find(r => String(r.userId) === String(requesterId));
+  if (!request) { toast('Diese Anfrage existiert nicht mehr', 'info'); return false; }
+  // Anfrage in jedem Fall aus der Liste nehmen, bevor gespeichert wird.
+  slice.meta.ownerRequests = before.filter(r => String(r.userId) !== String(requesterId));
+
+  if (accept) {
+    // setRoundOwner speichert und benachrichtigt den neuen Owner selbst.
+    const ok = await setRoundOwner(sessionId, runde, String(requesterId), { notify: true, silent: true });
+    if (!ok) { slice.meta.ownerRequests = before; return false; }
+    if (state.teamPanel) state.teamPanel.ownerId = String(requesterId);
+    toast(`Ownerschaft an ${request.name || 'Teammitglied'} übergeben`, 'info');
+  } else {
+    try {
+      await persistCandidateSlices(c);
+    } catch (e) {
+      slice.meta.ownerRequests = before;
+      console.error('resolveOwnerRequest', e);
+      toast('Antwort konnte nicht gespeichert werden', 'error');
+      return false;
+    }
+    const me = window.RootsUser._p?.full_name || 'Der Owner';
+    await notifyUsers([String(requesterId)], {
+      type: 'interview_owner_request_result',
+      title: `Owner-Anfrage abgelehnt: ${c.kandidat || 'Bewerber'}`,
+      message: `${me} bleibt Owner des ${runde === 'zweit' ? 'Zweit' : 'Erst'}gesprächs.`,
+      sessionId, runde, kandidat: c.kandidat,
+      meta: { decision: 'declined' },
+    });
+    toast('Anfrage abgelehnt', 'info');
+  }
+  if (state.view === 'dashboard') renderDashboard();
+  if (state.teamPanel) renderTeamPanelBody();
+  return true;
+}
+
 function ensureZweitTeamMeta(erstSlice, zweitSlice) {
   if (!zweitSlice?.meta) return;
   ensureInitialOwner(zweitSlice);
@@ -2493,7 +2596,43 @@ function renderTeamPanelBody() {
       <div class="team-member-grid" id="tp-owner-list">${state.teamMembers.map(m => memberRow(m, 'owner')).join('')}</div>
     </div>`
     : '';
-  body.innerHTML = ownerSection + `
+
+  // Offene Anfragen sieht nur der Owner, denn nur er kann entscheiden.
+  const requests = pendingOwnerRequests(slice);
+  const requestInbox = allowOwnerTransfer && requests.length
+    ? `<div class="team-panel-section">
+      <h4>Owner-Anfragen <span class="owner-request-count">${requests.length}</span></h4>
+      <div class="team-member-grid">${requests.map(r => {
+        const m = getTeamMember(r.userId);
+        const name = m?.full_name || r.name || 'Teammitglied';
+        const since = r.requestedAt ? new Date(r.requestedAt).toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }) : '';
+        return `<div class="team-member-opt owner-request-row">
+          ${memberAvatarHtml(name, m?.avatar_url, 36)}
+          <span class="team-member-opt-info">
+            <span class="team-member-opt-name">${escapeHtml(name)}</span>
+            <span class="team-member-opt-role">möchte Owner werden${since ? ` · ${escapeHtml(since)}` : ''}</span>
+          </span>
+          <span class="owner-request-actions">
+            <button type="button" class="btn-primary owner-request-btn" data-accept-uid="${escapeHtml(String(r.userId))}">Übergeben</button>
+            <button type="button" class="btn-secondary owner-request-btn" data-decline-uid="${escapeHtml(String(r.userId))}">Ablehnen</button>
+          </span>
+        </div>`;
+      }).join('')}</div>
+    </div>`
+    : '';
+
+  // Wer nicht Owner ist, kann anfragen statt zu übernehmen.
+  const ownerMember = getTeamMember(slice.meta?.ownerId);
+  const requestSection = !allowOwnerTransfer && slice.meta?.ownerId
+    ? `<div class="team-panel-section">
+      <h4>Ownerschaft anfragen</h4>
+      <p style="font-size:.8rem;color:var(--muted);margin:0 0 .6rem;line-height:1.45">Owner ist derzeit ${escapeHtml(ownerMember?.full_name || slice.meta?.ownerName || 'ein Teammitglied')}. Die Anfrage geht als Benachrichtigung an ihn.</p>
+      ${hasOwnOwnerRequest(slice)
+        ? `<p class="owner-request-pending"><i class="fa-solid fa-hourglass-half"></i> Anfrage läuft, du wirst benachrichtigt.</p>`
+        : `<button type="button" class="btn-secondary" id="tp-request-owner"><i class="fa-solid fa-hand"></i> Ownerschaft anfragen</button>`}
+    </div>`
+    : '';
+  body.innerHTML = requestInbox + ownerSection + requestSection + `
     <div class="team-panel-section">
       <h4>Zum Termin einladen</h4>
       <div class="team-member-grid" id="tp-invite-list">${members.length ? members.map(m => memberRow(m, 'participant')).join('') : '<p style="color:var(--muted);font-size:.85rem">Keine weiteren Teammitglieder.</p>'}</div>
@@ -2523,6 +2662,27 @@ function renderTeamPanelBody() {
       }
     });
   });
+  const requestBtn = body.querySelector('#tp-request-owner');
+  if (requestBtn) {
+    requestBtn.addEventListener('click', async () => {
+      requestBtn.disabled = true;
+      await requestInterviewOwnership(tp.sessionId, tp.runde);
+      // renderTeamPanelBody zeichnet neu; schlaegt es fehl, bleibt der Knopf nutzbar.
+      if (document.body.contains(requestBtn)) requestBtn.disabled = false;
+    });
+  }
+
+  body.querySelectorAll('[data-accept-uid], [data-decline-uid]').forEach(button => {
+    button.addEventListener('click', async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const accept = button.hasAttribute('data-accept-uid');
+      const uid = button.getAttribute(accept ? 'data-accept-uid' : 'data-decline-uid');
+      body.querySelectorAll('.owner-request-btn').forEach(b => { b.disabled = true; });
+      await resolveOwnerRequest(tp.sessionId, tp.runde, uid, accept);
+    });
+  });
+
   body.querySelectorAll('[data-remove-uid]').forEach(button => {
     button.addEventListener('click', (e) => {
       e.preventDefault();
