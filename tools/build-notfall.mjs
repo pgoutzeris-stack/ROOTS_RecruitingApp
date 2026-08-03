@@ -87,11 +87,9 @@ const page = `<!DOCTYPE html>
   </div>
 
   <h1>Gespräch im Notbetrieb</h1>
-  <p class="sub">Kein Login, keine Datenbank, kein Internet nötig.</p>
 
   <div class="card" id="setup">
     <h2>Gespräch anlegen</h2>
-    <p class="time">Name und Runde festlegen, dann starten.</p>
     <div class="meta-grid">
       <div><label for="m-kandidat">Bewerber</label><input type="text" id="m-kandidat" placeholder="Vor- und Nachname"></div>
       <div><label for="m-interviewer">Interviewer</label><input type="text" id="m-interviewer" placeholder="Dein Name"></div>
@@ -106,7 +104,6 @@ const page = `<!DOCTYPE html>
 
   <div class="card hidden" id="closing">
     <h2>Abschluss</h2>
-    <p class="time">Bewertung und Empfehlung.</p>
     <label for="c-note">Gesamtnote</label>
     <input type="text" id="c-note" placeholder="z. B. 4 von 5">
     <label for="c-reco">Empfehlung</label>
@@ -180,7 +177,6 @@ function renderSections() {
     return '<div class="card">'
       + '<h2>' + esc(s.main) + '</h2>'
       + '<p class="time">' + esc(s.time || '') + '</p>'
-      + (s.type === 'roots' ? '<p class="q-follow">ROOTS-Intro frei halten.</p>' : '')
       + body
       + blockEvals.map((ev) => evalHtml(s.blockEvaluation.id, ev)).join('')
       + '</div>';
