@@ -174,6 +174,16 @@
     .roots-select-option.is-selected { color: var(--brand); font-weight: 600; background: var(--brand-light); }
     .roots-select-option.is-placeholder-opt { color: var(--muted); opacity: .7; }
 
+    /* Filterleisten: gleiche Mechanik, Pillenform wie die übrigen Bedienelemente */
+    .roots-custom-select.filter-select { flex-shrink: 0; }
+    .filter-select .roots-select-trigger { height: 42px; border-radius: 999px; padding: 0 1rem; font-size: .88rem; gap: 10px; }
+    .filter-select .roots-select-trigger > i:first-child { color: var(--muted); font-size: .8rem; flex-shrink: 0; }
+    .filter-select .roots-select-value { font-weight: 500; }
+    .filter-select .roots-select-menu { left: 0; right: auto; min-width: max(100%, 210px); border-radius: 14px; padding: .3rem; box-shadow: 0 12px 32px rgba(15,23,42,.14); }
+    .filter-select .roots-select-option { border-radius: 10px; padding: .55rem .7rem; white-space: nowrap; }
+    .filter-select .roots-select-option:hover { background: var(--status-bg); color: var(--ink); }
+    .filter-select .roots-select-option.is-selected { background: var(--brand-light); color: var(--brand); }
+
     /* ─── Mobile hamburger & sidebar overlay ─── */
     .nav-hamburger { display: none; background: none; border: none; color: var(--ink); cursor: pointer; padding: 4px 6px; border-radius: 8px; font-size: 1.1rem; align-items: center; flex-shrink: 0; }
     .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 8999; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
@@ -771,10 +781,13 @@
       .dash-search-wrap {
         min-width: 100%; max-width: none;
       }
-      .dash-filter {
+      .dash-filter,
+      .roots-custom-select.filter-select {
         flex: 1 1 calc(50% - .375rem);
         min-width: 0;
       }
+      .filter-select .roots-select-trigger { min-height: 44px; }
+      .filter-select .roots-select-menu { right: 0; min-width: 100%; }
       .dash-toolbar {
         gap: .75rem;
       }
@@ -927,6 +940,7 @@
         padding: .8rem 1rem;
       }
       .dash-filter,
+      .roots-custom-select.filter-select,
       .dash-search-wrap {
         min-width: 100%;
         width: 100%;
@@ -1183,19 +1197,8 @@
         <i class="fa-solid fa-magnifying-glass"></i>
         <input type="text" id="bew-search" class="dash-search" placeholder="Name oder E-Mail suchen…">
       </div>
-      <select id="bew-filter-status" class="dash-filter">
-        <option value="all">Alle</option>
-        <option value="new">Neu</option>
-        <option value="erst">Erstgespräch</option>
-        <option value="zweit">Zweitgespräch</option>
-        <option value="hired">Eingestellt</option>
-        <option value="rejected">Abgelehnt</option>
-        <option value="withdrawn">Zurückgezogen</option>
-      </select>
-      <select id="bew-sort" class="dash-filter">
-        <option value="date_desc">Neueste zuerst</option>
-        <option value="date_asc">Älteste zuerst</option>
-      </select>
+      <div class="roots-custom-select filter-select" id="bew-filter-status"></div>
+      <div class="roots-custom-select filter-select" id="bew-sort"></div>
     </div>
     <div class="bew-layout">
       <div class="bew-list-panel">
@@ -1223,25 +1226,9 @@
         <button type="button" class="dash-scope-btn is-active" data-scope="active" aria-pressed="true"><i class="fa-solid fa-inbox"></i> Aktiv <span class="dash-scope-count" id="dash-count-active">0</span></button>
         <button type="button" class="dash-scope-btn" data-scope="archive" aria-pressed="false"><i class="fa-solid fa-box-archive"></i> Archiv <span class="dash-scope-count" id="dash-count-archive">0</span></button>
       </div>
-      <select id="dash-filter" class="dash-filter">
-        <option value="all">Alle Runden</option>
-        <option value="erst">Nur Erstgespräch</option>
-        <option value="zweit">Nur Zweitgespräch</option>
-      </select>
-      <select id="dash-result" class="dash-filter">
-        <option value="all">Alle Ergebnisse</option>
-        <option value="zweit_invite">Zum Zweitgespräch</option>
-        <option value="hired">Einstellen</option>
-        <option value="discuss">Weitere Diskussion</option>
-        <option value="rejected">Absage</option>
-        <option value="open">Ohne Ergebnis</option>
-      </select>
-      <select id="dash-sort" class="dash-filter">
-        <option value="date_desc">Neueste zuerst</option>
-        <option value="date_asc">Älteste zuerst</option>
-        <option value="name">Nach Name</option>
-        <option value="score_desc">Beste Bewertung</option>
-      </select>
+      <div class="roots-custom-select filter-select" id="dash-filter"></div>
+      <div class="roots-custom-select filter-select" id="dash-result"></div>
+      <div class="roots-custom-select filter-select" id="dash-sort"></div>
     </div>
     <div id="dash-list"></div>
   </div>
@@ -1757,6 +1744,7 @@ document.addEventListener('keydown', (e) => {
       document.getElementById(id)?.classList.remove('open');
     });
     if (document.getElementById('mail-overlay')?.classList.contains('visible')) closeMailDialog();
+    closeAllRootsSelects();
   }
 });
 let recruitingRealtimeChannels = [];
@@ -5683,30 +5671,112 @@ function currentMailFields() {
   };
 }
 
-function downloadMailTemplate() {
+/* ── Desktop-Huelle (Tauri) ───────────────────────────────────────────────
+   Im Browser oeffnet ein mailto-Link das Mailprogramm und ein Blob-Link laedt
+   die Datei herunter. Die Desktop-Huelle kann beides nicht von sich aus: fuer
+   fremde Protokolle braucht sie das Opener-Plugin, Dateidownloads unterstuetzt
+   ihr Webview gar nicht. Deshalb erst der Weg ueber die Huelle, dann der
+   Browserweg - und wenn nichts greift eine ehrliche Rueckmeldung statt eines
+   Buttons, der nichts tut.                                                   */
+function desktopShellInvoke(command, args) {
+  const invoke = window.__TAURI_INTERNALS__?.invoke || window.__TAURI__?.core?.invoke;
+  if (typeof invoke !== 'function') return null;
+  try {
+    return Promise.resolve(invoke(command, args));
+  } catch (e) {
+    return Promise.reject(e);
+  }
+}
+
+function isDesktopShell() {
+  return !!(window.__TAURI_INTERNALS__ || window.__TAURI__ || /\bTauri\b/i.test(navigator.userAgent));
+}
+
+async function openExternalUrl(url) {
+  const viaShell = desktopShellInvoke('plugin:opener|open_url', { url });
+  if (viaShell) {
+    try {
+      await viaShell;
+      return true;
+    } catch (e) {
+      console.warn('opener plugin', e);
+    }
+  }
+  if (isDesktopShell()) return false;   // Anker-Klick bewirkt dort nichts
+  try {
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return true;
+  } catch (e) {
+    console.error('openExternalUrl', e);
+    return false;
+  }
+}
+
+// Outlook im Web als zweiter Weg: gewoehnliche https-Adresse, die auch dort
+// ankommt, wo mailto nicht durchgeht.
+function outlookWebComposeUrl({ to, subject, body }) {
+  const params = new URLSearchParams({ to, subject, body });
+  return `https://outlook.office.com/mail/deeplink/compose?${params.toString()}`;
+}
+
+async function downloadMailTemplate() {
   if (!mailDialog) return;
   const { to, subject, body } = currentMailFields();
+
   const eml = buildEmlFile({ fromName: mailDialog.ctx.fromName, fromEmail: mailDialog.ctx.fromEmail, to, subject, body });
-  const blob = new Blob([eml], { type: 'message/rfc822' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = mailFileName(mailDialog.ctx, mailDialog.templateId);
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  const filename = mailFileName(mailDialog.ctx, mailDialog.templateId);
+  triggerFileDownload(eml, 'message/rfc822', filename);
+
+  // Ob die Desktop-Huelle den Download annimmt, laesst sich vorher nicht
+  // feststellen. Also zusaetzlich den Text sichern, damit der Klick auch dann
+  // etwas bringt, wenn das Webview die Datei verwirft.
+  if (isDesktopShell()) {
+    const copied = await copyToClipboard(`Betreff: ${subject}\n\n${body}`);
+    toast(copied
+      ? 'Betreff und Text kopiert · Datei-Download nur in der Browser-Version'
+      : 'Datei-Download nur in der Browser-Version', copied ? 'info' : 'error');
+    return;
+  }
   toast('Outlook-Vorlage heruntergeladen');
 }
 
-function openMailInClient() {
-  const { to, subject, body } = currentMailFields();
-  const a = document.createElement('a');
-  a.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+function triggerFileDownload(content, mime, filename) {
+  try {
+    const url = URL.createObjectURL(new Blob([content], { type: mime }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    return true;
+  } catch (e) {
+    console.error('triggerFileDownload', e);
+    return false;
+  }
+}
+
+async function openMailInClient() {
+  const fields = currentMailFields();
+  const { subject, body } = fields;
+  const mailto = `mailto:${encodeURIComponent(fields.to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  if (await openExternalUrl(mailto)) return;
+  if (await openExternalUrl(outlookWebComposeUrl(fields))) {
+    toast('Outlook im Web geöffnet');
+    return;
+  }
+  const copied = await copyToClipboard(`Betreff: ${subject}\n\n${body}`);
+  toast(copied
+    ? 'Outlook ließ sich nicht öffnen – Betreff und Text liegen in der Zwischenablage'
+    : 'Outlook ließ sich nicht öffnen', copied ? 'info' : 'error');
 }
 
 function bindMailDialogHandlers() {
@@ -6516,6 +6586,64 @@ function stelleDropdownHtml(currentValue) {
     </div>`;
 }
 
+/**
+ * Filter-Dropdown im ROOTS-Stil. Ersetzt die nativen <select> in den
+ * Filterleisten, die je nach Betriebssystem und in der Desktop-Huelle anders
+ * aussehen als der Rest der Oberflaeche.
+ */
+function mountFilterSelect(hostId, config) {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  const { icon = '', options, getValue, onChange } = config;
+  const render = () => {
+    const current = getValue();
+    const selected = options.find(o => o.value === current) || options[0];
+    host.innerHTML = `
+      <button type="button" class="roots-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+        ${icon ? `<i class="fa-solid ${icon}"></i>` : ''}
+        <span class="roots-select-value">${escapeHtml(selected.label)}</span>
+        <i class="fa-solid fa-chevron-down roots-select-chevron"></i>
+      </button>
+      <div class="roots-select-menu" hidden role="listbox">
+        ${options.map(o => `<div class="roots-select-option${o.value === current ? ' is-selected' : ''}" role="option" aria-selected="${o.value === current}" data-value="${escapeHtml(o.value)}">
+          <span>${escapeHtml(o.label)}</span>
+          ${o.value === current ? '<i class="fa-solid fa-check" style="font-size:.72rem"></i>' : ''}
+        </div>`).join('')}
+      </div>`;
+    const trigger = host.querySelector('.roots-select-trigger');
+    const menu = host.querySelector('.roots-select-menu');
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const opening = menu.hidden;
+      closeAllRootsSelects();
+      if (opening) {
+        menu.hidden = false;
+        host.classList.add('is-open');
+        trigger.setAttribute('aria-expanded', 'true');
+      }
+    });
+    host.querySelectorAll('.roots-select-option').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeAllRootsSelects();
+        if (opt.dataset.value === getValue()) return;
+        onChange(opt.dataset.value);
+        render();
+      });
+    });
+  };
+  render();
+}
+
+function closeAllRootsSelects() {
+  document.querySelectorAll('.roots-select-menu:not([hidden])').forEach(m => {
+    m.hidden = true;
+    const sel = m.closest('.roots-custom-select');
+    sel?.classList.remove('is-open');
+    sel?.querySelector('.roots-select-trigger')?.setAttribute('aria-expanded', 'false');
+  });
+}
+
 function initRootsCustomSelects(container) {
   container.querySelectorAll('.roots-custom-select').forEach(sel => {
     const trigger = sel.querySelector('.roots-select-trigger');
@@ -6866,7 +6994,6 @@ document.getElementById('nav-back-dashboard').addEventListener('click', () => le
 document.getElementById('nav-fullscreen').addEventListener('click', toggleInterviewFullscreen);
 document.addEventListener('fullscreenchange', syncFullscreenNavButton);
 document.addEventListener('webkitfullscreenchange', syncFullscreenNavButton);
-document.getElementById('bew-sort').addEventListener('change', (e) => { state.bewSortBy = e.target.value; renderBewerberList(); });
 document.getElementById('picker-cancel').addEventListener('click', closeInterviewPicker);
 document.getElementById('picker-new-applicant').addEventListener('click', () => openBewerberCreateForm({ startInterviewAfterSave: true }));
 document.getElementById('interview-picker-overlay').addEventListener('click', (e) => {
@@ -6900,7 +7027,29 @@ window.addEventListener('keydown', event => {
   }
 });
 document.getElementById('bew-search').addEventListener('input', (e) => { state.bewFilterText = e.target.value; renderBewerberList(); });
-document.getElementById('bew-filter-status').addEventListener('change', (e) => { state.bewFilterStatus = e.target.value; renderBewerberList(); });
+mountFilterSelect('bew-filter-status', {
+  icon: 'fa-filter',
+  options: [
+    { value: 'all', label: 'Alle Status' },
+    { value: 'new', label: 'Neu' },
+    { value: 'erst', label: 'Erstgespräch' },
+    { value: 'zweit', label: 'Zweitgespräch' },
+    { value: 'hired', label: 'Eingestellt' },
+    { value: 'rejected', label: 'Abgelehnt' },
+    { value: 'withdrawn', label: 'Zurückgezogen' },
+  ],
+  getValue: () => state.bewFilterStatus,
+  onChange: (v) => { state.bewFilterStatus = v; renderBewerberList(); },
+});
+mountFilterSelect('bew-sort', {
+  icon: 'fa-arrow-down-short-wide',
+  options: [
+    { value: 'date_desc', label: 'Neueste zuerst' },
+    { value: 'date_asc', label: 'Älteste zuerst' },
+  ],
+  getValue: () => state.bewSortBy,
+  onChange: (v) => { state.bewSortBy = v; renderBewerberList(); },
+});
 
 document.getElementById('team-panel-cancel').addEventListener('click', closeTeamPanel);
 document.getElementById('team-panel-save').addEventListener('click', saveTeamPanel);
@@ -6946,9 +7095,40 @@ document.getElementById('zweit-locked-close').addEventListener('click', () => {
 
 // Dashboard filters
 document.getElementById('dash-search').addEventListener('input', (e) => { state.filterText = e.target.value; renderDashboard(); });
-document.getElementById('dash-filter').addEventListener('change', (e) => { state.filterRunde = e.target.value; renderDashboard(); });
-document.getElementById('dash-sort').addEventListener('change', (e) => { state.sortBy = e.target.value; renderDashboard(); });
-document.getElementById('dash-result').addEventListener('change', (e) => { state.filterResult = e.target.value; renderDashboard(); });
+mountFilterSelect('dash-filter', {
+  icon: 'fa-layer-group',
+  options: [
+    { value: 'all', label: 'Alle Runden' },
+    { value: 'erst', label: 'Nur Erstgespräch' },
+    { value: 'zweit', label: 'Nur Zweitgespräch' },
+  ],
+  getValue: () => state.filterRunde,
+  onChange: (v) => { state.filterRunde = v; renderDashboard(); },
+});
+mountFilterSelect('dash-result', {
+  icon: 'fa-flag-checkered',
+  options: [
+    { value: 'all', label: 'Alle Ergebnisse' },
+    { value: 'zweit_invite', label: 'Zum Zweitgespräch' },
+    { value: 'hired', label: 'Einstellen' },
+    { value: 'discuss', label: 'Weitere Diskussion' },
+    { value: 'rejected', label: 'Absage' },
+    { value: 'open', label: 'Ohne Ergebnis' },
+  ],
+  getValue: () => state.filterResult,
+  onChange: (v) => { state.filterResult = v; renderDashboard(); },
+});
+mountFilterSelect('dash-sort', {
+  icon: 'fa-arrow-down-short-wide',
+  options: [
+    { value: 'date_desc', label: 'Neueste zuerst' },
+    { value: 'date_asc', label: 'Älteste zuerst' },
+    { value: 'name', label: 'Nach Name' },
+    { value: 'score_desc', label: 'Beste Bewertung' },
+  ],
+  getValue: () => state.sortBy,
+  onChange: (v) => { state.sortBy = v; renderDashboard(); },
+});
 document.querySelectorAll('#dash-scope .dash-scope-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     state.dashScope = btn.dataset.scope === 'archive' ? 'archive' : 'active';
@@ -7219,14 +7399,7 @@ window.RootsSyncStatusConfig = {
 })();
 
 // Close ROOTS custom dropdowns on outside click
-document.addEventListener('click', () => {
-  document.querySelectorAll('.roots-select-menu:not([hidden])').forEach(m => {
-    m.hidden = true;
-    const sel = m.closest('.roots-custom-select');
-    sel?.classList.remove('is-open');
-    sel?.querySelector('.roots-select-trigger')?.setAttribute('aria-expanded', 'false');
-  });
-});
+document.addEventListener('click', closeAllRootsSelects);
 
 initializeRecruitingHistory();
 </script>
