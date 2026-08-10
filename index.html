@@ -2439,7 +2439,29 @@ function sliceForRunde(candidate, runde) {
 
 function roundCompletedTs(candidate, slice) {
   if (!slice?.completed) return null;
-  return parseTs(slice.completedAt) || parseTs(candidate?.updated_at);
+  // `finalizedAt` ist der bestaendige Merker: Zwischenspeichern setzt ihn nicht
+  // zurueck. `updated_at` nur als letzte Reserve fuer alte Datensaetze, es
+  // wandert bei jedem Schreiben auf der Zeile mit.
+  return parseTs(slice.completedAt) || parseTs(slice.finalizedAt) || parseTs(candidate?.updated_at);
+}
+
+/**
+ * Wurde in dieser Runde ueberhaupt gearbeitet? Ein Zweitgespraech wird beim
+ * Freischalten automatisch angelegt und traegt dann nur ein Platzhalterdatum -
+ * ohne diese Pruefung wuerde sein Owner an den Abschluss eines Gespraechs
+ * erinnert, das noch nicht stattgefunden hat.
+ */
+function roundHasWork(slice) {
+  if (!slice) return false;
+  if (slice.pausedAt || slice.recommendation || (slice.gesamtNote || '').trim()) return true;
+  if (slice.rtiDone) return true;
+  const anyValue = (obj) => Object.values(obj || {}).some(v => {
+    if (v == null || v === '' || v === false) return false;
+    if (typeof v === 'object') return anyValue(v);
+    return true;
+  });
+  return anyValue(slice.ratings) || anyValue(slice.notes) || anyValue(slice.checks)
+    || anyValue(slice.cultureFitAnswers) || anyValue(slice.abschlussNotes) || anyValue(slice.caseChecks);
 }
 
 // Ab wann die 48-Stunden-Frist fuer diese Runde laeuft. Beim Erstgespraech mit
@@ -2485,22 +2507,28 @@ function laneArchiveInfo(candidate, runde) {
 function roundPauseBase(candidate, runde) {
   const slice = sliceForRunde(candidate, runde);
   const stamps = [parseTs(slice.pausedAt)];
-  const datum = String(slice.meta?.datum || candidate.datum || '').trim();
+  // Nur das Datum der eigenen Runde zaehlt. Faellt das Zweitgespraech auf das
+  // Datum der Zeile zurueck, waere es sofort ueberfaellig.
+  const datum = String(slice.meta?.datum || (runde === 'erst' ? candidate.datum : '') || '').trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(datum)) stamps.push(parseTs(`${datum}T18:00:00`));
   const valid = stamps.filter(Boolean);
   return valid.length ? Math.max(...valid) : null;
 }
 
 /**
- * Steht der finale Abschluss einer Runde aus? Gilt unabhaengig davon, ob schon
- * eine Empfehlung eingetragen ist - erst das Abschliessen beendet die Runde.
+ * Steht der finale Abschluss einer Runde aus? Ob schon eine Empfehlung
+ * eingetragen ist, spielt keine Rolle - erst das Abschliessen beendet die
+ * Runde. Nicht faellig ist sie dagegen, wenn sie schon einmal abgeschlossen
+ * wurde (`finalizedAt`) oder wenn in ihr noch nicht gearbeitet wurde.
  */
 function laneFinalizePending(candidate, runde) {
+  const none = { pending: false, dueAt: null, base: null };
   const slice = sliceForRunde(candidate, runde);
-  if (runde === 'zweit' && !slice.meta?.zweitCreated) return { pending: false, dueAt: null, base: null };
-  if (slice.completed) return { pending: false, dueAt: null, base: null };
+  if (runde === 'zweit' && !slice.meta?.zweitCreated) return none;
+  if (slice.completed || slice.finalizedAt) return none;
+  if (!roundHasWork(slice)) return none;
   const base = roundPauseBase(candidate, runde);
-  if (!base) return { pending: false, dueAt: null, base: null };
+  if (!base) return none;
   const dueAt = base + FINALIZE_REMINDER_DELAY_MS;
   return { pending: Date.now() >= dueAt, dueAt, base };
 }
@@ -3505,11 +3533,29 @@ function updateRundeSelect() {
   }
 }
 
+// Aenderungen, die die Bewertung selbst betreffen. Nur sie holen eine
+// abgeschlossene Runde zurueck in den Entwurf - Stammdaten und die Anmerkung
+// fuer den Zweitinterviewer nicht.
+const EVALUATION_ACTIONS = new Set([
+  'TOGGLE_CHECK', 'SET_NOTE', 'SET_RATING', 'SET_GESAMT_NOTE', 'SET_RECOMMENDATION',
+  'SET_ABSCHLUSS_NOTE', 'TOGGLE_RTI', 'TOGGLE_CASE_CHECK', 'SET_CULTURE_FIT',
+]);
+
+function reopenRoundOnEdit(slice, action) {
+  if (!EVALUATION_ACTIONS.has(action.type)) return;
+  if (!slice.completed && !slice.finalizedAt) return;
+  slice.completed = false;
+  slice.completedAt = null;
+  slice.finalizedAt = null;
+  slice.reminderSentAt = null;
+}
+
 function dispatch(action) {
   const slice = (action.scope === 'erst' || (action.type === 'SET_ZWEIT_ANMERKUNG'))
     ? state.erst
     : currentSlice();
   applyAction(slice, action);
+  reopenRoundOnEdit(slice, action);
 
   if (action.type === 'SET_META') {
     state.erst.meta[action.field] = action.value;
@@ -3995,9 +4041,6 @@ async function persistInterviewDraftToDb() {
     dbAutosaveQueued = true;
     return;
   }
-  const slice = currentSlice();
-  slice.completed = false;
-  slice.completedAt = null;
   dbAutosaveInFlight = true;
   try {
     await saveCurrent({ allowIncomplete: true, silent: true });
@@ -4017,9 +4060,6 @@ async function flushInterviewDraftToDb() {
   if (dbSaveTimer) { clearTimeout(dbSaveTimer); dbSaveTimer = null; }
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
   persistLocalDraft();
-  const slice = currentSlice();
-  slice.completed = false;
-  slice.completedAt = null;
   await saveCurrent({ allowIncomplete: true, throwOnError: true });
 }
 
@@ -4207,11 +4247,10 @@ async function saveCurrent(opts = {}) {
       if (!opts.silent) toast(msg, 'error');
       return false;
     }
-  } else {
-    const activeSlice = isZweit() ? state.zweit : state.erst;
-    activeSlice.completed = false;
-    activeSlice.completedAt = null;
   }
+  // Ein Zwischenspeichern hebt einen bestehenden Abschluss nicht auf. Zurueck in
+  // den Entwurf geht eine Runde nur durch eine echte Aenderung (siehe dispatch)
+  // oder ueber "Bearbeitung wieder oeffnen".
   const activeSlice = isZweit() ? state.zweit : state.erst;
   const row = {
     session_id: meta.sessionId,
@@ -4299,6 +4338,10 @@ async function saveInterviewComplete() {
   }
   check.slice.completed = true;
   check.slice.completedAt = new Date().toISOString();
+  // Bestaendiger Merker: Zwischenspeichern und Wiederansehen setzen ihn nicht
+  // zurueck, damit eine abgeschlossene Runde nicht wieder als Entwurf gilt.
+  check.slice.finalizedAt = check.slice.completedAt;
+  check.slice.reminderSentAt = null;
   if (!isZweit() && state.erst.recommendation === ZWEIT_INVITE_RECO) {
     ensureZweitInterviewCreated(state.erst, state.zweit);
   }
@@ -4322,9 +4365,12 @@ async function leaveInterviewToDashboard(targetView = 'dashboard') {
   let saveFailed = false;
   // "Spaeter fortsetzen" ist das vorlaeufige Ende des Gespraechs. Ab hier laeuft
   // die 24-Stunden-Frist, nach der der Owner an den Abschluss erinnert wird.
+  // Eine abgeschlossene Runde bleibt unberuehrt - dort steht nichts mehr aus.
   const leftSlice = currentSlice();
-  leftSlice.pausedAt = new Date().toISOString();
-  leftSlice.reminderSentAt = null;
+  if (!leftSlice.completed && !leftSlice.finalizedAt) {
+    leftSlice.pausedAt = new Date().toISOString();
+    leftSlice.reminderSentAt = null;
+  }
   try {
     await flushInterviewDraftToDb();
   } catch (e) {
@@ -4432,6 +4478,10 @@ async function finalizeInterview() {
   }
   check.slice.completed = true;
   check.slice.completedAt = new Date().toISOString();
+  // Bestaendiger Merker: Zwischenspeichern und Wiederansehen setzen ihn nicht
+  // zurueck, damit eine abgeschlossene Runde nicht wieder als Entwurf gilt.
+  check.slice.finalizedAt = check.slice.completedAt;
+  check.slice.reminderSentAt = null;
   if (!isZweit() && state.erst.recommendation === ZWEIT_INVITE_RECO) {
     ensureZweitInterviewCreated(state.erst, state.zweit);
   }
@@ -4454,6 +4504,7 @@ function reopenInterviewRound() {
   const slice = currentSlice();
   slice.completed = false;
   slice.completedAt = null;
+  slice.finalizedAt = null;
   slice.reminderSentAt = null;
   scheduleSave();
   toast('Bearbeitung wieder geöffnet');
