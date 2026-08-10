@@ -5672,12 +5672,11 @@ function currentMailFields() {
 }
 
 /* ── Desktop-Huelle (Tauri) ───────────────────────────────────────────────
-   Im Browser oeffnet ein mailto-Link das Mailprogramm und ein Blob-Link laedt
-   die Datei herunter. Die Desktop-Huelle kann beides nicht von sich aus: fuer
-   fremde Protokolle braucht sie das Opener-Plugin, Dateidownloads unterstuetzt
-   ihr Webview gar nicht. Deshalb erst der Weg ueber die Huelle, dann der
-   Browserweg - und wenn nichts greift eine ehrliche Rueckmeldung statt eines
-   Buttons, der nichts tut.                                                   */
+   Die Huelle reicht mailto-Links seit Version 1.0.2 an das Mailprogramm weiter
+   und nimmt Dateidownloads an. Laeuft das Tool dort als eigenes Fenster statt
+   im iframe, ist zusaetzlich das Opener-Plugin erreichbar - das ist der kurze
+   Weg. Bleibt beides erfolglos, tritt Outlook im Web ein und zuletzt die
+   Zwischenablage, damit kein Button ins Leere klickt.                        */
 function desktopShellInvoke(command, args) {
   const invoke = window.__TAURI_INTERNALS__?.invoke || window.__TAURI__?.core?.invoke;
   if (typeof invoke !== 'function') return null;
@@ -5702,7 +5701,6 @@ async function openExternalUrl(url) {
       console.warn('opener plugin', e);
     }
   }
-  if (isDesktopShell()) return false;   // Anker-Klick bewirkt dort nichts
   try {
     const a = document.createElement('a');
     a.href = url;
@@ -5732,19 +5730,14 @@ async function downloadMailTemplate() {
 
   const eml = buildEmlFile({ fromName: mailDialog.ctx.fromName, fromEmail: mailDialog.ctx.fromEmail, to, subject, body });
   const filename = mailFileName(mailDialog.ctx, mailDialog.templateId);
-  triggerFileDownload(eml, 'message/rfc822', filename);
-
-  // Ob die Desktop-Huelle den Download annimmt, laesst sich vorher nicht
-  // feststellen. Also zusaetzlich den Text sichern, damit der Klick auch dann
-  // etwas bringt, wenn das Webview die Datei verwirft.
-  if (isDesktopShell()) {
-    const copied = await copyToClipboard(`Betreff: ${subject}\n\n${body}`);
-    toast(copied
-      ? 'Betreff und Text kopiert · Datei-Download nur in der Browser-Version'
-      : 'Datei-Download nur in der Browser-Version', copied ? 'info' : 'error');
+  if (triggerFileDownload(eml, 'message/rfc822', filename)) {
+    toast('Outlook-Vorlage heruntergeladen');
     return;
   }
-  toast('Outlook-Vorlage heruntergeladen');
+  const copied = await copyToClipboard(`Betreff: ${subject}\n\n${body}`);
+  toast(copied
+    ? 'Download nicht möglich – Betreff und Text liegen in der Zwischenablage'
+    : 'Download nicht möglich', copied ? 'info' : 'error');
 }
 
 function triggerFileDownload(content, mime, filename) {
