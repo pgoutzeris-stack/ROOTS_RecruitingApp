@@ -364,6 +364,70 @@
     .cand-badge--done { background: #ecfdf5; color: #047857; }
     .cand-badge--draft { background: #fff7ed; color: #b45309; }
     .dash-empty { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+
+    /* ─── Dashboard: Aktiv/Archiv-Umschalter ─── */
+    .dash-scope { display: inline-flex; gap: 2px; padding: 3px; background: var(--status-bg); border: 1px solid var(--line); border-radius: 999px; flex-shrink: 0; }
+    .dash-scope-btn { display: inline-flex; align-items: center; gap: 7px; border: 0; background: transparent; color: var(--muted); font-family: inherit; font-size: .86rem; font-weight: 600; padding: .5rem 1.05rem; border-radius: 999px; cursor: pointer; transition: color .15s, background .15s, box-shadow .15s; white-space: nowrap; }
+    .dash-scope-btn:hover { color: var(--ink); }
+    .dash-scope-btn.is-active { background: var(--bg); color: var(--brand); box-shadow: 0 2px 8px rgba(15,23,42,.09); }
+    .dash-scope-count { font-size: .72rem; font-weight: 800; min-width: 1.35rem; padding: .1rem .38rem; border-radius: 999px; background: rgba(15,23,42,.06); color: var(--muted); font-variant-numeric: tabular-nums; text-align: center; }
+    .dash-scope-btn.is-active .dash-scope-count { background: var(--brand-light); color: var(--brand); }
+    .dash-group--archived { background: var(--surface); box-shadow: none; }
+    .dash-group--archived .dash-group-head { background: transparent; }
+    .dash-group--archived .dash-lane:hover { background: rgba(15,23,42,.035); }
+    .dash-chip--archived { background: #eef2ff; color: #4338ca; }
+    .dash-chip--pending { background: #fef2f2; color: #b91c1c; }
+    .dash-chip--countdown { background: var(--brand-light); color: var(--brand-dark); }
+
+    /* ─── Bewerberkommunikation: Mail-Fenster ─── */
+    .mail-overlay { position: fixed; inset: 0; z-index: 9600; background: rgba(15,23,42,.5); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 1.25rem; }
+    .mail-overlay.visible { display: flex; }
+    .mail-card { background: var(--bg); border-radius: 18px; box-shadow: var(--shadow-modal); width: 100%; max-width: 960px; height: min(90vh, 760px); display: flex; flex-direction: column; overflow: hidden; }
+    .mail-titlebar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .8rem 1.1rem; background: var(--surface); border-bottom: 1px solid var(--line); }
+    .mail-titlebar-left { display: flex; align-items: center; gap: .6rem; min-width: 0; }
+    .mail-titlebar-left i { color: var(--brand); font-size: 1rem; }
+    .mail-titlebar-title { font-size: .95rem; font-weight: 800; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mail-x { width: 2rem; height: 2rem; border: 0; border-radius: 50%; background: transparent; color: var(--muted); font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .15s, color .15s; flex-shrink: 0; }
+    .mail-x:hover { background: rgba(0,0,0,.06); color: var(--ink); }
+    .mail-split { display: grid; grid-template-columns: 236px 1fr; flex: 1; min-height: 0; }
+    .mail-templates { border-right: 1px solid var(--line); background: var(--surface); padding: .85rem .7rem; overflow-y: auto; display: flex; flex-direction: column; gap: .3rem; }
+    .mail-templates-h { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 0 .35rem .45rem; }
+    .mail-tpl { display: flex; align-items: center; gap: .6rem; width: 100%; text-align: left; border: 1px solid transparent; background: transparent; border-radius: 10px; padding: .55rem .6rem; font-family: inherit; font-size: .84rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .12s; }
+    .mail-tpl:hover { background: var(--bg); color: var(--ink); }
+    .mail-tpl i { width: 1rem; text-align: center; font-size: .82rem; flex-shrink: 0; }
+    .mail-tpl.is-active { background: var(--bg); border-color: var(--brand); color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.1); }
+    .mail-tpl-match { margin-left: auto; font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--brand); background: var(--brand-light); border-radius: 999px; padding: .1rem .4rem; flex-shrink: 0; }
+    .mail-compose { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+    .mail-field { display: flex; align-items: center; gap: .6rem; padding: .55rem 1.1rem; border-bottom: 1px solid var(--line); }
+    .mail-field-label { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); width: 4.2rem; flex-shrink: 0; }
+    .mail-field-value { font-size: .88rem; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mail-field input { flex: 1; min-width: 0; border: 0; background: transparent; font-family: inherit; font-size: .88rem; color: var(--ink); outline: none; padding: .2rem 0; }
+    .mail-field input::placeholder { color: #94a3b8; }
+    .mail-field input#mail-subject { font-weight: 700; }
+    .mail-copy-btn { width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: .74rem; transition: all .12s; flex-shrink: 0; }
+    .mail-copy-btn:hover { color: var(--brand); border-color: #cbd5e1; background: var(--status-bg); }
+    .mail-body { flex: 1; min-height: 0; width: 100%; border: 0; outline: none; resize: none; padding: 1.15rem 1.15rem 1.4rem; font-family: 'Segoe UI', 'Circular Std', -apple-system, sans-serif; font-size: .92rem; line-height: 1.62; color: var(--ink); background: var(--bg); }
+    .mail-foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .85rem 1.1rem; border-top: 1px solid var(--line); background: var(--surface); flex-wrap: wrap; }
+    .mail-foot-note { font-size: .78rem; color: var(--muted); display: inline-flex; align-items: center; gap: .4rem; min-width: 0; }
+    .mail-foot-note.is-warn { color: var(--warning-text); }
+    .mail-foot-actions { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+    .mail-foot-actions .btn-secondary, .mail-foot-actions .btn-primary { padding: .55rem 1.1rem; font-size: .85rem; box-shadow: none; }
+    .mail-foot-actions .btn-primary:hover:not(:disabled) { transform: none; }
+    @media (max-width: 768px) {
+      .mail-card { height: 100%; max-width: none; border-radius: 0; }
+      .mail-overlay { padding: 0; }
+      .mail-split { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+      .mail-templates { border-right: 0; border-bottom: 1px solid var(--line); flex-direction: row; overflow-x: auto; padding: .6rem; gap: .4rem; }
+      .mail-templates-h { display: none; }
+      .mail-tpl { white-space: nowrap; }
+      .mail-tpl-match { display: none; }
+      .mail-field-label { width: 3.4rem; }
+      .mail-foot { justify-content: stretch; }
+      .mail-foot-actions { width: 100%; }
+      .mail-foot-actions button { flex: 1 1 auto; justify-content: center; min-height: 44px; }
+      .dash-scope { width: 100%; }
+      .dash-scope-btn { flex: 1; justify-content: center; min-height: 44px; }
+    }
     .team-panel-overlay { position: fixed; inset: 0; z-index: 9500; background: rgba(15,23,42,.45); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 1.25rem; }
     .team-panel-overlay.visible { display: flex; }
     .team-panel-card { background: var(--bg); border-radius: 20px; width: 100%; max-width: 480px; max-height: min(88vh, 720px); display: flex; flex-direction: column; box-shadow: var(--shadow-modal); overflow: hidden; }
@@ -1155,10 +1219,22 @@
         <i class="fa-solid fa-magnifying-glass"></i>
         <input type="text" id="dash-search" class="dash-search" placeholder="Kandidat:in suchen...">
       </div>
+      <div class="dash-scope" id="dash-scope" role="group" aria-label="Aktive Gespräche oder Archiv">
+        <button type="button" class="dash-scope-btn is-active" data-scope="active" aria-pressed="true"><i class="fa-solid fa-inbox"></i> Aktiv <span class="dash-scope-count" id="dash-count-active">0</span></button>
+        <button type="button" class="dash-scope-btn" data-scope="archive" aria-pressed="false"><i class="fa-solid fa-box-archive"></i> Archiv <span class="dash-scope-count" id="dash-count-archive">0</span></button>
+      </div>
       <select id="dash-filter" class="dash-filter">
         <option value="all">Alle Runden</option>
         <option value="erst">Nur Erstgespräch</option>
         <option value="zweit">Nur Zweitgespräch</option>
+      </select>
+      <select id="dash-result" class="dash-filter">
+        <option value="all">Alle Ergebnisse</option>
+        <option value="zweit_invite">Zum Zweitgespräch</option>
+        <option value="hired">Einstellen</option>
+        <option value="discuss">Weitere Diskussion</option>
+        <option value="rejected">Absage</option>
+        <option value="open">Ohne Ergebnis</option>
       </select>
       <select id="dash-sort" class="dash-filter">
         <option value="date_desc">Neueste zuerst</option>
@@ -1308,6 +1384,49 @@
     <div class="team-panel-foot" id="team-panel-foot">
       <button type="button" class="btn-secondary" id="team-panel-cancel">Abbrechen</button>
       <button type="button" class="btn-primary" id="team-panel-save"><i class="fa-solid fa-check"></i> Speichern &amp; benachrichtigen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Bewerberkommunikation: Mail-Fenster ─── -->
+<div class="mail-overlay" id="mail-overlay">
+  <div class="mail-card" role="dialog" aria-modal="true" aria-labelledby="mail-title">
+    <div class="mail-titlebar">
+      <div class="mail-titlebar-left">
+        <i class="fa-regular fa-envelope"></i>
+        <span class="mail-titlebar-title" id="mail-title">Bewerberkommunikation</span>
+      </div>
+      <button type="button" class="mail-x" id="mail-close" title="Schließen" aria-label="Schließen"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="mail-split">
+      <aside class="mail-templates" id="mail-template-list">
+        <div class="mail-templates-h">Vorlagen</div>
+      </aside>
+      <div class="mail-compose">
+        <div class="mail-field">
+          <span class="mail-field-label">Von</span>
+          <span class="mail-field-value" id="mail-from"></span>
+        </div>
+        <div class="mail-field">
+          <span class="mail-field-label">An</span>
+          <input type="email" id="mail-to" placeholder="Keine E-Mail-Adresse hinterlegt" aria-label="Empfänger">
+          <button type="button" class="mail-copy-btn" data-copy="to" title="Adresse kopieren" aria-label="Adresse kopieren"><i class="fa-regular fa-copy"></i></button>
+        </div>
+        <div class="mail-field">
+          <span class="mail-field-label">Betreff</span>
+          <input type="text" id="mail-subject" aria-label="Betreff">
+          <button type="button" class="mail-copy-btn" data-copy="subject" title="Betreff kopieren" aria-label="Betreff kopieren"><i class="fa-regular fa-copy"></i></button>
+        </div>
+        <textarea class="mail-body" id="mail-body" spellcheck="true" aria-label="Nachricht"></textarea>
+      </div>
+    </div>
+    <div class="mail-foot">
+      <span class="mail-foot-note" id="mail-foot-note"></span>
+      <div class="mail-foot-actions">
+        <button type="button" class="btn-secondary" id="mail-copy"><i class="fa-regular fa-copy"></i> Text kopieren</button>
+        <button type="button" class="btn-secondary" id="mail-mailto"><i class="fa-solid fa-arrow-up-right-from-square"></i> In Outlook öffnen</button>
+        <button type="button" class="btn-primary" id="mail-download"><i class="fa-solid fa-download"></i> Outlook-Vorlage (.eml)</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1596,6 +1715,13 @@ async function onAuthReady() {
   await Promise.all([loadAllCandidates(), loadAllApplicants()]);
   _setDashLoading(false);
 
+  // Offene Abschluesse pruefen: beim Start und danach stuendlich, solange das
+  // Tool offen bleibt. Die Meldung entsteht einmal pro Runde.
+  runFinalizeReminders();
+  if (!window._recruitReminderPoll) {
+    window._recruitReminderPoll = setInterval(runFinalizeReminders, 60 * 60 * 1000);
+  }
+
   // 4. Retry: wenn beide leer UND Session vorhanden → einmalig wiederholen
   //    (fängt Race-Conditions beim ersten Auth-Start ab)
   if (state.candidates.length === 0 && state.applicants.length === 0) {
@@ -1630,6 +1756,7 @@ document.addEventListener('keydown', (e) => {
     ['rm-interview-delete','rm-applicant-delete','rm-applicant-withdraw'].forEach(id => {
       document.getElementById(id)?.classList.remove('open');
     });
+    if (document.getElementById('mail-overlay')?.classList.contains('visible')) closeMailDialog();
   }
 });
 let recruitingRealtimeChannels = [];
@@ -2164,6 +2291,8 @@ let state = {
   bewSortBy: 'date_desc',
   filterText: '',
   filterRunde: 'all',
+  filterResult: 'all',
+  dashScope: 'active',
   sortBy: 'date_desc',
   teamMembers: [],
   teamPanel: null,
@@ -2278,6 +2407,210 @@ function buildDashboardEntries(candidates) {
     }
   }
   return entries;
+}
+
+/* ──────────────────────────────────────────────
+   Archiv und Nachfassen
+
+   Beides laeuft ohne Server-Job: der Archivzustand wird aus dem Abschluss der
+   Runde berechnet, die Erinnerung wird vom Browser des Owners geschrieben,
+   sobald er das Tool oeffnet. Deshalb braucht es keine Migration - alle neuen
+   Felder liegen im JSONB der Runde und wandern ueber den normalen Speicherweg.
+   ────────────────────────────────────────────── */
+const ARCHIVE_DELAY_MS = 48 * 60 * 60 * 1000;
+const FINALIZE_REMINDER_DELAY_MS = 24 * 60 * 60 * 1000;
+
+// Entscheidungen, mit denen der Prozess fuer den Bewerber endet. Nur sie
+// starten die Archivfrist - eine Einladung ins Zweitgespraech tut das nicht.
+const TERMINAL_RECOS = new Set(['Nicht passend', 'Einstellen', 'Nicht einstellen']);
+
+function parseTs(value) {
+  const t = Date.parse(value || '');
+  return Number.isFinite(t) ? t : null;
+}
+
+function isTerminalReco(reco) {
+  return TERMINAL_RECOS.has(String(reco || '').trim());
+}
+
+function sliceForRunde(candidate, runde) {
+  return (runde === 'zweit' ? candidate?.zweit : candidate?.erst) || {};
+}
+
+function roundCompletedTs(candidate, slice) {
+  if (!slice?.completed) return null;
+  return parseTs(slice.completedAt) || parseTs(candidate?.updated_at);
+}
+
+// Ab wann die 48-Stunden-Frist fuer diese Runde laeuft. Beim Erstgespraech mit
+// Einladung ins Zweitgespraech zaehlt der Abschluss des Zweitgespraechs, damit
+// beide Runden eines Bewerbers gemeinsam ins Archiv gehen.
+function archiveClockStart(candidate, runde) {
+  const erst = candidate.erst || {};
+  const zweit = candidate.zweit || {};
+  const terminalTs = (slice) => (isTerminalReco(slice.recommendation) ? roundCompletedTs(candidate, slice) : null);
+  if (runde === 'zweit') return terminalTs(zweit);
+  const erstTs = terminalTs(erst);
+  if (erstTs) return erstTs;
+  if (isZweitUnlocked(erst) && erst.completed) return terminalTs(zweit);
+  return null;
+}
+
+/**
+ * Archivzustand einer Runde.
+ * `archivedAt` (manuell archiviert) und `archiveRestoredAt` (manuell
+ * zurueckgeholt) im Slice schlagen die automatische Frist - je nachdem, was
+ * spaeter passiert ist.
+ */
+function laneArchiveInfo(candidate, runde) {
+  const slice = sliceForRunde(candidate, runde);
+  const manualAt = parseTs(slice.archivedAt);
+  const restoredAt = parseTs(slice.archiveRestoredAt);
+  if (manualAt && (!restoredAt || manualAt > restoredAt)) {
+    return { archived: true, mode: 'manual', since: manualAt, dueAt: manualAt };
+  }
+  const start = archiveClockStart(candidate, runde);
+  if (!start) return { archived: false, mode: null, since: null, dueAt: null };
+  const dueAt = start + ARCHIVE_DELAY_MS;
+  if (restoredAt && restoredAt >= start) {
+    return { archived: false, mode: 'restored', since: null, dueAt: null };
+  }
+  const archived = Date.now() >= dueAt;
+  return { archived, mode: 'auto', since: archived ? dueAt : null, dueAt };
+}
+
+// Wann das Gespraech (vorlaeufig) beendet wurde: das Gespraechsdatum, bzw. der
+// spaetere Zeitpunkt, an dem der Owner das Interview ohne Abschluss verlassen
+// hat. Autosaves zaehlen nicht mit, sonst wuerde die Frist nie ablaufen.
+function roundPauseBase(candidate, runde) {
+  const slice = sliceForRunde(candidate, runde);
+  const stamps = [parseTs(slice.pausedAt)];
+  const datum = String(slice.meta?.datum || candidate.datum || '').trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(datum)) stamps.push(parseTs(`${datum}T18:00:00`));
+  const valid = stamps.filter(Boolean);
+  return valid.length ? Math.max(...valid) : null;
+}
+
+/**
+ * Steht der finale Abschluss einer Runde aus? Gilt unabhaengig davon, ob schon
+ * eine Empfehlung eingetragen ist - erst das Abschliessen beendet die Runde.
+ */
+function laneFinalizePending(candidate, runde) {
+  const slice = sliceForRunde(candidate, runde);
+  if (runde === 'zweit' && !slice.meta?.zweitCreated) return { pending: false, dueAt: null, base: null };
+  if (slice.completed) return { pending: false, dueAt: null, base: null };
+  const base = roundPauseBase(candidate, runde);
+  if (!base) return { pending: false, dueAt: null, base: null };
+  const dueAt = base + FINALIZE_REMINDER_DELAY_MS;
+  return { pending: Date.now() >= dueAt, dueAt, base };
+}
+
+async function setLaneArchived(sessionId, runde, archived) {
+  const c = state.candidates.find(x => x.session_id === sessionId);
+  if (!c) return;
+  const slice = sliceOf(c, runde);
+  const now = new Date().toISOString();
+  if (archived) {
+    slice.archivedAt = now;
+    slice.archiveRestoredAt = null;
+  } else {
+    slice.archivedAt = null;
+    slice.archiveRestoredAt = now;
+  }
+  syncOpenInterviewSlice(sessionId, runde, {
+    archivedAt: slice.archivedAt,
+    archiveRestoredAt: slice.archiveRestoredAt,
+  });
+  try {
+    await persistCandidateSlices(c);
+    toast(archived ? 'Ins Archiv verschoben' : 'Aus dem Archiv zurückgeholt');
+  } catch (e) {
+    console.error('setLaneArchived', e);
+    toast('Archiv konnte nicht gespeichert werden', 'error');
+  }
+  if (state.view === 'dashboard') renderDashboard();
+}
+
+// Haelt eine gerade geoeffnete Interview-Runde mit dem Dashboard-Datensatz in
+// Deckung, damit der naechste Autosave die Archiv-/Erinnerungsfelder nicht
+// wieder ueberschreibt.
+function syncOpenInterviewSlice(sessionId, runde, patch) {
+  if (!sessionId || state.erst.meta?.sessionId !== sessionId) return;
+  Object.assign(runde === 'zweit' ? state.zweit : state.erst, patch);
+}
+
+const finalizeRemindersInFlight = new Set();
+
+async function createFinalizeReminder(candidate, runde, slice) {
+  const uid = window.RootsUser?._uid;
+  if (!uid) return false;
+  const rundeLabel = runde === 'zweit' ? 'Zweitgespräch' : 'Erstgespräch';
+  const kandidat = candidate.kandidat || slice.meta?.kandidat || 'Bewerber:in';
+  const title = `Abschluss offen: ${kandidat}`;
+  const message = `Das ${rundeLabel} liegt mehr als 24 Stunden zurück. Finaler Abschluss und finale Bewertung stehen noch aus.`;
+  try {
+    const { error } = await recruitingDb().from('notifications').insert([{
+      user_id: uid,
+      type: 'interview_finalize_pending',
+      title,
+      message,
+      session_id: candidate.session_id || null,
+      runde,
+      meta: { source: 'recruiting', reason: 'finalize_pending', kandidat },
+    }]);
+    if (error) throw error;
+  } catch (e) {
+    console.error('createFinalizeReminder', e);
+    return false;
+  }
+  slice.reminderSentAt = new Date().toISOString();
+  syncOpenInterviewSlice(candidate.session_id, runde, { reminderSentAt: slice.reminderSentAt });
+  try {
+    await persistCandidateSlices(candidate);
+  } catch (e) {
+    // Die Meldung steht schon - ohne Merker kann sie sich beim naechsten Start
+    // wiederholen. Das ist weniger schlimm als eine verlorene Erinnerung.
+    console.error('createFinalizeReminder – Merker nicht gespeichert', e);
+  }
+  try {
+    const { error } = await recruitingDb().from('bulletin_posts').insert([{
+      user_id: uid,
+      author_id: uid,
+      title,
+      body: message,
+      session_id: candidate.session_id || null,
+      meta: { source: 'recruiting', type: 'interview_finalize_pending', runde, kandidat },
+    }]);
+    if (error) throw error;
+  } catch (e) {
+    console.error('createFinalizeReminder – Schwarzes Brett', e);
+  }
+  return true;
+}
+
+/**
+ * Erinnert den Owner an offene Abschluesse. Laeuft nur fuer die eigenen
+ * Gespraeche, damit kein zweiter Browser dieselbe Meldung erzeugt.
+ */
+async function runFinalizeReminders() {
+  const uid = window.RootsUser?._uid;
+  if (!uid) return;
+  let created = 0;
+  for (const c of state.candidates) {
+    for (const runde of ['erst', 'zweit']) {
+      const slice = sliceForRunde(c, runde);
+      if (String(slice.meta?.ownerId || '') !== String(uid)) continue;
+      if (slice.reminderSentAt) continue;
+      const key = `${c.session_id}:${runde}`;
+      if (finalizeRemindersInFlight.has(key)) continue;
+      if (!laneFinalizePending(c, runde).pending) continue;
+      finalizeRemindersInFlight.add(key);
+      const ok = await createFinalizeReminder(c, runde, slice);
+      if (ok) created++;
+      else finalizeRemindersInFlight.delete(key);
+    }
+  }
+  if (created && !isIntranetEmbedded()) loadNotifications();
 }
 
 async function loadTeamMembers() {
@@ -3987,6 +4320,11 @@ async function saveInterviewComplete() {
 
 async function leaveInterviewToDashboard(targetView = 'dashboard') {
   let saveFailed = false;
+  // "Spaeter fortsetzen" ist das vorlaeufige Ende des Gespraechs. Ab hier laeuft
+  // die 24-Stunden-Frist, nach der der Owner an den Abschluss erinnert wird.
+  const leftSlice = currentSlice();
+  leftSlice.pausedAt = new Date().toISOString();
+  leftSlice.reminderSentAt = null;
   try {
     await flushInterviewDraftToDb();
   } catch (e) {
@@ -4116,6 +4454,7 @@ function reopenInterviewRound() {
   const slice = currentSlice();
   slice.completed = false;
   slice.completedAt = null;
+  slice.reminderSentAt = null;
   scheduleSave();
   toast('Bearbeitung wieder geöffnet');
   renderMain();
@@ -4974,6 +5313,375 @@ function switchView(v, options = {}) {
 }
 
 /* ──────────────────────────────────────────────
+   Bewerberkommunikation
+
+   Vorlagen aus dem Prozessdokument "Bewerberkommunikation". Wortlaut und
+   Absaetze bleiben unveraendert; eingesetzt werden nur Vorname, Stelle und
+   Absender. Was allein der Recruiter kennt - Termine, Uhrzeiten - bleibt als
+   Platzhalter stehen und wird im Fenster ausgefuellt, bevor die Mail kopiert
+   oder als Outlook-Vorlage heruntergeladen wird.
+   ────────────────────────────────────────────── */
+const mailSubject = (ctx) => `Bewerbung ${ctx.stelle} - ${ctx.fullName}`;
+
+const MAIL_TEMPLATES = [
+  {
+    id: 'erstkontakt',
+    label: 'Erstkontakt',
+    icon: 'fa-paper-plane',
+    subject: mailSubject,
+    body: (ctx) => `Hallo ${ctx.firstName},
+
+vielen Dank für Deine Bewerbung bei ROOTS, die uns gut gefallen hat. Gerne würden wir Dich zu einem ersten 45-minütigen Kennenlernen per Teams einladen.
+
+Wichtige Frage vorab: Wo bist Du aktuell stationiert?
+Der Job soll zu mindestens 60 % (3 Tage pro Woche) in Präsenz bei uns im Büro am Factory Campus in Düsseldorf-Lierenfeld stattfinden. Kommt das für Dich in Frage?
+
+Wenn ja, melden wir uns mit Terminvorschlägen für das Erstgespräch.
+
+Beste Grüße
+${ctx.recruiter}`,
+  },
+  {
+    id: 'termin_erst',
+    label: 'Termin Erstgespräch',
+    icon: 'fa-calendar-day',
+    subject: mailSubject,
+    body: (ctx) => `Hallo ${ctx.firstName},
+
+ich bin ${ctx.recruiter}, Hiring Manager, und werde mit Dir das Erstgespräch führen.
+
+Wie würden Dir folgende Termine passen?
+- [Wochentag, TT.MM.], [HH:MM] Uhr
+- [Wochentag, TT.MM.], [HH:MM] Uhr
+
+Sollte keiner der Termine passen, nenne mir gerne zwei Alternativen.
+
+Wir freuen uns darauf, Dich kennenzulernen!
+
+Beste Grüße
+${ctx.recruiter}`,
+  },
+  {
+    id: 'termin_zweit',
+    label: 'Termin Zweitgespräch',
+    icon: 'fa-calendar-week',
+    subject: mailSubject,
+    body: (ctx) => `Hallo ${ctx.firstName},
+
+wir haben uns sehr über unser Erstgespräch gefreut und möchten Dich gerne zu einem Zweitgespräch einladen. In diesem Termin wollen wir tiefer in Deine fachliche Erfahrung einsteigen und Dir die Möglichkeit geben, weitere Personen aus dem ROOTS-Team kennenzulernen.
+
+Wie würden Dir folgende Termine passen?
+- [Wochentag, TT.MM.], [HH:MM] Uhr
+- [Wochentag, TT.MM.], [HH:MM] Uhr
+
+Sollte keiner der Termine passen, nenne mir gerne zwei Alternativen.
+
+Wir freuen uns auf die Fortsetzung!
+
+Beste Grüße
+${ctx.recruiter}`,
+  },
+  {
+    id: 'termin_case',
+    label: 'Termin Case Interview',
+    icon: 'fa-diagram-project',
+    subject: mailSubject,
+    body: (ctx) => `Hallo ${ctx.firstName},
+
+wir möchten Dich sehr gerne zum Case Interview, dem finalen Schritt unseres Auswahlprozesses einladen. Hier bekommst Du die Gelegenheit, Deine strukturelle und analytische Herangehensweise in persona mit uns zu besprechen.
+
+Wie würden Dir folgende Termine passen?
+- [Wochentag, TT.MM.], [HH:MM] Uhr
+- [Wochentag, TT.MM.], [HH:MM] Uhr
+
+Sobald der Termin steht, sende ich Dir den Case mit ausreichend Vorlaufzeit zur Vorbereitung zu.
+
+Beste Grüße
+${ctx.recruiter}`,
+  },
+  {
+    id: 'case_versand',
+    label: 'Versand Case Study',
+    icon: 'fa-file-lines',
+    subject: mailSubject,
+    body: (ctx) => `Hallo ${ctx.firstName},
+
+wir freuen uns sehr auf das bevorstehende Case Interview mit Dir!
+
+Den Case findest Du anbei. Du hast bis zur Vorstellung am [TT.MM.] um [HH:MM] Uhr Zeit, diesen zu bearbeiten, und brauchst ihn uns nicht vorab zuzusenden.
+
+Bitte schätze den Umfang so ein, dass Du Deine Ergebnisse in einer 20- bis 30-minütigen Präsentation strukturiert vorstellen kannst. Im Anschluss werden wir Dir noch einige Rückfragen stellen.
+
+Wir sind ausdrücklich offen für unterschiedliche Sichtweisen. Wichtig ist uns vor allem, dass Du Deine Argumente nachvollziehbar begründest und zeigst, wie Du aus Deiner Analyse echten strategischen Mehrwert ableitest.
+
+Wir wünschen Dir viel Erfolg bei der Vorbereitung und freuen uns auf Deine Präsentation.
+
+Beste Grüße
+${ctx.recruiter}`,
+    note: 'Case-PDF vor dem Senden anhängen · spätestens 7 Tage vor dem Termin verschicken',
+  },
+  {
+    id: 'absage',
+    label: 'Absage',
+    icon: 'fa-circle-xmark',
+    subject: mailSubject,
+    body: (ctx) => `Hallo ${ctx.firstName},
+
+nochmals vielen Dank für deine Bewerbung und dein Interesse an ROOTS.
+
+Nach sorgfältiger Abwägung haben wir uns entschieden, den Auswahlprozess mit anderen Kandidatinnen und Kandidaten fortzusetzen, deren Profil derzeit noch besser zu unseren Anforderungen passt. Diese Entscheidung ist uns nicht leichtgefallen.
+
+Falls Du damit einverstanden bist, dass wir Dich in unserem Talent Pool für zukünftige Positionen berücksichtigen, lass es uns gerne wissen. Ansonsten werden deine Daten entsprechend der gesetzlichen Aufbewahrungszeit gelöscht.
+
+Für Deinen weiteren Weg wünschen wir Dir alles Gute und viel Erfolg.
+
+Beste Grüße
+${ctx.recruiter}`,
+    note: 'Ohne inhaltliche Begründung versenden (AGG) · innerhalb von 5 Werktagen nach der Entscheidung',
+  },
+];
+
+// Welche Vorlage zur getroffenen Auswahl gehoert. "Vielleicht - weitere
+// Diskussion" hat keine, dort steht noch keine Entscheidung fest.
+function matchedMailTemplateId(reco) {
+  const r = String(reco || '').trim();
+  if (r === ZWEIT_INVITE_RECO) return 'termin_zweit';
+  if (r === 'Einstellen') return 'termin_case';
+  if (r === 'Nicht passend' || r === 'Nicht einstellen') return 'absage';
+  return null;
+}
+
+function applicantForCandidate(candidate) {
+  if (!candidate?.session_id) return null;
+  return state.applicants.find(a => a.session_id === candidate.session_id) || null;
+}
+
+function buildMailContext(candidate, runde) {
+  const slice = sliceForRunde(candidate, runde);
+  const applicant = applicantForCandidate(candidate);
+  const fullName = (applicant ? getApplicantDisplayName(applicant) : '')
+    || candidate.kandidat || slice.meta?.kandidat || '';
+  const firstName = (applicant?.first_name || '').trim() || fullName.split(/\s+/)[0] || '';
+  const owner = resolveOwnerDisplay(slice, candidate.interviewer);
+  const me = window.RootsUser?._p || {};
+  const ownerName = owner.name && owner.name !== '—' ? owner.name : '';
+  return {
+    sessionId: candidate.session_id,
+    runde,
+    reco: slice.recommendation || '',
+    fullName: fullName || '[Name]',
+    firstName: firstName || '[Vorname]',
+    stelle: applicant?.role_title || applicant?.position_applied || '[Stelle]',
+    recruiter: ownerName || me.full_name || '[Name Recruiter]',
+    to: (applicant?.email || '').trim(),
+    fromName: me.full_name || '',
+    fromEmail: me.email || '',
+  };
+}
+
+let mailDialog = null;
+
+function openMailDialog(sessionId, runde) {
+  const candidate = state.candidates.find(c => c.session_id === sessionId);
+  if (!candidate) return;
+  const ctx = buildMailContext(candidate, runde);
+  const matched = matchedMailTemplateId(ctx.reco);
+  mailDialog = { ctx, matched, templateId: null, drafts: {} };
+  document.getElementById('mail-from').textContent = ctx.fromEmail
+    ? `${ctx.fromName || ctx.fromEmail}${ctx.fromName ? ` · ${ctx.fromEmail}` : ''}`
+    : (ctx.fromName || '—');
+  document.getElementById('mail-to').value = ctx.to;
+  document.getElementById('mail-title').textContent = `Bewerberkommunikation · ${ctx.fullName}`;
+  // Erst sichtbar machen, dann fuellen - sonst hat die Vorlagenliste noch kein
+  // Layout und kann die gewaehlte Vorlage nicht ins Sichtfeld scrollen.
+  document.getElementById('mail-overlay').classList.add('visible');
+  applyMailTemplate(matched || (runde === 'zweit' ? 'termin_case' : 'termin_erst'));
+  document.getElementById('mail-body').scrollTop = 0;
+}
+
+function closeMailDialog() {
+  document.getElementById('mail-overlay').classList.remove('visible');
+  mailDialog = null;
+}
+
+function renderMailTemplateList() {
+  const host = document.getElementById('mail-template-list');
+  if (!host || !mailDialog) return;
+  host.innerHTML = '<div class="mail-templates-h">Vorlagen</div>' + MAIL_TEMPLATES.map(t => `
+    <button type="button" class="mail-tpl ${t.id === mailDialog.templateId ? 'is-active' : ''}" data-tpl="${t.id}">
+      <i class="fa-solid ${t.icon}"></i>
+      <span>${escapeHtml(t.label)}</span>
+      ${t.id === mailDialog.matched ? '<span class="mail-tpl-match">Passend</span>' : ''}
+    </button>`).join('');
+  host.querySelectorAll('[data-tpl]').forEach(btn => {
+    btn.addEventListener('click', () => applyMailTemplate(btn.dataset.tpl));
+  });
+  // Auf schmalen Bildschirmen ist die Liste eine Leiste - die gewaehlte Vorlage
+  // sonst ausserhalb des Sichtfelds.
+  host.querySelector('.mail-tpl.is-active')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+}
+
+function stashMailDraft() {
+  if (!mailDialog?.templateId) return;
+  mailDialog.drafts[mailDialog.templateId] = {
+    subject: document.getElementById('mail-subject').value,
+    body: document.getElementById('mail-body').value,
+  };
+}
+
+function applyMailTemplate(templateId) {
+  if (!mailDialog) return;
+  const tpl = MAIL_TEMPLATES.find(t => t.id === templateId) || MAIL_TEMPLATES[0];
+  stashMailDraft();
+  mailDialog.templateId = tpl.id;
+  const draft = mailDialog.drafts[tpl.id];
+  document.getElementById('mail-subject').value = draft ? draft.subject : tpl.subject(mailDialog.ctx);
+  document.getElementById('mail-body').value = draft ? draft.body : tpl.body(mailDialog.ctx);
+  const note = document.getElementById('mail-foot-note');
+  const missingMail = !document.getElementById('mail-to').value.trim();
+  const parts = [];
+  if (missingMail) parts.push('Keine E-Mail-Adresse in den Stammdaten');
+  if (tpl.note) parts.push(tpl.note);
+  note.className = `mail-foot-note${missingMail ? ' is-warn' : ''}`;
+  note.innerHTML = parts.length
+    ? `<i class="fa-solid ${missingMail ? 'fa-triangle-exclamation' : 'fa-circle-info'}"></i><span>${escapeHtml(parts.join(' · '))}</span>`
+    : '';
+  renderMailTemplateList();
+}
+
+async function copyToClipboard(text) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (e) {
+    console.warn('clipboard API', e);
+  }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch (e) {
+    console.error('clipboard fallback', e);
+    return false;
+  }
+}
+
+function base64Utf8(str) {
+  const bytes = new TextEncoder().encode(String(str));
+  let bin = '';
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin);
+}
+
+// Kopfzeilen duerfen nur ASCII enthalten, deshalb Umlaute nach RFC 2047 kodieren.
+function mailHeaderEncode(value) {
+  const v = String(value || '');
+  if (!v) return '';
+  return /^[\x20-\x7E]*$/.test(v) ? v : `=?UTF-8?B?${base64Utf8(v)}?=`;
+}
+
+function mailAddress(name, address) {
+  const addr = String(address || '').trim();
+  if (!addr) return '';
+  const raw = String(name || '').trim();
+  if (!raw) return addr;
+  if (/^[\x20-\x7E]*$/.test(raw)) return `"${raw.replace(/["\\]/g, '')}" <${addr}>`;
+  return `${mailHeaderEncode(raw)} <${addr}>`;
+}
+
+/**
+ * Baut eine .eml-Datei. Outlook oeffnet sie als noch nicht gesendete Nachricht
+ * (Kopfzeile X-Unsent), sodass Empfaenger, Betreff und Text direkt drinstehen
+ * und nur noch gesendet werden muss.
+ */
+function buildEmlFile({ fromName, fromEmail, to, subject, body }) {
+  const CRLF = '\r\n';
+  const encodedBody = base64Utf8(String(body || '').replace(/\r?\n/g, CRLF))
+    .replace(/.{1,76}/g, (line) => line + CRLF);
+  const headers = ['MIME-Version: 1.0', `Date: ${new Date().toUTCString()}`];
+  const from = mailAddress(fromName, fromEmail);
+  if (from) headers.push(`From: ${from}`);
+  if (String(to || '').trim()) headers.push(`To: ${String(to).trim()}`);
+  headers.push(`Subject: ${mailHeaderEncode(subject)}`);
+  headers.push('X-Unsent: 1');
+  headers.push('Content-Type: text/plain; charset=utf-8');
+  headers.push('Content-Transfer-Encoding: base64');
+  return headers.join(CRLF) + CRLF + CRLF + encodedBody;
+}
+
+function mailFileName(ctx, templateId) {
+  const tpl = MAIL_TEMPLATES.find(t => t.id === templateId);
+  const clean = (s) => String(s || '').replace(/[^\wÀ-ž -]/g, '').trim().replace(/\s+/g, '-');
+  return `ROOTS-${clean(tpl?.label || 'Mail')}-${clean(ctx.fullName) || 'Bewerber'}.eml`;
+}
+
+function currentMailFields() {
+  return {
+    to: document.getElementById('mail-to').value.trim(),
+    subject: document.getElementById('mail-subject').value,
+    body: document.getElementById('mail-body').value,
+  };
+}
+
+function downloadMailTemplate() {
+  if (!mailDialog) return;
+  const { to, subject, body } = currentMailFields();
+  const eml = buildEmlFile({ fromName: mailDialog.ctx.fromName, fromEmail: mailDialog.ctx.fromEmail, to, subject, body });
+  const blob = new Blob([eml], { type: 'message/rfc822' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = mailFileName(mailDialog.ctx, mailDialog.templateId);
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  toast('Outlook-Vorlage heruntergeladen');
+}
+
+function openMailInClient() {
+  const { to, subject, body } = currentMailFields();
+  const a = document.createElement('a');
+  a.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function bindMailDialogHandlers() {
+  const overlay = document.getElementById('mail-overlay');
+  if (!overlay) return;
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeMailDialog(); });
+  document.getElementById('mail-close').addEventListener('click', closeMailDialog);
+  document.getElementById('mail-copy').addEventListener('click', async () => {
+    const { subject, body } = currentMailFields();
+    const ok = await copyToClipboard(`Betreff: ${subject}\n\n${body}`);
+    toast(ok ? 'Betreff und Text kopiert' : 'Kopieren nicht möglich', ok ? 'info' : 'error');
+  });
+  document.getElementById('mail-mailto').addEventListener('click', openMailInClient);
+  document.getElementById('mail-download').addEventListener('click', downloadMailTemplate);
+  overlay.querySelectorAll('[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const field = btn.dataset.copy === 'to' ? 'mail-to' : 'mail-subject';
+      const value = document.getElementById(field).value.trim();
+      if (!value) { toast('Nichts zu kopieren', 'error'); return; }
+      const ok = await copyToClipboard(value);
+      toast(ok ? (btn.dataset.copy === 'to' ? 'Adresse kopiert' : 'Betreff kopiert') : 'Kopieren nicht möglich', ok ? 'info' : 'error');
+    });
+  });
+}
+
+/* ──────────────────────────────────────────────
    Render: Dashboard
    ────────────────────────────────────────────── */
 function recoCategory(reco) {
@@ -4996,6 +5704,23 @@ function groupDashboardEntries(items) {
   return [...groups.values()];
 }
 
+// Grobe, lesbare Zeitangabe fuer die Chips: Stunden bis 48 h, danach Tage.
+function formatSpanShort(ms) {
+  const hours = Math.round(Math.abs(ms) / 3600000);
+  if (hours < 1) return 'unter 1 Std.';
+  if (hours < 48) return `${hours} Std.`;
+  return `${Math.round(hours / 24)} Tagen`;
+}
+
+function recoResultKey(reco) {
+  const r = String(reco || '').trim();
+  if (r === ZWEIT_INVITE_RECO) return 'zweit_invite';
+  if (r === 'Einstellen') return 'hired';
+  if (r === 'Nicht passend' || r === 'Nicht einstellen') return 'rejected';
+  if (!r) return 'open';
+  return 'discuss';
+}
+
 function renderDashboardLane(entry) {
   const c = entry.candidate;
   const slice = entry.runde === 'zweit' ? (c.zweit || {}) : (c.erst || {});
@@ -5006,30 +5731,70 @@ function renderDashboardLane(entry) {
   const score = scores.overall != null ? scores.overall.toFixed(1) : '–';
   const dateStr = slice.meta?.datum || c.datum || (c.updated_at ? c.updated_at.slice(0, 10) : '');
   const completed = isRoundCompletedInData(c, entry.runde);
-  const completedAt = slice.completedAt;
   const rundeLabel = entry.runde === 'zweit' ? 'Zweitgespräch' : 'Erstgespräch';
-  return `<div class="dash-lane ${entry.runde === 'zweit' ? 'dash-lane--zweit' : ''}" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}">
+  const archive = entry.archive || laneArchiveInfo(c, entry.runde);
+  const pending = entry.pending || laneFinalizePending(c, entry.runde);
+  const now = Date.now();
+  const sid = escapeHtml(c.session_id);
+
+  let statusChips = '';
+  if (archive.archived) {
+    statusChips += `<span class="dash-chip dash-chip--archived"><i class="fa-solid fa-box-archive"></i>Archiviert${archive.since ? ` · ${new Date(archive.since).toLocaleDateString('de-DE')}` : ''}</span>`;
+  } else if (archive.dueAt && archive.dueAt > now) {
+    statusChips += `<span class="dash-chip dash-chip--countdown"><i class="fa-regular fa-clock"></i>Archiv in ${formatSpanShort(archive.dueAt - now)}</span>`;
+  }
+  if (pending.pending) {
+    statusChips += `<span class="dash-chip dash-chip--pending"><i class="fa-solid fa-hourglass-half"></i>Abschluss offen seit ${formatSpanShort(now - pending.base)}</span>`;
+  }
+
+  const archiveBtn = archive.archived
+    ? `<button type="button" class="dash-icon-btn" data-act="unarchive" data-id="${sid}" data-runde="${entry.runde}" title="Aus dem Archiv zurückholen"><i class="fa-solid fa-box-open"></i></button>`
+    : (completed ? `<button type="button" class="dash-icon-btn" data-act="archive" data-id="${sid}" data-runde="${entry.runde}" title="Ins Archiv verschieben"><i class="fa-solid fa-box-archive"></i></button>` : '');
+  const mailBtn = reco
+    ? `<button type="button" class="dash-icon-btn" data-act="mail" data-id="${sid}" data-runde="${entry.runde}" title="Bewerber-E-Mail vorbereiten"><i class="fa-regular fa-envelope"></i></button>`
+    : '';
+
+  return `<div class="dash-lane ${entry.runde === 'zweit' ? 'dash-lane--zweit' : ''}" data-id="${sid}" data-runde="${entry.runde}">
     <div>
       <div class="dash-lane-runde dash-lane-runde--${entry.runde}"><i class="fa-solid ${entry.runde === 'zweit' ? 'fa-forward' : 'fa-user-tie'}"></i> ${rundeLabel}</div>
       <div class="dash-lane-chips">
         <span class="dash-chip dash-chip--${completed ? 'status-done' : 'status-draft'}"><i class="fa-solid ${completed ? 'fa-circle-check' : 'fa-pen'}"></i>${completed ? 'Abgeschlossen' : 'Entwurf'}</span>
         <span class="dash-chip dash-chip--date"><i class="fa-regular fa-calendar"></i>${escapeHtml(dateStr || '—')}</span>
+        ${statusChips}
       </div>
     </div>
     ${renderLaneOwnerBtn(entry)}
     <div class="dash-score" title="Score">${score}<small>/5</small></div>
     <div class="dash-reco cand-reco cand-reco--${recoCat}" title="${escapeHtml(recoDisplay || 'Keine Empfehlung')}">${recoDisplay ? escapeHtml(recoDisplay) : '—'}</div>
     <div class="dash-lane-actions">
-      <button type="button" class="dash-icon-btn" data-act="open" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="${completed ? 'Ansehen' : 'Bearbeiten'}"><i class="fa-solid fa-pen"></i></button>
-      <button type="button" class="dash-icon-btn" data-act="print" data-id="${escapeHtml(c.session_id)}" data-runde="${entry.runde}" title="PDF herunterladen"><i class="fa-solid fa-file-pdf"></i></button>
-      ${entry.runde === 'erst' ? `<button type="button" class="dash-icon-btn dash-icon-btn--danger" data-act="delete" data-id="${escapeHtml(c.session_id)}" title="Löschen"><i class="fa-solid fa-trash"></i></button>` : ''}
+      ${mailBtn}
+      <button type="button" class="dash-icon-btn" data-act="open" data-id="${sid}" data-runde="${entry.runde}" title="${completed ? 'Ansehen' : 'Bearbeiten'}"><i class="fa-solid fa-pen"></i></button>
+      <button type="button" class="dash-icon-btn" data-act="print" data-id="${sid}" data-runde="${entry.runde}" title="PDF herunterladen"><i class="fa-solid fa-file-pdf"></i></button>
+      ${archiveBtn}
+      ${entry.runde === 'erst' ? `<button type="button" class="dash-icon-btn dash-icon-btn--danger" data-act="delete" data-id="${sid}" title="Löschen"><i class="fa-solid fa-trash"></i></button>` : ''}
     </div>
   </div>`;
 }
 
+function updateDashScopeCounts(activeCount, archiveCount) {
+  const active = document.getElementById('dash-count-active');
+  const archive = document.getElementById('dash-count-archive');
+  if (active) active.textContent = activeCount;
+  if (archive) archive.textContent = archiveCount;
+  document.querySelectorAll('#dash-scope .dash-scope-btn').forEach(btn => {
+    const on = btn.dataset.scope === state.dashScope;
+    btn.classList.toggle('is-active', on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+
 function renderDashboard() {
   const list = document.getElementById('dash-list');
-  let items = buildDashboardEntries(state.candidates.slice());
+  let items = buildDashboardEntries(state.candidates.slice()).map(e => ({
+    ...e,
+    archive: laneArchiveInfo(e.candidate, e.runde),
+    pending: laneFinalizePending(e.candidate, e.runde),
+  }));
 
   if (state.filterText) {
     const f = state.filterText.toLowerCase();
@@ -5044,6 +5809,16 @@ function renderDashboard() {
   if (state.filterRunde !== 'all') {
     items = items.filter(e => e.runde === state.filterRunde);
   }
+  if (state.filterResult !== 'all') {
+    items = items.filter(e => recoResultKey(sliceForRunde(e.candidate, e.runde).recommendation) === state.filterResult);
+  }
+
+  // Zaehler beziehen sich auf die gesetzten Filter, nicht auf den Gesamtbestand.
+  const archiveCount = items.filter(e => e.archive.archived).length;
+  updateDashScopeCounts(items.length - archiveCount, archiveCount);
+  const archiveView = state.dashScope === 'archive';
+  items = items.filter(e => e.archive.archived === archiveView);
+
   if (state.sortBy === 'name') items.sort((a, b) => (a.candidate.kandidat||'').localeCompare(b.candidate.kandidat||''));
   else if (state.sortBy === 'score_desc') {
     items.sort((a, b) => {
@@ -5058,11 +5833,17 @@ function renderDashboard() {
   }
 
   if (items.length === 0) {
-    list.innerHTML = `<div class="dash-empty">
-      <i class="fa-solid fa-folder-open"></i>
-      <h3>Noch keine Interviews</h3>
-      <p>Klicke auf "Neues Interview", um deine erste Beurteilung zu starten.</p>
-    </div>`;
+    list.innerHTML = archiveView
+      ? `<div class="dash-empty">
+          <i class="fa-solid fa-box-archive"></i>
+          <h3>Archiv ist leer</h3>
+          <p>Gespräche wandern 48 Stunden nach der finalen Entscheidung automatisch hierher.</p>
+        </div>`
+      : `<div class="dash-empty">
+          <i class="fa-solid fa-folder-open"></i>
+          <h3>Noch keine Interviews</h3>
+          <p>Klicke auf "Neues Interview", um deine erste Beurteilung zu starten.</p>
+        </div>`;
     return;
   }
 
@@ -5070,7 +5851,7 @@ function renderDashboard() {
   list.innerHTML = '<div class="dash-rows">' + groups.map(g => {
     const c = g.candidate;
     const laneCount = g.lanes.length;
-    return `<div class="dash-group">
+    return `<div class="dash-group${archiveView ? ' dash-group--archived' : ''}">
       <div class="dash-group-head">
         <div>
           <div class="dash-group-name">${escapeHtml(c.kandidat || 'Unbenannt')}</div>
@@ -5092,6 +5873,9 @@ function renderDashboard() {
       else if (btn.dataset.act === 'delete') deleteCandidate(id);
       else if (btn.dataset.act === 'print') printInterviewById(id, runde);
       else if (btn.dataset.act === 'team-panel') openTeamPanel(id, runde);
+      else if (btn.dataset.act === 'mail') openMailDialog(id, runde);
+      else if (btn.dataset.act === 'archive') setLaneArchived(id, runde, true);
+      else if (btn.dataset.act === 'unarchive') setLaneArchived(id, runde, false);
     });
   });
   list.querySelectorAll('.dash-lane').forEach(lane => {
@@ -6113,6 +6897,14 @@ document.getElementById('zweit-locked-close').addEventListener('click', () => {
 document.getElementById('dash-search').addEventListener('input', (e) => { state.filterText = e.target.value; renderDashboard(); });
 document.getElementById('dash-filter').addEventListener('change', (e) => { state.filterRunde = e.target.value; renderDashboard(); });
 document.getElementById('dash-sort').addEventListener('change', (e) => { state.sortBy = e.target.value; renderDashboard(); });
+document.getElementById('dash-result').addEventListener('change', (e) => { state.filterResult = e.target.value; renderDashboard(); });
+document.querySelectorAll('#dash-scope .dash-scope-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.dashScope = btn.dataset.scope === 'archive' ? 'archive' : 'active';
+    renderDashboard();
+  });
+});
+bindMailDialogHandlers();
 
 // Initial: try to restore local session
 try {
