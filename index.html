@@ -184,6 +184,52 @@
     .filter-select .roots-select-option:hover { background: var(--status-bg); color: var(--ink); }
     .filter-select .roots-select-option.is-selected { background: var(--brand-light); color: var(--brand); }
 
+    /* ─── ROOTS Datumsauswahl ─── */
+    .roots-date { position: relative; }
+    .roots-date-trigger {
+      display: flex; align-items: center; gap: 9px; width: 100%; height: 42px; padding: 0 12px;
+      border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink);
+      font-family: inherit; font-size: .9rem; cursor: pointer; text-align: left;
+      transition: border-color .2s, box-shadow .2s; box-sizing: border-box;
+    }
+    .roots-date-trigger:hover { border-color: rgba(32,110,251,.5); }
+    .roots-date-trigger > i:first-child { color: var(--muted); font-size: .82rem; flex-shrink: 0; }
+    .roots-date-value { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .roots-date-value.is-placeholder { color: #94a3b8; }
+    .roots-date-chevron { color: var(--muted); font-size: .72rem; transition: transform .2s; flex-shrink: 0; }
+    .roots-date.is-open .roots-date-chevron { transform: rotate(180deg); }
+    .roots-date.is-open .roots-date-trigger { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(32,110,251,.12); }
+    .roots-date-pop {
+      position: absolute; top: calc(100% + 6px); left: 0; z-index: 700; width: 268px;
+      background: var(--bg); border: 1px solid var(--line); border-radius: 16px;
+      box-shadow: 0 16px 40px rgba(15,23,42,.16); padding: .8rem;
+    }
+    .roots-date[data-drop="up"] .roots-date-pop { top: auto; bottom: calc(100% + 6px); }
+    .roots-date-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: .6rem; }
+    .roots-date-month { font-size: .86rem; font-weight: 700; color: var(--ink); }
+    .roots-date-nav {
+      width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
+      color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+      font-size: .7rem; transition: all .12s;
+    }
+    .roots-date-nav:hover { color: var(--brand); border-color: rgba(32,110,251,.4); background: var(--brand-light); }
+    .roots-date-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .roots-date-dow { font-size: .64rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); text-align: center; padding-bottom: .3rem; }
+    .roots-date-day {
+      height: 32px; border: 0; border-radius: 9px; background: transparent; color: var(--ink);
+      font-family: inherit; font-size: .82rem; cursor: pointer; transition: all .12s;
+      font-variant-numeric: tabular-nums;
+    }
+    .roots-date-day:hover { background: var(--status-bg); }
+    .roots-date-day.is-today { box-shadow: inset 0 0 0 1px rgba(32,110,251,.45); color: var(--brand); font-weight: 700; }
+    .roots-date-day.is-selected { background: var(--brand); color: #fff; font-weight: 700; box-shadow: none; }
+    .roots-date-foot { display: flex; gap: 6px; margin-top: .6rem; padding-top: .6rem; border-top: 1px solid var(--line); }
+    .roots-date-quick {
+      flex: 1; height: 32px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg);
+      color: var(--muted); font-family: inherit; font-size: .78rem; font-weight: 600; cursor: pointer; transition: all .12s;
+    }
+    .roots-date-quick:hover { color: var(--brand); border-color: rgba(32,110,251,.4); background: var(--brand-light); }
+
     /* ─── Mobile hamburger & sidebar overlay ─── */
     .nav-hamburger { display: none; background: none; border: none; color: var(--ink); cursor: pointer; padding: 4px 6px; border-radius: 8px; font-size: 1.1rem; align-items: center; flex-shrink: 0; }
     .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 8999; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
@@ -1387,9 +1433,8 @@
 <div class="round-switch-overlay" id="lane-date-overlay">
   <div class="round-switch-card" role="dialog" aria-modal="true" aria-labelledby="lane-date-title">
     <h3 id="lane-date-title">Gesprächstermin</h3>
-    <div class="bew-field" style="margin:1rem 0">
-      <label for="lane-date-input">Datum</label>
-      <input type="date" id="lane-date-input">
+    <div class="bew-field" style="margin:1rem 0" id="lane-date-field">
+      <label>Datum</label>
     </div>
     <div class="round-switch-actions">
       <button type="button" class="btn-secondary" id="lane-date-cancel">Abbrechen</button>
@@ -2589,9 +2634,14 @@ function openLaneDateDialog(sessionId, runde) {
   laneDateTarget = { sessionId, runde };
   const rundeLabel = runde === 'zweit' ? 'Zweitgespräch' : 'Erstgespräch';
   document.getElementById('lane-date-title').textContent = `${rundeLabel} · ${c.kandidat || 'Bewerber:in'}`;
-  document.getElementById('lane-date-input').value = roundDatum(c, runde);
+  const field = document.getElementById('lane-date-field');
+  field.querySelector('.roots-date')?.remove();
+  field.insertAdjacentHTML('beforeend', rootsDateHtml({
+    id: 'lane-date-input', name: 'lane_datum', value: roundDatum(c, runde), placeholder: 'Termin wählen',
+  }));
+  initRootsDatePickers(field);
   document.getElementById('lane-date-overlay').classList.add('visible');
-  document.getElementById('lane-date-input').focus();
+  field.querySelector('.roots-date-trigger')?.focus();
 }
 
 function closeLaneDateDialog() {
@@ -6746,6 +6796,139 @@ function closeAllRootsSelects() {
     sel?.classList.remove('is-open');
     sel?.querySelector('.roots-select-trigger')?.setAttribute('aria-expanded', 'false');
   });
+  closeAllRootsDatePickers();
+}
+
+/* ──────────────────────────────────────────────
+   Datumsauswahl im ROOTS-Design
+
+   Ein natives <input type="date"> bringt den Kalender des Browsers mit, der auf
+   jedem System anders aussieht. Hier steht deshalb ein eigener Kalender im
+   weissen ROOTS-Look; den Wert fuehrt weiter ein verstecktes Feld mit demselben
+   Namen, damit Formulare und Auslesen unveraendert funktionieren.
+   ────────────────────────────────────────────── */
+const DATE_MONTHS_DE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+const DATE_DOW_DE = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+
+function isoToday() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function rootsDateHtml({ id = '', name, value = '', placeholder = 'Datum wählen', clearable = false }) {
+  const iso = ISO_DATE.test(String(value || '')) ? value : '';
+  return `<div class="roots-date" data-clearable="${clearable ? '1' : '0'}">
+      <button type="button" class="roots-date-trigger" aria-haspopup="dialog" aria-expanded="false">
+        <i class="fa-regular fa-calendar"></i>
+        <span class="roots-date-value${iso ? '' : ' is-placeholder'}">${escapeHtml(iso ? formatDeDate(iso) : placeholder)}</span>
+        <i class="fa-solid fa-chevron-down roots-date-chevron"></i>
+      </button>
+      <div class="roots-date-pop" hidden role="dialog"></div>
+      <input type="hidden"${id ? ` id="${escapeHtml(id)}"` : ''} name="${escapeHtml(name)}" value="${escapeHtml(iso)}" data-placeholder="${escapeHtml(placeholder)}">
+    </div>`;
+}
+
+function closeAllRootsDatePickers() {
+  document.querySelectorAll('.roots-date.is-open').forEach(root => {
+    root.classList.remove('is-open');
+    root.removeAttribute('data-drop');
+    root.querySelector('.roots-date-pop').hidden = true;
+    root.querySelector('.roots-date-trigger')?.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function setRootsDateValue(hidden, iso) {
+  const root = hidden?.closest('.roots-date');
+  if (!root) return;
+  const clean = ISO_DATE.test(String(iso || '')) ? iso : '';
+  hidden.value = clean;
+  const label = root.querySelector('.roots-date-value');
+  label.textContent = clean ? formatDeDate(clean) : (hidden.dataset.placeholder || 'Datum wählen');
+  label.classList.toggle('is-placeholder', !clean);
+  root.dataset.view = clean || isoToday();
+  if (root.classList.contains('is-open')) renderRootsDateGrid(root);
+}
+
+function renderRootsDateGrid(root) {
+  const hidden = root.querySelector('input[type="hidden"]');
+  const pop = root.querySelector('.roots-date-pop');
+  const view = ISO_DATE.test(String(root.dataset.view || '')) ? root.dataset.view : isoToday();
+  const [year, month] = view.split('-').map(Number);
+  const selected = hidden.value;
+  const today = isoToday();
+  const leading = (new Date(year, month - 1, 1).getDay() + 6) % 7;   // Montag zuerst
+  const days = new Date(year, month, 0).getDate();
+  let cells = DATE_DOW_DE.map(d => `<span class="roots-date-dow">${d}</span>`).join('');
+  cells += '<span></span>'.repeat(leading);
+  for (let day = 1; day <= days; day++) {
+    const iso = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const classes = ['roots-date-day'];
+    if (iso === selected) classes.push('is-selected');
+    if (iso === today) classes.push('is-today');
+    cells += `<button type="button" class="${classes.join(' ')}" data-day="${iso}">${day}</button>`;
+  }
+  pop.innerHTML = `<div class="roots-date-head">
+      <button type="button" class="roots-date-nav" data-nav="-1" aria-label="Vorheriger Monat"><i class="fa-solid fa-chevron-left"></i></button>
+      <span class="roots-date-month">${DATE_MONTHS_DE[month - 1]} ${year}</span>
+      <button type="button" class="roots-date-nav" data-nav="1" aria-label="Nächster Monat"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+    <div class="roots-date-grid">${cells}</div>
+    <div class="roots-date-foot">
+      <button type="button" class="roots-date-quick" data-quick="today">Heute</button>
+      ${root.dataset.clearable === '1' ? '<button type="button" class="roots-date-quick" data-quick="clear">Leeren</button>' : ''}
+    </div>`;
+}
+
+function initRootsDatePickers(container = document) {
+  container.querySelectorAll('.roots-date:not([data-ready])').forEach(root => {
+    root.dataset.ready = '1';
+    const hidden = root.querySelector('input[type="hidden"]');
+    const trigger = root.querySelector('.roots-date-trigger');
+    const pop = root.querySelector('.roots-date-pop');
+    root.dataset.view = hidden.value || isoToday();
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const opening = pop.hidden;
+      closeAllRootsSelects();
+      if (!opening) return;
+      root.dataset.view = hidden.value || isoToday();
+      renderRootsDateGrid(root);
+      pop.hidden = false;
+      root.classList.add('is-open');
+      trigger.setAttribute('aria-expanded', 'true');
+      // Nach unten, wenn dort Platz ist - sonst nach oben aufklappen.
+      const below = window.innerHeight - trigger.getBoundingClientRect().bottom;
+      if (below < pop.offsetHeight + 16) root.dataset.drop = 'up';
+      else root.removeAttribute('data-drop');
+    });
+
+    pop.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const nav = e.target.closest('[data-nav]');
+      if (nav) {
+        const [year, month] = (root.dataset.view || isoToday()).split('-').map(Number);
+        const shifted = new Date(year, month - 1 + Number(nav.dataset.nav), 1);
+        root.dataset.view = `${shifted.getFullYear()}-${String(shifted.getMonth() + 1).padStart(2, '0')}-01`;
+        renderRootsDateGrid(root);
+        return;
+      }
+      const quick = e.target.closest('[data-quick]');
+      if (quick) {
+        commitRootsDate(hidden, quick.dataset.quick === 'today' ? isoToday() : '');
+        return;
+      }
+      const day = e.target.closest('[data-day]');
+      if (day) commitRootsDate(hidden, day.dataset.day);
+    });
+  });
+}
+
+function commitRootsDate(hidden, iso) {
+  setRootsDateValue(hidden, iso);
+  closeAllRootsDatePickers();
+  hidden.dispatchEvent(new Event('input', { bubbles: true }));
+  hidden.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
 function initRootsCustomSelects(container) {
@@ -6795,7 +6978,7 @@ function renderBewerberCreateForm() {
   // Startet direkt danach ein Interview, gehoert der Termin des Erstgespraechs
   // dazu: er tragt die Archivfrist und die Erinnerung an den Abschluss.
   const dateField = mode.startInterviewAfterSave
-    ? `<div class="bew-field"><label for="bew-erst-datum">Erstgespräch am</label><input id="bew-erst-datum" name="erst_datum" type="date" required value="${escapeHtml(mode.erstDatum || '')}"></div>`
+    ? `<div class="bew-field"><label>Erstgespräch am</label>${rootsDateHtml({ id: 'bew-erst-datum', name: 'erst_datum', value: mode.erstDatum || '', placeholder: 'Termin wählen' })}</div>`
     : '';
   detail.innerHTML = `
     <form id="bew-form" class="bew-form-grid">
@@ -6808,6 +6991,7 @@ function renderBewerberCreateForm() {
       <button type="button" class="btn-ghost" id="bew-create-cancel">Abbrechen</button>
     </div>`;
   initRootsCustomSelects(detail);
+  initRootsDatePickers(detail);
   detail.querySelector('[name="erst_datum"]')?.addEventListener('input', (e) => {
     if (state.bewerberCreateMode) state.bewerberCreateMode.erstDatum = e.target.value;
   });
@@ -6906,8 +7090,8 @@ function renderBewerberDetail(id) {
       <div class="bew-field"><label>Bewerbung auf Stelle</label><input name="position_applied" value="${escapeHtml(a.position_applied||'')}"></div>
       <div class="bew-field">${stelleDropdownHtml(a.role_title||'')}</div>
       <div class="bew-field"><label>Quelle</label><input name="application_source" value="${escapeHtml(a.application_source||'')}"></div>
-      <div class="bew-field"><label>Geburtsdatum</label><input name="date_of_birth" type="date" value="${a.date_of_birth||''}"></div>
-      <div class="bew-field"><label>Einstiegsdatum</label><input name="availability_start" type="date" value="${a.availability_start||''}"></div>
+      <div class="bew-field"><label>Geburtsdatum</label>${rootsDateHtml({ name: 'date_of_birth', value: a.date_of_birth || '', placeholder: 'Kein Datum', clearable: true })}</div>
+      <div class="bew-field"><label>Einstiegsdatum</label>${rootsDateHtml({ name: 'availability_start', value: a.availability_start || '', placeholder: 'Kein Datum', clearable: true })}</div>
       <div class="bew-field"><label>Status</label>
         <select name="pipeline_status">${Object.entries(PIPELINE_FORM_OPTIONS).map(([k,v])=>`<option value="${k}" ${a.pipeline_status===k?'selected':''}>${v}</option>`).join('')}${!PIPELINE_FORM_OPTIONS[a.pipeline_status] && a.pipeline_status ? `<option value="${escapeHtml(a.pipeline_status)}" selected>${escapeHtml(PIPELINE_LABELS[a.pipeline_status] || a.pipeline_status)}</option>` : ''}</select>
       </div>
@@ -6958,6 +7142,7 @@ function renderBewerberDetail(id) {
   uz.onclick = () => fi.click();
   fi.onchange = () => { if (fi.files[0]) uploadApplicantDocument(a.id, fi.files[0]); };
   initRootsCustomSelects(detail);
+  initRootsDatePickers(detail);
   enhanceTextAssists(detail);
 }
 
@@ -7266,8 +7451,8 @@ document.getElementById('lane-date-save').addEventListener('click', saveLaneDate
 document.getElementById('lane-date-overlay').addEventListener('click', (e) => {
   if (e.target.id === 'lane-date-overlay') closeLaneDateDialog();
 });
-document.getElementById('lane-date-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') { e.preventDefault(); saveLaneDate(); }
+document.getElementById('lane-date-overlay').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.target.closest('.roots-date-pop')) { e.preventDefault(); saveLaneDate(); }
 });
 
 // Initial: try to restore local session
