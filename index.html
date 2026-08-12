@@ -325,6 +325,8 @@
     .bew-status--new { background: var(--status-bg); color: var(--muted); }
     .bew-status--erst { background: var(--brand-light); color: var(--brand); }
     .bew-status--zweit { background: #ede9fe; color: #5b21b6; }
+    .bew-status--dritt { background: #fef3c7; color: #92400e; }
+    .bew-status--offer { background: #d0f4ee; color: #0f6b57; }
     .bew-status--hired { background: #d0f4ee; color: #0f6b57; }
     .bew-status--rejected { background: #fee2e2; color: #b91c1c; }
     .bew-status--withdrawn { background: #fff1f2; color: #be123c; }
@@ -2311,7 +2313,10 @@ const SECTIONS_ZWEIT = [
 ];
 
 const RECO_OPTIONS_ERST = ['Zum Zweitgespräch einladen', 'Nicht passend'];
-const RECO_OPTIONS_ZWEIT = ['Einstellen', 'Vielleicht – weitere Diskussion', 'Nicht einstellen'];
+// Nach dem Zweitgespraech folgt das Drittgespraech vor Ort mit Case. Es wird
+// nicht im Tool gefuehrt, deshalb endet die Bewertung hier mit der Empfehlung.
+// Die Einstellungsentscheidung faellt nach dem Drittgespraech ausserhalb.
+const RECO_OPTIONS_ZWEIT = ['Zum Drittgespräch einladen', 'Vielleicht – weitere Diskussion', 'Nicht einstellen'];
 </script>
 
 <script>
@@ -2477,9 +2482,11 @@ function buildDashboardEntries(candidates) {
 const ARCHIVE_DELAY_MS = 48 * 60 * 60 * 1000;
 const FINALIZE_REMINDER_DELAY_MS = 24 * 60 * 60 * 1000;
 
-// Entscheidungen, mit denen der Prozess fuer den Bewerber endet. Nur sie
-// starten die Archivfrist - eine Einladung ins Zweitgespraech tut das nicht.
-const TERMINAL_RECOS = new Set(['Nicht passend', 'Einstellen', 'Nicht einstellen']);
+// Entscheidungen, nach denen im Tool nichts mehr folgt. Nur sie starten die
+// Archivfrist - eine Einladung ins Zweitgespraech tut das nicht. Die Einladung
+// ins Drittgespraech schon, denn das Gespraech selbst laeuft ausserhalb.
+// 'Einstellen' stammt aus aelteren Datensaetzen und bleibt deshalb enthalten.
+const TERMINAL_RECOS = new Set(['Nicht passend', 'Zum Drittgespräch einladen', 'Einstellen', 'Nicht einstellen']);
 
 function parseTs(value) {
   const t = Date.parse(value || '');
@@ -5561,12 +5568,12 @@ ${ctx.recruiter}`,
   },
   {
     id: 'termin_case',
-    label: 'Termin Case Interview',
+    label: 'Termin Drittgespräch (Case)',
     icon: 'fa-diagram-project',
     subject: mailSubject,
     body: (ctx) => `Hallo ${ctx.firstName},
 
-wir möchten Dich sehr gerne zum Case Interview, dem finalen Schritt unseres Auswahlprozesses einladen. Hier bekommst Du die Gelegenheit, Deine strukturelle und analytische Herangehensweise in persona mit uns zu besprechen.
+wir möchten Dich sehr gerne zum Case Interview, dem finalen Schritt unseres Auswahlprozesses einladen. Hier bekommst Du die Gelegenheit, Deine strukturelle und analytische Herangehensweise in persona mit uns zu besprechen. Das Gespräch findet bei uns im Büro am Factory Campus in Düsseldorf-Lierenfeld statt.
 
 Wie würden Dir folgende Termine passen?
 - [Wochentag, TT.MM.], [HH:MM] Uhr
@@ -5624,7 +5631,7 @@ ${ctx.recruiter}`,
 function matchedMailTemplateId(reco) {
   const r = String(reco || '').trim();
   if (r === ZWEIT_INVITE_RECO) return 'termin_zweit';
-  if (r === 'Einstellen') return 'termin_case';
+  if (r === 'Zum Drittgespräch einladen' || r === 'Einstellen') return 'termin_case';
   if (r === 'Nicht passend' || r === 'Nicht einstellen') return 'absage';
   return null;
 }
@@ -5939,7 +5946,7 @@ function bindMailDialogHandlers() {
    ────────────────────────────────────────────── */
 function recoCategory(reco) {
   if (!reco) return 'none';
-  if (reco === 'Zum Zweitgespräch einladen' || reco === 'Einstellen') return 'yes';
+  if (reco === 'Zum Zweitgespräch einladen' || reco === 'Zum Drittgespräch einladen' || reco === 'Einstellen') return 'yes';
   if (reco === 'Nicht passend' || reco === 'Nicht einstellen') return 'no';
   return 'maybe';
 }
@@ -5968,6 +5975,7 @@ function formatSpanShort(ms) {
 function recoResultKey(reco) {
   const r = String(reco || '').trim();
   if (r === ZWEIT_INVITE_RECO) return 'zweit_invite';
+  if (r === 'Zum Drittgespräch einladen') return 'dritt_invite';
   if (r === 'Einstellen') return 'hired';
   if (r === 'Nicht passend' || r === 'Nicht einstellen') return 'rejected';
   if (!r) return 'open';
@@ -6528,11 +6536,11 @@ function bindMainHandlers() {
    ────────────────────────────────────────────── */
 const PIPELINE_LABELS = {
   new: 'Neu', screening: 'Screening', erst: 'Erstgespräch', zweit: 'Zweitgespräch',
-  offer: 'Angebot', hired: 'Eingestellt', rejected: 'Abgelehnt', withdrawn: 'Zurückgezogen',
+  dritt: 'Drittgespräch', offer: 'Angebot', hired: 'Eingestellt', rejected: 'Abgelehnt', withdrawn: 'Zurückgezogen',
 };
 
 const PIPELINE_FORM_OPTIONS = {
-  new: 'Neu', erst: 'Erstgespräch', zweit: 'Zweitgespräch',
+  new: 'Neu', erst: 'Erstgespräch', zweit: 'Zweitgespräch', dritt: 'Drittgespräch',
   hired: 'Eingestellt', rejected: 'Abgelehnt', withdrawn: 'Zurückgezogen',
 };
 
@@ -6575,6 +6583,7 @@ function mergeAbschlussNotes(primary = {}, fallback = {}) {
 }
 
 function pipelineFromInterview(meta, recommendation) {
+  if (recommendation === 'Zum Drittgespräch einladen') return 'dritt';
   if (recommendation === 'Einstellen') return 'offer';
   if (recommendation === 'Nicht einstellen' || recommendation === 'Nicht passend') return 'rejected';
   if (recommendation === 'Zum Zweitgespräch einladen') return 'zweit';
@@ -7344,6 +7353,7 @@ mountFilterSelect('bew-filter-status', {
     { value: 'new', label: 'Neu' },
     { value: 'erst', label: 'Erstgespräch' },
     { value: 'zweit', label: 'Zweitgespräch' },
+    { value: 'dritt', label: 'Drittgespräch' },
     { value: 'hired', label: 'Eingestellt' },
     { value: 'rejected', label: 'Abgelehnt' },
     { value: 'withdrawn', label: 'Zurückgezogen' },
@@ -7420,6 +7430,7 @@ mountFilterSelect('dash-result', {
   options: [
     { value: 'all', label: 'Alle Ergebnisse' },
     { value: 'zweit_invite', label: 'Zum Zweitgespräch' },
+    { value: 'dritt_invite', label: 'Zum Drittgespräch' },
     { value: 'hired', label: 'Einstellen' },
     { value: 'discuss', label: 'Weitere Diskussion' },
     { value: 'rejected', label: 'Absage' },

@@ -298,7 +298,10 @@ const SECTIONS_ZWEIT = [
 ];
 
 const RECO_OPTIONS_ERST = ['Zum Zweitgespräch einladen', 'Nicht passend'];
-const RECO_OPTIONS_ZWEIT = ['Einstellen', 'Vielleicht – weitere Diskussion', 'Nicht einstellen'];
+// Nach dem Zweitgespraech folgt das Drittgespraech vor Ort mit Case. Es wird
+// nicht im Tool gefuehrt, deshalb endet die Bewertung hier mit der Empfehlung.
+// Die Einstellungsentscheidung faellt nach dem Drittgespraech ausserhalb.
+const RECO_OPTIONS_ZWEIT = ['Zum Drittgespräch einladen', 'Vielleicht – weitere Diskussion', 'Nicht einstellen'];
 </script>
 
 <script>
