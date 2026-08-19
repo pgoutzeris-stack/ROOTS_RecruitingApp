@@ -5900,7 +5900,9 @@ function triggerFileDownload(content, mime, filename) {
 // Rechners - auf Macs ohne geaenderte Einstellung also in Apple Mail.
 function outlookComposeUrl({ to, subject, body }) {
   const params = new URLSearchParams({ to: to || '', subject: subject || '', body: body || '' });
-  return `ms-outlook://compose?${params.toString()}`;
+  // Outlook fuer Mac kennt nur `emails/new`; `compose` (Outlook Mobile) quittiert
+  // es mit "Unbekannter Host in URL".
+  return `ms-outlook://emails/new?${params.toString()}`;
 }
 
 async function openMailInClient() {
