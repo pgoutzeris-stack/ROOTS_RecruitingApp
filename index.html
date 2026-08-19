@@ -1810,7 +1810,7 @@ function _setDashLoading(on) {
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    ['rm-interview-delete','rm-applicant-delete','rm-applicant-withdraw'].forEach(id => {
+    ['rm-interview-delete','rm-applicant-delete','rm-applicant-withdraw','rm-mail-archive'].forEach(id => {
       document.getElementById(id)?.classList.remove('open');
     });
     if (document.getElementById('mail-overlay')?.classList.contains('visible')) closeMailDialog();
@@ -5506,7 +5506,7 @@ function switchView(v, options = {}) {
    Platzhalter stehen und wird im Fenster ausgefuellt, bevor die Mail kopiert
    oder als Outlook-Vorlage heruntergeladen wird.
    ────────────────────────────────────────────── */
-const mailSubject = (ctx) => `Bewerbung ${ctx.stelle} - ${ctx.fullName}`;
+const mailSubject = (ctx) => `Deine Bewerbung als ${ctx.stelle} bei ROOTS - ${ctx.fullName}`;
 
 const MAIL_TEMPLATES = [
   {
@@ -5774,15 +5774,6 @@ function mailHeaderEncode(value) {
   return /^[\x20-\x7E]*$/.test(v) ? v : `=?UTF-8?B?${base64Utf8(v)}?=`;
 }
 
-function mailAddress(name, address) {
-  const addr = String(address || '').trim();
-  if (!addr) return '';
-  const raw = String(name || '').trim();
-  if (!raw) return addr;
-  if (/^[\x20-\x7E]*$/.test(raw)) return `"${raw.replace(/["\\]/g, '')}" <${addr}>`;
-  return `${mailHeaderEncode(raw)} <${addr}>`;
-}
-
 /**
  * Baut eine .eml-Datei. Outlook oeffnet sie als noch nicht gesendete Nachricht
  * (Kopfzeile X-Unsent), sodass Empfaenger, Betreff und Text direkt drinstehen
@@ -5792,12 +5783,14 @@ function buildEmlFile({ fromName, fromEmail, to, subject, body }) {
   const CRLF = '\r\n';
   const encodedBody = base64Utf8(String(body || '').replace(/\r?\n/g, CRLF))
     .replace(/.{1,76}/g, (line) => line + CRLF);
-  const headers = ['MIME-Version: 1.0', `Date: ${new Date().toUTCString()}`];
-  const from = mailAddress(fromName, fromEmail);
-  if (from) headers.push(`From: ${from}`);
+  // Kein `From` und kein `Date`: beides laesst Outlook die Datei als bereits
+  // empfangene Nachricht einordnen und nur noch als Vorschau oeffnen. Ohne sie
+  // plus `X-Unsent` erscheint sie als eigener, sendebereiter Entwurf.
+  const headers = ['MIME-Version: 1.0'];
   if (String(to || '').trim()) headers.push(`To: ${String(to).trim()}`);
   headers.push(`Subject: ${mailHeaderEncode(subject)}`);
   headers.push('X-Unsent: 1');
+  headers.push('X-Uniform-Type-Identifier: com.apple.mail-draft');
   headers.push('Content-Type: text/plain; charset=utf-8');
   headers.push('Content-Transfer-Encoding: base64');
   return headers.join(CRLF) + CRLF + CRLF + encodedBody;
@@ -5903,11 +5896,17 @@ function triggerFileDownload(content, mime, filename) {
   }
 }
 
+// Outlook per eigenem Schema. `mailto:` landet beim Standard-Mailprogramm des
+// Rechners - auf Macs ohne geaenderte Einstellung also in Apple Mail.
+function outlookComposeUrl({ to, subject, body }) {
+  const params = new URLSearchParams({ to: to || '', subject: subject || '', body: body || '' });
+  return `ms-outlook://compose?${params.toString()}`;
+}
+
 async function openMailInClient() {
   const fields = currentMailFields();
   const { subject, body } = fields;
-  const mailto = `mailto:${encodeURIComponent(fields.to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  if (await openExternalUrl(mailto)) return;
+  if (await openExternalUrl(outlookComposeUrl(fields))) return;
   if (await openExternalUrl(outlookWebComposeUrl(fields))) {
     toast('Outlook im Web geöffnet');
     return;
@@ -5916,6 +5915,48 @@ async function openMailInClient() {
   toast(copied
     ? 'Outlook ließ sich nicht öffnen – Betreff und Text liegen in der Zwischenablage'
     : 'Outlook ließ sich nicht öffnen', copied ? 'info' : 'error');
+}
+
+/**
+ * Nach jeder Aktion im Mailfenster: Bewerber:in ins Archiv? Der Weg ist von
+ * Abschluss und Empfehlung unabhaengig - auch ein Gespraech im Entwurfsstadium
+ * laesst sich so ablegen, weil `archivedAt` die automatische Frist schlaegt.
+ */
+async function offerArchiveAfterMailAction() {
+  if (!mailDialog) return;
+  const { sessionId, fullName } = mailDialog.ctx;
+  const candidate = state.candidates.find(c => c.session_id === sessionId);
+  if (!candidate) return;
+  const rounden = ['erst', 'zweit'].filter(r => r === 'erst' || candidate.zweit);
+  if (rounden.every(r => laneArchiveInfo(candidate, r).archived)) return;
+  const text = document.getElementById('rm-mail-archive-text');
+  if (text) text.textContent = `${fullName || 'Die Bewerber:in'} ins Archiv verschieben? Offene Gespräche werden dabei auf „Nicht einstellen“ gesetzt.`;
+  if (!await rootsConfirm('rm-mail-archive')) return;
+  const now = new Date().toISOString();
+  for (const runde of rounden) {
+    const slice = sliceOf(candidate, runde);
+    slice.archivedAt = now;
+    slice.archiveRestoredAt = null;
+    // Eine bereits getroffene Entscheidung bleibt stehen, alles andere endet
+    // mit der Archivierung als Absage.
+    if (!isTerminalReco(slice.recommendation)) slice.recommendation = 'Nicht einstellen';
+    syncOpenInterviewSlice(sessionId, runde, {
+      archivedAt: slice.archivedAt,
+      archiveRestoredAt: slice.archiveRestoredAt,
+      recommendation: slice.recommendation,
+    });
+  }
+  if (!isTerminalReco(candidate.recommendation)) candidate.recommendation = 'Nicht einstellen';
+  try {
+    await persistCandidateSlices(candidate);
+    toast('Ins Archiv verschoben');
+  } catch (e) {
+    console.error('offerArchiveAfterMailAction', e);
+    toast('Archiv konnte nicht gespeichert werden', 'error');
+    return;
+  }
+  closeMailDialog();
+  if (state.view === 'dashboard') renderDashboard();
 }
 
 function bindMailDialogHandlers() {
@@ -5927,9 +5968,16 @@ function bindMailDialogHandlers() {
     const { subject, body } = currentMailFields();
     const ok = await copyToClipboard(`Betreff: ${subject}\n\n${body}`);
     toast(ok ? 'Betreff und Text kopiert' : 'Kopieren nicht möglich', ok ? 'info' : 'error');
+    await offerArchiveAfterMailAction();
   });
-  document.getElementById('mail-mailto').addEventListener('click', openMailInClient);
-  document.getElementById('mail-download').addEventListener('click', downloadMailTemplate);
+  document.getElementById('mail-mailto').addEventListener('click', async () => {
+    await openMailInClient();
+    await offerArchiveAfterMailAction();
+  });
+  document.getElementById('mail-download').addEventListener('click', async () => {
+    await downloadMailTemplate();
+    await offerArchiveAfterMailAction();
+  });
   overlay.querySelectorAll('[data-copy]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const field = btn.dataset.copy === 'to' ? 'mail-to' : 'mail-subject';
@@ -7766,6 +7814,18 @@ initializeRecruitingHistory();
     <div class="roots-modal-actions">
       <button class="btn-cancel" id="rm-applicant-withdraw-cancel">Abbrechen</button>
       <button class="btn-confirm warning" id="rm-applicant-withdraw-confirm"><i class="fa-solid fa-user-minus"></i> Absage erfassen</button>
+    </div>
+  </div>
+</div>
+
+<div class="roots-modal-overlay" id="rm-mail-archive">
+  <div class="roots-modal-box">
+    <div class="roots-modal-icon warning"><i class="fa-solid fa-box-archive"></i></div>
+    <div class="roots-modal-title">Ins Archiv verschieben</div>
+    <div class="roots-modal-body" id="rm-mail-archive-text"></div>
+    <div class="roots-modal-actions">
+      <button class="btn-cancel" id="rm-mail-archive-cancel">Nicht archivieren</button>
+      <button class="btn-confirm warning" id="rm-mail-archive-confirm"><i class="fa-solid fa-box-archive"></i> Archivieren</button>
     </div>
   </div>
 </div>
